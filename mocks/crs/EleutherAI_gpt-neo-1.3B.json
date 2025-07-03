@@ -1,0 +1,29 @@
+{
+  "metadata": {
+    "name": "EleutherAI/gpt-neo-1.3B",
+    "namespace": "default"
+  },
+  "spec": {
+    "predictor": {
+      "model": {
+        "modelName": "model-15",
+        "runtime": "openvino",
+        "storageUri": "s3://models/model-15"
+      }
+    }
+  },
+  "status": {
+    "conditions": [
+      {
+        "type": "Ready",
+        "status": "True",
+        "message": "All systems go"
+      },
+      {
+        "type": "PredictorReady",
+        "status": "True",
+        "message": "Predictor loaded"
+      }
+    ]
+  }
+}

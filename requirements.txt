@@ -1,0 +1,7 @@
+pyyaml
+termcolor
+
+pytest
+
+rich
+readchar

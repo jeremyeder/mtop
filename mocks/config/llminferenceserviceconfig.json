@@ -1,0 +1,12 @@
+{
+  "metadata": {
+    "name": "llminferenceserviceconfig"
+  },
+  "spec": {
+    "defaultRuntime": "triton",
+    "supportedRuntimes": [
+      "triton",
+      "openvino"
+    ]
+  }
+}
