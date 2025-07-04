@@ -1,0 +1,29 @@
+{
+  "metadata": {
+    "name": "gpt2",
+    "namespace": "default"
+  },
+  "spec": {
+    "predictor": {
+      "model": {
+        "modelName": "model-2",
+        "runtime": "triton",
+        "storageUri": "s3://models/model-2"
+      }
+    }
+  },
+  "status": {
+    "conditions": [
+      {
+        "type": "Ready",
+        "status": "True",
+        "message": "All systems go"
+      },
+      {
+        "type": "PredictorReady",
+        "status": "True",
+        "message": "Predictor loaded"
+      }
+    ]
+  }
+}

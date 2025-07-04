@@ -1,0 +1,29 @@
+{
+  "metadata": {
+    "name": "sentence-transformers/all-MiniLM-L6-v2",
+    "namespace": "default"
+  },
+  "spec": {
+    "predictor": {
+      "model": {
+        "modelName": "model-13",
+        "runtime": "openvino",
+        "storageUri": "s3://models/model-13"
+      }
+    }
+  },
+  "status": {
+    "conditions": [
+      {
+        "type": "Ready",
+        "status": "True",
+        "message": "All systems go"
+      },
+      {
+        "type": "PredictorReady",
+        "status": "True",
+        "message": "Predictor loaded"
+      }
+    ]
+  }
+}

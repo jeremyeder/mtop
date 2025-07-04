@@ -1,0 +1,16 @@
+{
+  "traffic": {
+    "gpt2": 0,
+    "bert-base": 100
+  },
+  "status": {
+    "gpt2": {
+      "status": "Terminated"
+    },
+    "bert-base": {
+      "status": "Ready"
+    }
+  },
+  "step": 2,
+  "timestamp": "00:10"
+}

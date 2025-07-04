@@ -1,0 +1,19 @@
+clear
+echo "# 🧪 Demo: kubectl-ld with mocked output"
+echo ""
+
+wait 1
+
+echo "🔍 Simulated: kubectl get pods --show-labels"
+cat mock/get_pods.txt
+
+wait 2
+
+echo ""
+echo "✨ Simulated: kubectl ld pods"
+cat mock/ld_pods.txt
+
+wait 2
+
+echo ""
+echo "✅ kubectl-ld plugin adds clarity to label-heavy output!"

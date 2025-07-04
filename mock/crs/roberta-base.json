@@ -1,0 +1,29 @@
+{
+  "metadata": {
+    "name": "roberta-base",
+    "namespace": "default"
+  },
+  "spec": {
+    "predictor": {
+      "model": {
+        "modelName": "model-3",
+        "runtime": "openvino",
+        "storageUri": "s3://models/model-3"
+      }
+    }
+  },
+  "status": {
+    "conditions": [
+      {
+        "type": "Ready",
+        "status": "True",
+        "message": "All systems go"
+      },
+      {
+        "type": "PredictorReady",
+        "status": "True",
+        "message": "Predictor loaded"
+      }
+    ]
+  }
+}

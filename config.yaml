@@ -1,0 +1,89 @@
+# Unified Configuration for Build-time and Runtime Settings
+
+# Build-time Configuration (Program Identity)
+build:
+  program:
+    name: "mtop"                              # Main program name
+    monitor_name: "mtop"                      # Monitor command (replaces ldtop)
+    description: "Model Top - Real-time ML monitoring"
+    class_prefix: "MTop"                      # Generates MTopMain, MTopMonitor
+    
+  branding:
+    emoji: "📊"
+    tagline: "Real-time LLM inference monitoring"
+    github_repo: "jeremyeder/mtop"
+
+# Runtime Configuration (Display & Behavior)
+display:
+  columns:
+    - name: "Model"
+      field: "name"                           # ModelMetrics attribute
+      width: 28
+      justify: "left"
+      truncate: 25                           # Truncate at 25 chars with "..."
+      
+    - name: "Status" 
+      field: "status"
+      width: 12
+      justify: "center"
+      format: "emoji_status"                 # Custom formatter
+      
+    - name: "QPS"
+      field: "current_qps" 
+      width: 8
+      justify: "right"
+      format: "integer_comma"                # 1,234 format
+      sortable: true
+      sort_key: "qps"
+      
+    - name: "GPU %util"
+      field: "cpu_percent"                   # Note: cpu_percent represents GPU
+      width: 9 
+      justify: "center"
+      format: "percentage"
+      color_thresholds:
+        - max: 50
+          color: "green"
+        - max: 80
+          color: "yellow" 
+        - min: 80
+          color: "red"
+      sortable: true
+      sort_key: "gpu"
+      
+    - name: "Errors"
+      field: "error_rate"
+      width: 7
+      justify: "center"
+      format: "percentage_1dp"               # 1.2% format
+      color_thresholds:
+        - max: 1.0
+          color: "green"
+        - max: 3.0
+          color: "yellow"
+        - min: 3.0
+          color: "red"
+      sortable: true
+      sort_key: "errors"
+      
+    - name: "Latency"
+      field: "latency_p95"
+      width: 8
+      justify: "center"
+      format: "latency_ms"                   # "127ms" format
+      
+    - name: "Replicas"
+      field: "replicas"
+      width: 8
+      justify: "center"
+      format: "integer"
+
+  sorting:
+    default_key: "qps"
+    available_keys: ["qps", "gpu", "errors", "name"]
+    
+  summary:
+    show_runtime: true
+    show_sort_key: true
+    show_mode: true
+    show_namespace: true

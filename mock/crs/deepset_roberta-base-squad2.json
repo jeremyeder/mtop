@@ -1,0 +1,29 @@
+{
+  "metadata": {
+    "name": "deepset/roberta-base-squad2",
+    "namespace": "default"
+  },
+  "spec": {
+    "predictor": {
+      "model": {
+        "modelName": "model-14",
+        "runtime": "triton",
+        "storageUri": "s3://models/model-14"
+      }
+    }
+  },
+  "status": {
+    "conditions": [
+      {
+        "type": "Ready",
+        "status": "True",
+        "message": "All systems go"
+      },
+      {
+        "type": "PredictorReady",
+        "status": "True",
+        "message": "Predictor loaded"
+      }
+    ]
+  }
+}

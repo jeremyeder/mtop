@@ -1,0 +1,29 @@
+{
+  "metadata": {
+    "name": "t5-base",
+    "namespace": "default"
+  },
+  "spec": {
+    "predictor": {
+      "model": {
+        "modelName": "model-7",
+        "runtime": "openvino",
+        "storageUri": "s3://models/model-7"
+      }
+    }
+  },
+  "status": {
+    "conditions": [
+      {
+        "type": "Ready",
+        "status": "True",
+        "message": "All systems go"
+      },
+      {
+        "type": "PredictorReady",
+        "status": "True",
+        "message": "Predictor loaded"
+      }
+    ]
+  }
+}

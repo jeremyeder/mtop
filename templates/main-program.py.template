@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""kubectl-ld - Mock CLI tool for debugging LLMInferenceService CRDs"""
+"""${PROGRAM_NAME} - ${PROGRAM_DESCRIPTION}"""
 
 import sys
 
 # Check Python version early
 if sys.version_info < (3, 11):
-    print("Error: kubectl-ld requires Python 3.11 or later")
+    print("Error: ${PROGRAM_NAME} requires Python 3.11 or later")
     print(f"Current version: {sys.version}")
     sys.exit(1)
 
@@ -15,7 +15,6 @@ import os
 import random
 import signal
 import subprocess
-import sys
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
@@ -23,7 +22,7 @@ from typing import Any, Dict, List, Optional, Union
 import yaml
 from termcolor import colored
 
-# Try to import rich for ldtop functionality
+# Try to import rich for ${MONITOR_NAME} functionality
 try:
     from rich.console import Console
     from rich.layout import Layout
@@ -35,9 +34,17 @@ try:
 except ImportError:
     RICH_AVAILABLE = False
 
+# Import configuration system
+try:
+    from config_loader import Config, load_config, get_default_config
+    from column_engine import TableRenderer
+    CONFIG_AVAILABLE = True
+except ImportError:
+    CONFIG_AVAILABLE = False
+
 
 class ModelMetrics:
-    """Represents metrics for a single model - extracted from demo_monitor.py"""
+    """Represents metrics for a single model"""
     def __init__(self, name: str, cr_data: Dict[str, Any], base_qps: int = 100):
         self.name = name
         self.cr_data = cr_data
@@ -72,20 +79,39 @@ class ModelMetrics:
         self.latency_p95 = max(50, min(500, self.latency_p95))
 
 
-class LLMTopMonitor:
-    """kubectl-ldtop monitoring functionality"""
-    def __init__(self, kubectl_ld: 'KubectlLD', interval: float = 0.5, namespace: str = "default"):
+class ${CLASS_PREFIX}Monitor:
+    """${PROGRAM_NAME} monitoring functionality"""
+    def __init__(self, ${PROGRAM_VARIABLE}: '${CLASS_PREFIX}Main', interval: float = 0.5, namespace: str = "default", config_path: str = None):
         if not RICH_AVAILABLE:
-            raise ImportError("Rich library is required for ldtop. Install with: pip install rich")
+            raise ImportError("Rich library is required for ${MONITOR_NAME}. Install with: pip install rich")
             
-        self.kubectl_ld = kubectl_ld
+        self.${PROGRAM_VARIABLE} = ${PROGRAM_VARIABLE}
         self.console = Console()
         self.interval = interval
         self.namespace = namespace
         self.running = True
-        self.sort_key = "qps"  # qps, cpu, errors, name
         self.models: Dict[str, ModelMetrics] = {}
         self.start_time = time.time()
+        
+        # Load configuration
+        if CONFIG_AVAILABLE:
+            try:
+                if config_path and Path(config_path).exists():
+                    self.config = load_config(config_path)
+                else:
+                    self.config = load_config("config.yaml") if Path("config.yaml").exists() else get_default_config()
+                self.table_renderer = TableRenderer(self.config)
+                self.sort_key = self.table_renderer.engine.get_default_sort_key()
+            except Exception as e:
+                self.console.print(f"[yellow]Warning: Could not load config ({e}), using defaults[/yellow]")
+                self.config = get_default_config()
+                self.table_renderer = TableRenderer(self.config)
+                self.sort_key = "qps"
+        else:
+            # Fallback mode without configuration system
+            self.sort_key = "qps"
+            self.config = None
+            self.table_renderer = None
         
         # Setup signal handlers
         signal.signal(signal.SIGINT, self._signal_handler)
@@ -99,7 +125,7 @@ class LLMTopMonitor:
         """Load models from mock data or live cluster"""
         self.models = {}
         
-        if self.kubectl_ld.is_live:
+        if self.${PROGRAM_VARIABLE}.is_live:
             self._load_live_models()
         else:
             self._load_mock_models()
@@ -108,7 +134,7 @@ class LLMTopMonitor:
         """Load models from live Kubernetes cluster"""
         try:
             # Get LLMInferenceService resources from the cluster
-            data = self.kubectl_ld.kubectl_get("llminferenceservice", namespace=self.namespace)
+            data = self.${PROGRAM_VARIABLE}.kubectl_get("llminferenceservice", namespace=self.namespace)
             if "items" in data:
                 for item in data["items"]:
                     name = item["metadata"]["name"]
@@ -126,7 +152,7 @@ class LLMTopMonitor:
             
     def _load_mock_models(self):
         """Load models from mock CRs"""
-        for cr_file in sorted(self.kubectl_ld.crs_dir.glob("*.json")):
+        for cr_file in sorted(self.${PROGRAM_VARIABLE}.crs_dir.glob("*.json")):
             try:
                 with open(cr_file) as f:
                     cr_data = json.load(f)
@@ -138,8 +164,17 @@ class LLMTopMonitor:
                 
     def _create_traffic_table(self) -> Table:
         """Create the main traffic monitoring table"""
+        if self.table_renderer and CONFIG_AVAILABLE:
+            # Use configurable table renderer
+            return self.table_renderer.create_table_with_data(self.models, self.sort_key)
+        else:
+            # Fallback to hardcoded table (backward compatibility)
+            return self._create_fallback_table()
+    
+    def _create_fallback_table(self) -> Table:
+        """Create fallback table without configuration system"""
         table = Table(show_header=True, header_style="bold cyan")
-        table.add_column("Model", width=30)
+        table.add_column("Model", width=28)
         table.add_column("Status", width=12, justify="center")
         table.add_column("QPS", width=8, justify="right")
         table.add_column("GPU %util", width=9, justify="center")
@@ -150,7 +185,7 @@ class LLMTopMonitor:
         # Sort models based on current sort key
         if self.sort_key == "qps":
             sorted_models = sorted(self.models.items(), key=lambda x: x[1].current_qps, reverse=True)
-        elif self.sort_key == "cpu":
+        elif self.sort_key == "gpu":
             sorted_models = sorted(self.models.items(), key=lambda x: x[1].cpu_percent, reverse=True)
         elif self.sort_key == "errors":
             sorted_models = sorted(self.models.items(), key=lambda x: x[1].error_rate, reverse=True)
@@ -171,7 +206,7 @@ class LLMTopMonitor:
             cpu_style = "green" if metrics.cpu_percent < 50 else "yellow" if metrics.cpu_percent < 80 else "red"
             
             table.add_row(
-                name[:23] + ("..." if len(name) > 23 else ""),
+                name[:25] + ("..." if len(name) > 25 else ""),
                 f"{status_emoji} {metrics.status[:6]}",
                 f"{int(metrics.current_qps):,}",
                 f"[{cpu_style}]{metrics.cpu_percent}%[/{cpu_style}]",
@@ -189,20 +224,24 @@ class LLMTopMonitor:
             
         total_qps = sum(m.current_qps for m in self.models.values())
         total_replicas = sum(m.replicas for m in self.models.values())
-        avg_cpu = sum(m.cpu_percent for m in self.models.values()) / len(self.models)
-        avg_error = sum(m.error_rate for m in self.models.values()) / len(self.models)
         
         healthy_models = sum(1 for m in self.models.values() if m.status == "Ready")
         total_models = len(self.models)
         
         runtime = time.time() - self.start_time
         
+        # Get program info from config if available
+        if self.config:
+            program_title = f"{self.config.build.branding.emoji} {self.config.build.program.name} - {self.config.build.branding.tagline}"
+        else:
+            program_title = f"${EMOJI} ${PROGRAM_NAME} - ${TAGLINE}"
+        
         summary_text = Text()
-        summary_text.append(f"🚀 kubectl-ldtop - LLM Inference Monitor\n", style="bold cyan")
-        summary_text.append(f"Mode: {self.kubectl_ld.mode} | Namespace: {self.namespace} | Runtime: {runtime:.0f}s | Sort: {self.sort_key}\n", style="dim")
+        summary_text.append(f"{program_title}\\n", style="bold cyan")
+        summary_text.append(f"Mode: {self.${PROGRAM_VARIABLE}.mode} | Namespace: {self.namespace} | Runtime: {runtime:.0f}s | Sort: {self.sort_key}\\n", style="dim")
         summary_text.append(f"Total QPS: {int(total_qps):,} ", style="white")
         summary_text.append(f"• Models: {healthy_models}/{total_models} healthy ", style="green" if healthy_models == total_models else "yellow")
-        summary_text.append(f"• Replicas: {total_replicas}\n", style="white")
+        summary_text.append(f"• Replicas: {total_replicas}\\n", style="white")
         summary_text.append(f"Controls: Ctrl+C to quit | Sort by: {self.sort_key}", style="dim")
         
         return Panel(summary_text, border_style="cyan")
@@ -215,21 +254,22 @@ class LLMTopMonitor:
             Layout(name="main")
         )
         
+        # Get table title from config if available
+        if self.config:
+            table_title = self.table_renderer.get_table_title()
+        else:
+            table_title = "${EMOJI} Live LLM Inference Traffic"
+        
         layout["summary"].update(self._create_summary_panel())
         layout["main"].update(Panel(self._create_traffic_table(), 
-                                   title="🔥 Live LLM Inference Traffic", 
+                                   title=table_title, 
                                    border_style="green"))
         
         return layout
         
-    def _handle_input(self):
-        """Handle keyboard input (simplified - in real implementation would use proper input handling)"""
-        # This is a simplified version - real implementation would need proper non-blocking input
-        pass
-        
     def run(self):
-        """Run the ldtop monitor"""
-        self.console.print("[cyan]Starting kubectl-ldtop monitor...[/cyan]")
+        """Run the ${MONITOR_NAME} monitor"""
+        self.console.print(f"[cyan]Starting {self.config.build.program.name if self.config else '${PROGRAM_NAME}'} monitor...[/cyan]")
         self.console.print("[dim]Press Ctrl+C to exit[/dim]")
         
         # Initial load
@@ -252,12 +292,12 @@ class LLMTopMonitor:
                     time.sleep(self.interval)
                     
         except KeyboardInterrupt:
-            self.console.print("\n[yellow]Exiting kubectl-ldtop...[/yellow]")
+            self.console.print(f"\\n[yellow]Exiting {self.config.build.program.name if self.config else '${PROGRAM_NAME}'}...[/yellow]")
         except Exception as e:
             self.console.print(f"[red]Error: {e}[/red]")
 
 
-class KubectlLD:
+class ${CLASS_PREFIX}Main:
     def __init__(self, mode: str = "mock") -> None:
         self.mode = mode
         self.is_live = mode == "live"
@@ -450,31 +490,31 @@ class KubectlLD:
             if d.is_dir():
                 print(f"  - {d.name}")
                 
-    def ldtop(self, interval: float = 0.5, namespace: str = "default", **kwargs) -> None:
-        """Run kubectl-ldtop monitoring"""
+    def ${MONITOR_VARIABLE}(self, interval: float = 0.5, namespace: str = "default", config: str = None, **kwargs) -> None:
+        """Run ${PROGRAM_NAME} monitoring"""
         if not RICH_AVAILABLE:
-            print(colored("❌ Rich library is required for ldtop. Install with: pip install rich", "red"))
+            print(colored(f"❌ Rich library is required for {self.${MONITOR_VARIABLE}.__name__}. Install with: pip install rich", "red"))
             sys.exit(1)
             
-        monitor = LLMTopMonitor(self, interval=interval, namespace=namespace)
+        monitor = ${CLASS_PREFIX}Monitor(self, interval=interval, namespace=namespace, config_path=config)
         monitor.run()
 
 
 def main() -> None:
-    # Check if running as kubectl-ldtop
+    # Check if running as ${PROGRAM_NAME}-${MONITOR_NAME}
     script_name = Path(sys.argv[0]).name
-    if script_name == "kubectl-ldtop":
-        # When called as kubectl-ldtop, insert ldtop command
+    if script_name == "${PROGRAM_NAME}-${MONITOR_NAME}" or script_name == "${PROGRAM_NAME}":
+        # When called as ${PROGRAM_NAME}-${MONITOR_NAME} or just ${PROGRAM_NAME}, insert ${MONITOR_NAME} command
         if len(sys.argv) == 1:
-            # No arguments, just run ldtop
-            sys.argv.append("ldtop")
+            # No arguments, just run ${MONITOR_NAME}
+            sys.argv.append("${MONITOR_NAME}")
         else:
-            # Arguments provided, insert ldtop as the command
-            sys.argv.insert(1, "ldtop")
+            # Arguments provided, insert ${MONITOR_NAME} as the command
+            sys.argv.insert(1, "${MONITOR_NAME}")
     
     parser = argparse.ArgumentParser(
-        prog="kubectl-ld",
-        description="🚀 kubectl-ld: Mock CLI tool for debugging LLMInferenceService CRDs",
+        prog="${PROGRAM_NAME}",
+        description="${EMOJI} ${PROGRAM_NAME}: ${PROGRAM_DESCRIPTION}",
         epilog="""
 Examples:
   %(prog)s list                    # List all LLMInferenceServices  
@@ -483,10 +523,10 @@ Examples:
   %(prog)s simulate canary        # Simulate canary rollout
   %(prog)s --mode live list       # Use live Kubernetes cluster
   %(prog)s create model.yaml      # Create CR from file
-  %(prog)s ldtop                  # Real-time LLM inference monitoring
-  %(prog)s --mode live ldtop      # Monitor live cluster
+  %(prog)s ${MONITOR_NAME}                  # Real-time LLM inference monitoring
+  %(prog)s --mode live ${MONITOR_NAME}      # Monitor live cluster
   
-For more information: https://github.com/jeremyeder/kubectl-ld
+For more information: https://github.com/${GITHUB_REPO}
         """,
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
@@ -506,10 +546,11 @@ For more information: https://github.com/jeremyeder/kubectl-ld
     subparsers.add_parser("list-topologies", help="List available rollout topology types")
     subparsers.add_parser("help", help="Show detailed help information")
     
-    # ldtop command
-    ldtop_parser = subparsers.add_parser("ldtop", help="Real-time LLM inference monitoring (like htop for LLMs)")
-    ldtop_parser.add_argument("--interval", type=float, default=0.5, help="Refresh interval in seconds (default: 0.5)")
-    ldtop_parser.add_argument("--namespace", default="default", help="Kubernetes namespace to monitor")
+    # ${MONITOR_NAME} command
+    ${MONITOR_VARIABLE}_parser = subparsers.add_parser("${MONITOR_NAME}", help="Real-time LLM inference monitoring (like htop for LLMs)")
+    ${MONITOR_VARIABLE}_parser.add_argument("--interval", type=float, default=0.5, help="Refresh interval in seconds (default: 0.5)")
+    ${MONITOR_VARIABLE}_parser.add_argument("--namespace", default="default", help="Kubernetes namespace to monitor")
+    ${MONITOR_VARIABLE}_parser.add_argument("--config", help="Path to configuration file")
     
     # Commands with arguments
     get_parser = subparsers.add_parser("get", help="Retrieve and display a specific LLMInferenceService")
@@ -539,7 +580,7 @@ For more information: https://github.com/jeremyeder/kubectl-ld
     if show_mode:
         print(colored(f"🔧 Mode: {mode}", "cyan"))
     
-    cli = KubectlLD(mode=mode)
+    cli = ${CLASS_PREFIX}Main(mode=mode)
     
     # Command dispatch
     commands = {
@@ -552,7 +593,7 @@ For more information: https://github.com/jeremyeder/kubectl-ld
         "create": lambda: cli.create_cr(args.file),
         "simulate": lambda: cli.simulate_rollout(args.topology),
         "list-topologies": cli.list_topologies,
-        "ldtop": lambda: cli.ldtop(interval=args.interval, namespace=args.namespace),
+        "${MONITOR_NAME}": lambda: cli.${MONITOR_VARIABLE}(interval=args.interval, namespace=args.namespace, config=args.config),
         "help": parser.print_help,
         None: parser.print_help
     }
