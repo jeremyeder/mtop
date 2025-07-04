@@ -152,3 +152,9 @@ cython_debug/
 
 # Test artifacts
 tests/test-cr.yaml
+
+# Security audit files
+audit.json
+
+# Old demo recordings
+kubectl-ld-demo.cast

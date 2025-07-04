@@ -79,6 +79,8 @@ class DemoMonitor:
         self.running = True
         self.current_action = "init"
         self.view_mode = "overview"  # overview, traffic, health, deployments
+        self.start_time = time.time()
+        self.max_runtime = 30 if headless else 3600  # 30 sec for headless, 1 hour for interactive
         
         # Setup signal handler
         signal.signal(signal.SIGINT, self._signal_handler)
@@ -245,10 +247,18 @@ class DemoMonitor:
         try:
             with Live(self._create_layout(), refresh_per_second=2) as live:
                 while self.running:
+                    # Check for timeout in headless mode
+                    if self.headless and (time.time() - self.start_time) > self.max_runtime:
+                        self.console.print("[yellow]Demo timeout reached, exiting...[/yellow]")
+                        break
+                        
                     # Check for signals from narrator
                     signal_data = self._read_signal()
                     if signal_data:
                         self.current_action = signal_data.get("action", "normal")
+                        # Check for exit signal
+                        if signal_data.get("exit", False):
+                            break
                         
                     # Update all models
                     for model in self.models.values():

@@ -34,6 +34,7 @@ class DemoNarrator:
         self.headless = headless
         self.step = 0
         self.running = True
+        self.start_time = time.time()
         
         # Setup signal handler for clean exit
         signal.signal(signal.SIGINT, self._signal_handler)
@@ -349,8 +350,20 @@ class DemoNarrator:
                 padding=(2, 2)
             ))
             
-            # Clean up signal file
+            # Signal exit to monitor
             signal_file = Path("/tmp/kubectl_ld_demo_signal.json")
+            exit_signal = {
+                "action": "exit",
+                "exit": True,
+                "step": self.step,
+                "timestamp": time.time()
+            }
+            signal_file.write_text(json.dumps(exit_signal))
+            
+            # Wait a moment for monitor to receive exit signal
+            time.sleep(2)
+            
+            # Clean up signal file
             if signal_file.exists():
                 signal_file.unlink()
                 

@@ -64,12 +64,46 @@ echo "🎬 Starting split-screen kubectl-ld demo..."
 echo "🎯 Scenario: $SCENARIO"
 echo "🔧 Setting up tmux environment..."
 
+# Check if we're inside tmux already or don't have a proper terminal (for recording compatibility)
+if [ -n "$TMUX" ] || [ ! -t 0 ]; then
+    echo "⚠️  Running in compatibility mode - sequential execution"
+    
+    # Run narrator first
+    NARRATOR_CMD="python3 demo_narrator.py --scenario $SCENARIO"
+    if [ "$HEADLESS" = true ]; then
+        NARRATOR_CMD="$NARRATOR_CMD --headless"
+    fi
+    
+    echo "🎬 Starting narrator..."
+    $NARRATOR_CMD &
+    NARRATOR_PID=$!
+    
+    sleep 2
+    
+    # Run monitor
+    MONITOR_CMD="python3 demo_monitor.py --scenario $SCENARIO"
+    if [ "$HEADLESS" = true ]; then
+        MONITOR_CMD="$MONITOR_CMD --headless"
+    fi
+    
+    echo "📊 Starting monitor..."
+    $MONITOR_CMD
+    
+    # Clean up narrator
+    kill $NARRATOR_PID 2>/dev/null || true
+    exit 0
+fi
+
 # Create tmux session with horizontal split
 tmux new-session -d -s "$SESSION_NAME"
 
 # Split horizontally (top 55%, bottom 45%)
 tmux split-window -v -t "$SESSION_NAME"
-sleep 1  # Give tmux time to create the panes
+
+# Wait for panes to be created and get their IDs
+sleep 1
+PANE0=$(tmux list-panes -t "$SESSION_NAME" -F "#{pane_id}" | sed -n '1p')
+PANE1=$(tmux list-panes -t "$SESSION_NAME" -F "#{pane_id}" | sed -n '2p')
 
 # Set up top pane (narrator)
 NARRATOR_CMD="python3 demo_narrator.py --scenario $SCENARIO"
@@ -77,7 +111,7 @@ if [ "$HEADLESS" = true ]; then
     NARRATOR_CMD="$NARRATOR_CMD --headless"
 fi
 
-tmux send-keys -t "$SESSION_NAME:0.0" "$NARRATOR_CMD" Enter
+tmux send-keys -t "$PANE0" "$NARRATOR_CMD" Enter
 
 # Set up bottom pane (monitor)  
 MONITOR_CMD="python3 demo_monitor.py --scenario $SCENARIO"
@@ -85,7 +119,7 @@ if [ "$HEADLESS" = true ]; then
     MONITOR_CMD="$MONITOR_CMD --headless"
 fi
 
-tmux send-keys -t "$SESSION_NAME:0.1" "$MONITOR_CMD" Enter
+tmux send-keys -t "$PANE1" "$MONITOR_CMD" Enter
 
 # Attach to session
 echo "🚀 Launching split-screen demo..."
