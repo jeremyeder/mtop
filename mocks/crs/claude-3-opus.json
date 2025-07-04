@@ -1,0 +1,77 @@
+{
+  "metadata": {
+    "name": "claude-3-opus",
+    "namespace": "production",
+    "labels": {
+      "model-size": "xlarge",
+      "provider": "anthropic", 
+      "use-case": "reasoning"
+    },
+    "annotations": {
+      "deployment.strategy": "canary",
+      "scaling.minReplicas": "1",
+      "scaling.maxReplicas": "6"
+    }
+  },
+  "spec": {
+    "predictor": {
+      "model": {
+        "modelName": "claude-3-opus-20240229",
+        "runtime": "vllm",
+        "storageUri": "s3://anthropic-models/claude-3-opus",
+        "resources": {
+          "requests": {
+            "memory": "200Gi",
+            "cpu": "32000m",
+            "nvidia.com/gpu": "8"
+          },
+          "limits": {
+            "memory": "400Gi",
+            "cpu": "64000m",
+            "nvidia.com/gpu": "8"
+          }
+        },
+        "env": [
+          {
+            "name": "MODEL_TYPE",
+            "value": "claude"
+          },
+          {
+            "name": "MAX_SEQUENCE_LENGTH",
+            "value": "200000"
+          },
+          {
+            "name": "TENSOR_PARALLELISM",
+            "value": "8"
+          },
+          {
+            "name": "REASONING_MODE",
+            "value": "advanced"
+          }
+        ]
+      }
+    },
+    "replicas": 2
+  },
+  "status": {
+    "conditions": [
+      {
+        "type": "Ready",
+        "status": "False",
+        "lastTransitionTime": "2024-01-15T13:15:00Z",
+        "reason": "ModelLoading",
+        "message": "Claude-3 Opus model loading, requires significant GPU memory"
+      },
+      {
+        "type": "PredictorReady",
+        "status": "False",
+        "lastTransitionTime": "2024-01-15T13:10:00Z",
+        "reason": "PredictorInitializing",
+        "message": "vLLM predictor initializing with 8-way tensor parallelism"
+      }
+    ],
+    "replicas": 2,
+    "readyReplicas": 0,
+    "url": "http://claude-3-opus.production.svc.cluster.local"
+  }
+}

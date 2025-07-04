@@ -1,0 +1,37 @@
+{
+  "metadata": {
+    "name": "edge-config",
+    "namespace": "edge"
+  },
+  "spec": {
+    "defaultRuntime": "onnx",
+    "supportedRuntimes": [
+      "onnx",
+      "openvino",
+      "tensorrt"
+    ],
+    "resourceLimits": {
+      "maxGpuPerModel": 0,
+      "maxMemoryPerModel": "8Gi",
+      "maxCpuPerModel": "4000m"
+    },
+    "scalingConfig": {
+      "defaultMinReplicas": 1,
+      "defaultMaxReplicas": 5,
+      "scaleUpCooldown": "30s",
+      "scaleDownCooldown": "2m"
+    },
+    "edgeOptimizations": {
+      "modelCompression": true,
+      "quantization": "int8",
+      "pruningEnabled": true,
+      "lowLatencyMode": true
+    },
+    "monitoringConfig": {
+      "metricsEnabled": false,
+      "loggingLevel": "warn",
+      "tracingEnabled": false,
+      "alertingEnabled": false
+    }
+  }
+}

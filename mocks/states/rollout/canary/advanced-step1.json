@@ -1,0 +1,45 @@
+{
+  "step": 1,
+  "timestamp": "00:00",
+  "strategy": "canary",
+  "scenario": "large-scale-canary",
+  "traffic": {
+    "gpt-4-turbo": 95,
+    "claude-3-haiku": 100,
+    "llama-3-8b-instruct": 100,
+    "mixtral-8x7b-instruct": 100,
+    "gpt-4-turbo-canary": 5
+  },
+  "status": {
+    "gpt-4-turbo": {
+      "status": "Ready",
+      "replicas": 8,
+      "version": "v1.2.3"
+    },
+    "claude-3-haiku": {
+      "status": "Ready", 
+      "replicas": 3,
+      "version": "v1.0.1"
+    },
+    "llama-3-8b-instruct": {
+      "status": "Ready",
+      "replicas": 12,
+      "version": "v2.1.0"
+    },
+    "mixtral-8x7b-instruct": {
+      "status": "Ready",
+      "replicas": 6,
+      "version": "v1.5.2"
+    },
+    "gpt-4-turbo-canary": {
+      "status": "Starting",
+      "replicas": 1,
+      "version": "v1.3.0-rc1"
+    }
+  },
+  "metrics": {
+    "error_rate": 0.12,
+    "latency_p95": 1.2,
+    "total_rps": 892
+  }
+}

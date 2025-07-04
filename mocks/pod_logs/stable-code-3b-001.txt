@@ -1,0 +1,14 @@
+2024-01-15T16:15:00.001Z INFO [vllm] Stable Code Instruct 3B starting
+2024-01-15T16:15:00.002Z INFO [code] Fill-in-middle (FIM) mode enabled
+2024-01-15T16:15:03.123Z INFO [vllm] Loading code generation model
+2024-01-15T16:15:06.456Z INFO [code] Multi-language support: Python, JS, Go, Rust, Java
+2024-01-15T16:15:08.789Z INFO [vllm] Model loaded: 3B parameters
+2024-01-15T16:15:09.000Z INFO [vllm] GPU memory usage: 8GB / 16GB (50%)
+2024-01-15T16:15:10.000Z INFO [code] Code completion tokenizer configured
+2024-01-15T16:15:12.000Z INFO [health] Code generation endpoint ready
+2024-01-15T16:18:30.234Z INFO [metrics] RPS: 67.3, Latency P95: 187ms, GPU Util: 55%
+2024-01-15T16:20:45.567Z INFO [code] Completion accuracy: 87% (Python), 82% (JS)
+2024-01-15T16:22:00.890Z INFO [metrics] RPS: 89.4, Latency P95: 156ms, GPU Util: 63%
+2024-01-15T16:25:15.123Z INFO [fim] Fill-in-middle requests: 34% of total
+2024-01-15T16:27:30.456Z INFO [code] Multi-line completions: 45% success rate
+2024-01-15T16:30:00.789Z INFO [metrics] RPS: 112.7, Latency P95: 134ms, GPU Util: 71%

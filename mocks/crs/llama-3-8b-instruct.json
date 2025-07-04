@@ -1,0 +1,77 @@
+{
+  "metadata": {
+    "name": "llama-3-8b-instruct", 
+    "namespace": "production",
+    "labels": {
+      "model-size": "small",
+      "provider": "meta",
+      "use-case": "chat"
+    },
+    "annotations": {
+      "deployment.strategy": "rolling",
+      "scaling.minReplicas": "5",
+      "scaling.maxReplicas": "30"
+    }
+  },
+  "spec": {
+    "predictor": {
+      "model": {
+        "modelName": "meta-llama/Meta-Llama-3-8B-Instruct",
+        "runtime": "vllm",
+        "storageUri": "hf://meta-llama/Meta-Llama-3-8B-Instruct",
+        "resources": {
+          "requests": {
+            "memory": "20Gi",
+            "cpu": "4000m",
+            "nvidia.com/gpu": "1"
+          },
+          "limits": {
+            "memory": "32Gi",
+            "cpu": "8000m",
+            "nvidia.com/gpu": "1"
+          }
+        },
+        "env": [
+          {
+            "name": "MODEL_TYPE",
+            "value": "llama"
+          },
+          {
+            "name": "MAX_SEQUENCE_LENGTH", 
+            "value": "8192"
+          },
+          {
+            "name": "QUANTIZATION",
+            "value": "int8"
+          },
+          {
+            "name": "BATCH_SIZE",
+            "value": "32"
+          }
+        ]
+      }
+    },
+    "replicas": 12
+  },
+  "status": {
+    "conditions": [
+      {
+        "type": "Ready",
+        "status": "True",
+        "lastTransitionTime": "2024-01-15T07:30:00Z",
+        "reason": "ModelLoaded",
+        "message": "Llama-3 8B Instruct model loaded with INT8 quantization"
+      },
+      {
+        "type": "PredictorReady",
+        "status": "True",
+        "lastTransitionTime": "2024-01-15T07:28:15Z",
+        "reason": "PredictorInitialized",
+        "message": "vLLM predictor initialized with high throughput settings"
+      }
+    ],
+    "replicas": 12,
+    "readyReplicas": 12,
+    "url": "http://llama-3-8b-instruct.production.svc.cluster.local"
+  }
+}

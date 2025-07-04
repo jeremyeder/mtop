@@ -1,0 +1,77 @@
+{
+  "metadata": {
+    "name": "phi-3-medium-instruct",
+    "namespace": "staging",
+    "labels": {
+      "model-size": "small",
+      "provider": "microsoft",
+      "use-case": "efficient-reasoning"
+    },
+    "annotations": {
+      "deployment.strategy": "rolling",
+      "scaling.minReplicas": "3",
+      "scaling.maxReplicas": "20"
+    }
+  },
+  "spec": {
+    "predictor": {
+      "model": {
+        "modelName": "microsoft/Phi-3-medium-4k-instruct",
+        "runtime": "onnx",
+        "storageUri": "hf://microsoft/Phi-3-medium-4k-instruct",
+        "resources": {
+          "requests": {
+            "memory": "16Gi",
+            "cpu": "4000m",
+            "nvidia.com/gpu": "1"
+          },
+          "limits": {
+            "memory": "32Gi",
+            "cpu": "8000m",
+            "nvidia.com/gpu": "1"
+          }
+        },
+        "env": [
+          {
+            "name": "MODEL_TYPE",
+            "value": "phi"
+          },
+          {
+            "name": "MAX_SEQUENCE_LENGTH",
+            "value": "4096"
+          },
+          {
+            "name": "OPTIMIZATION_LEVEL",
+            "value": "all"
+          },
+          {
+            "name": "PRECISION",
+            "value": "fp16"
+          }
+        ]
+      }
+    },
+    "replicas": 8
+  },
+  "status": {
+    "conditions": [
+      {
+        "type": "Ready",
+        "status": "True",
+        "lastTransitionTime": "2024-01-15T15:45:00Z",
+        "reason": "ModelLoaded",
+        "message": "Phi-3 Medium Instruct model loaded with ONNX optimizations"
+      },
+      {
+        "type": "PredictorReady",
+        "status": "True",
+        "lastTransitionTime": "2024-01-15T15:43:30Z",
+        "reason": "PredictorInitialized",
+        "message": "ONNX Runtime predictor initialized with graph optimizations"
+      }
+    ],
+    "replicas": 8,
+    "readyReplicas": 8,
+    "url": "http://phi-3-medium-instruct.staging.svc.cluster.local"
+  }
+}

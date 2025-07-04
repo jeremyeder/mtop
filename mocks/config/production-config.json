@@ -1,0 +1,37 @@
+{
+  "metadata": {
+    "name": "production-config",
+    "namespace": "production"
+  },
+  "spec": {
+    "defaultRuntime": "vllm",
+    "supportedRuntimes": [
+      "vllm",
+      "triton",
+      "tensorflow-serving",
+      "onnx"
+    ],
+    "resourceLimits": {
+      "maxGpuPerModel": 8,
+      "maxMemoryPerModel": "400Gi",
+      "maxCpuPerModel": "64000m"
+    },
+    "scalingConfig": {
+      "defaultMinReplicas": 2,
+      "defaultMaxReplicas": 50,
+      "scaleUpCooldown": "5m",
+      "scaleDownCooldown": "10m"
+    },
+    "monitoringConfig": {
+      "metricsEnabled": true,
+      "loggingLevel": "info",
+      "tracingEnabled": true,
+      "alertingEnabled": true
+    },
+    "securityConfig": {
+      "networkPoliciesEnabled": true,
+      "podSecurityStandard": "restricted",
+      "rbacEnabled": true
+    }
+  }
+}

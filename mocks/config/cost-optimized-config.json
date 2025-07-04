@@ -1,0 +1,45 @@
+{
+  "metadata": {
+    "name": "cost-optimized-config",
+    "namespace": "cost-optimized"
+  },
+  "spec": {
+    "defaultRuntime": "onnx",
+    "supportedRuntimes": [
+      "onnx",
+      "openvino",
+      "tflite"
+    ],
+    "resourceLimits": {
+      "maxGpuPerModel": 1,
+      "maxMemoryPerModel": "32Gi",
+      "maxCpuPerModel": "8000m"
+    },
+    "costOptimizations": {
+      "spotInstances": true,
+      "preemptibleNodes": true,
+      "aggressiveScaleDown": true,
+      "lowPriorityWorkloads": true
+    },
+    "scalingConfig": {
+      "defaultMinReplicas": 0,
+      "defaultMaxReplicas": 15,
+      "scaleUpCooldown": "30s",
+      "scaleDownCooldown": "1m",
+      "scaleToZero": true
+    },
+    "modelOptimizations": {
+      "quantization": "int8",
+      "pruning": true,
+      "distillation": true,
+      "compression": true
+    },
+    "monitoringConfig": {
+      "metricsEnabled": false,
+      "loggingLevel": "error",
+      "tracingEnabled": false,
+      "alertingEnabled": true,
+      "costMetrics": true
+    }
+  }
+}

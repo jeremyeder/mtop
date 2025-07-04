@@ -1,0 +1,45 @@
+{
+  "metadata": {
+    "name": "enterprise-config",
+    "namespace": "enterprise"
+  },
+  "spec": {
+    "defaultRuntime": "triton",
+    "supportedRuntimes": [
+      "triton",
+      "vllm",
+      "tensorflow-serving"
+    ],
+    "resourceLimits": {
+      "maxGpuPerModel": 8,
+      "maxMemoryPerModel": "512Gi",
+      "maxCpuPerModel": "64000m"
+    },
+    "enterpriseFeatures": {
+      "auditLogging": true,
+      "complianceMode": "SOC2",
+      "dataGovernance": true,
+      "accessControl": "RBAC+ABAC"
+    },
+    "scalingConfig": {
+      "defaultMinReplicas": 3,
+      "defaultMaxReplicas": 30,
+      "scaleUpCooldown": "5m",
+      "scaleDownCooldown": "15m"
+    },
+    "securityConfig": {
+      "encryption": "AES-256",
+      "secretsManagement": "vault",
+      "networkSecurity": "strict",
+      "podSecurityPolicies": "enforced"
+    },
+    "monitoringConfig": {
+      "metricsEnabled": true,
+      "loggingLevel": "info",
+      "tracingEnabled": true,
+      "alertingEnabled": true,
+      "slaMetrics": true,
+      "businessMetrics": true
+    }
+  }
+}

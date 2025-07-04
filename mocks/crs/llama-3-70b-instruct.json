@@ -1,0 +1,77 @@
+{
+  "metadata": {
+    "name": "llama-3-70b-instruct",
+    "namespace": "staging",
+    "labels": {
+      "model-size": "large",
+      "provider": "meta",
+      "use-case": "instruction"
+    },
+    "annotations": {
+      "deployment.strategy": "rolling",
+      "scaling.minReplicas": "2", 
+      "scaling.maxReplicas": "20"
+    }
+  },
+  "spec": {
+    "predictor": {
+      "model": {
+        "modelName": "meta-llama/Meta-Llama-3-70B-Instruct",
+        "runtime": "vllm",
+        "storageUri": "hf://meta-llama/Meta-Llama-3-70B-Instruct",
+        "resources": {
+          "requests": {
+            "memory": "160Gi",
+            "cpu": "16000m",
+            "nvidia.com/gpu": "8"
+          },
+          "limits": {
+            "memory": "200Gi",
+            "cpu": "32000m",
+            "nvidia.com/gpu": "8"
+          }
+        },
+        "env": [
+          {
+            "name": "MODEL_TYPE", 
+            "value": "llama"
+          },
+          {
+            "name": "MAX_SEQUENCE_LENGTH",
+            "value": "8192"
+          },
+          {
+            "name": "TENSOR_PARALLELISM",
+            "value": "8"
+          },
+          {
+            "name": "QUANTIZATION", 
+            "value": "fp16"
+          }
+        ]
+      }
+    },
+    "replicas": 4
+  },
+  "status": {
+    "conditions": [
+      {
+        "type": "Ready",
+        "status": "False",
+        "lastTransitionTime": "2024-01-15T11:45:00Z",
+        "reason": "ModelLoading",
+        "message": "Llama-3 70B model currently loading, ETA 5 minutes"
+      },
+      {
+        "type": "PredictorReady",
+        "status": "False",
+        "lastTransitionTime": "2024-01-15T11:40:00Z",
+        "reason": "PredictorInitializing", 
+        "message": "vLLM predictor initializing with 8-way tensor parallelism"
+      }
+    ],
+    "replicas": 4,
+    "readyReplicas": 0,
+    "url": "http://llama-3-70b-instruct.staging.svc.cluster.local"
+  }
+}

@@ -1,0 +1,14 @@
+2024-01-15T17:05:00.001Z INFO [vllm] IBM Granite 3.0 8B starting with enterprise features
+2024-01-15T17:05:00.002Z INFO [vllm] Enterprise safety filters enabled
+2024-01-15T17:05:05.123Z INFO [vllm] Loading Granite model with compliance features
+2024-01-15T17:05:10.456Z INFO [safety] Content filtering pipeline initialized
+2024-01-15T17:05:12.789Z INFO [audit] Audit logging enabled for enterprise compliance
+2024-01-15T17:05:15.012Z INFO [vllm] Model loaded: 8B parameters
+2024-01-15T17:05:16.000Z INFO [vllm] GPU memory usage: 16GB / 32GB (50%)
+2024-01-15T17:05:17.000Z INFO [safety] Safety filters active: toxicity, bias, PII detection
+2024-01-15T17:05:20.000Z INFO [health] Enterprise health checks passed
+2024-01-15T17:08:30.234Z INFO [metrics] RPS: 45.6, Latency P95: 234ms, GPU Util: 65%
+2024-01-15T17:10:45.567Z INFO [safety] Content filter pass rate: 98.7%
+2024-01-15T17:12:00.890Z INFO [metrics] RPS: 67.2, Latency P95: 198ms, GPU Util: 73%
+2024-01-15T17:15:15.123Z INFO [compliance] SOC2 audit trail updated
+2024-01-15T17:17:30.456Z INFO [metrics] RPS: 84.1, Latency P95: 167ms, GPU Util: 81%

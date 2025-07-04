@@ -1,0 +1,43 @@
+{
+  "step": 1,
+  "timestamp": "00:00",
+  "strategy": "rolling",
+  "scenario": "multi-model-update",
+  "models": {
+    "phi-3-medium-instruct": {
+      "current_version": "v1.0.0",
+      "target_version": "v1.1.0",
+      "total_replicas": 8,
+      "updated_replicas": 2,
+      "ready_replicas": 2,
+      "status": "Updating"
+    },
+    "deepseek-r1-distill-llama-8b": {
+      "current_version": "v2.1.0",
+      "target_version": "v2.2.0", 
+      "total_replicas": 6,
+      "updated_replicas": 0,
+      "ready_replicas": 6,
+      "status": "Pending"
+    },
+    "stable-code-instruct-3b": {
+      "current_version": "v1.3.1",
+      "target_version": "v1.4.0",
+      "total_replicas": 6,
+      "updated_replicas": 0,
+      "ready_replicas": 6,
+      "status": "Pending"
+    }
+  },
+  "rollout_config": {
+    "max_unavailable": "25%",
+    "max_surge": "25%",
+    "progress_deadline": "600s"
+  },
+  "metrics": {
+    "overall_progress": 10,
+    "error_rate": 0.03,
+    "latency_p95": 0.67,
+    "total_rps": 678
+  }
+}

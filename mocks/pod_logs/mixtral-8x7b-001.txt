@@ -1,0 +1,14 @@
+2024-01-15T12:05:00.001Z INFO [vllm] Starting Mixtral 8x7B with MoE optimization
+2024-01-15T12:05:00.002Z INFO [vllm] Expert parallelism enabled: 2 GPUs
+2024-01-15T12:05:05.123Z INFO [vllm] Loading expert weights: 8 experts total
+2024-01-15T12:05:10.456Z INFO [vllm] Expert 0-3 loaded on GPU 0
+2024-01-15T12:05:15.789Z INFO [vllm] Expert 4-7 loaded on GPU 1
+2024-01-15T12:05:20.012Z INFO [vllm] Router network initialized
+2024-01-15T12:05:25.345Z INFO [vllm] Expert load balancing configured
+2024-01-15T12:05:30.678Z INFO [vllm] Model ready, total parameters: 45.6B (8x7B experts)
+2024-01-15T12:05:31.000Z INFO [vllm] GPU memory: GPU0: 24GB, GPU1: 24GB
+2024-01-15T12:05:32.000Z INFO [health] MoE health checks passed
+2024-01-15T12:08:15.234Z INFO [metrics] RPS: 28.4, Latency P95: 245ms, Expert util: 0:65% 1:58%
+2024-01-15T12:10:30.567Z INFO [metrics] RPS: 42.1, Latency P95: 189ms, Expert util: 0:78% 1:71%
+2024-01-15T12:12:45.890Z INFO [scaling] Expert load balancing optimal
+2024-01-15T12:15:00.123Z INFO [metrics] RPS: 56.7, Latency P95: 167ms, Expert util: 0:85% 1:82%

@@ -1,0 +1,77 @@
+{
+  "metadata": {
+    "name": "granite-3-2b-instruct",
+    "namespace": "staging",
+    "labels": {
+      "model-size": "tiny",
+      "provider": "ibm",
+      "use-case": "edge-deployment"
+    },
+    "annotations": {
+      "deployment.strategy": "rolling",
+      "scaling.minReplicas": "5",
+      "scaling.maxReplicas": "50"
+    }
+  },
+  "spec": {
+    "predictor": {
+      "model": {
+        "modelName": "ibm/granite-3.0-2b-instruct",
+        "runtime": "onnx",
+        "storageUri": "hf://ibm-granite/granite-3.0-2b-instruct",
+        "resources": {
+          "requests": {
+            "memory": "4Gi",
+            "cpu": "1000m",
+            "nvidia.com/gpu": "0"
+          },
+          "limits": {
+            "memory": "8Gi",
+            "cpu": "2000m",
+            "nvidia.com/gpu": "0"
+          }
+        },
+        "env": [
+          {
+            "name": "MODEL_TYPE",
+            "value": "granite"
+          },
+          {
+            "name": "MAX_SEQUENCE_LENGTH",
+            "value": "4096"
+          },
+          {
+            "name": "CPU_OPTIMIZED",
+            "value": "true"
+          },
+          {
+            "name": "EDGE_MODE",
+            "value": "true"
+          }
+        ]
+      }
+    },
+    "replicas": 15
+  },
+  "status": {
+    "conditions": [
+      {
+        "type": "Ready",
+        "status": "True",
+        "lastTransitionTime": "2024-01-15T18:00:00Z",
+        "reason": "ModelLoaded",
+        "message": "Granite 3.0 2B Instruct model loaded for edge deployment"
+      },
+      {
+        "type": "PredictorReady",
+        "status": "True",
+        "lastTransitionTime": "2024-01-15T17:58:45Z",
+        "reason": "PredictorInitialized",
+        "message": "ONNX Runtime predictor initialized with CPU optimizations"
+      }
+    ],
+    "replicas": 15,
+    "readyReplicas": 15,
+    "url": "http://granite-3-2b-instruct.staging.svc.cluster.local"
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "metadata": {
+    "name": "codellama-34b-instruct",
+    "namespace": "development",
+    "labels": {
+      "model-size": "medium",
+      "provider": "meta",
+      "use-case": "code-generation"
+    },
+    "annotations": {
+      "deployment.strategy": "blue-green",
+      "scaling.minReplicas": "1",
+      "scaling.maxReplicas": "8"
+    }
+  },
+  "spec": {
+    "predictor": {
+      "model": {
+        "modelName": "codellama/CodeLlama-34b-Instruct-hf",
+        "runtime": "vllm",
+        "storageUri": "hf://codellama/CodeLlama-34b-Instruct-hf",
+        "resources": {
+          "requests": {
+            "memory": "72Gi",
+            "cpu": "12000m",
+            "nvidia.com/gpu": "4"
+          },
+          "limits": {
+            "memory": "128Gi",
+            "cpu": "24000m",
+            "nvidia.com/gpu": "4"
+          }
+        },
+        "env": [
+          {
+            "name": "MODEL_TYPE",
+            "value": "codellama"
+          },
+          {
+            "name": "MAX_SEQUENCE_LENGTH", 
+            "value": "16384"
+          },
+          {
+            "name": "TENSOR_PARALLELISM",
+            "value": "4"
+          },
+          {
+            "name": "CODE_COMPLETION_MODE",
+            "value": "true"
+          }
+        ]
+      }
+    },
+    "replicas": 2
+  },
+  "status": {
+    "conditions": [
+      {
+        "type": "Ready",
+        "status": "True",
+        "lastTransitionTime": "2024-01-15T14:30:00Z",
+        "reason": "ModelLoaded",
+        "message": "CodeLlama 34B Instruct model loaded for code generation"
+      },
+      {
+        "type": "PredictorReady",
+        "status": "True", 
+        "lastTransitionTime": "2024-01-15T14:28:45Z",
+        "reason": "PredictorInitialized",
+        "message": "vLLM predictor initialized with code completion optimizations"
+      }
+    ],
+    "replicas": 2,
+    "readyReplicas": 2,
+    "url": "http://codellama-34b-instruct.development.svc.cluster.local"
+  }
+}

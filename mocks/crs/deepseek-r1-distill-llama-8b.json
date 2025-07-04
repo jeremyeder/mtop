@@ -1,0 +1,77 @@
+{
+  "metadata": {
+    "name": "deepseek-r1-distill-llama-8b",
+    "namespace": "production",
+    "labels": {
+      "model-size": "small",
+      "provider": "deepseek",
+      "use-case": "reasoning"
+    },
+    "annotations": {
+      "deployment.strategy": "shadow",
+      "scaling.minReplicas": "2",
+      "scaling.maxReplicas": "20"
+    }
+  },
+  "spec": {
+    "predictor": {
+      "model": {
+        "modelName": "deepseek-ai/DeepSeek-R1-Distill-Llama-8B",
+        "runtime": "vllm",
+        "storageUri": "hf://deepseek-ai/DeepSeek-R1-Distill-Llama-8B",
+        "resources": {
+          "requests": {
+            "memory": "20Gi",
+            "cpu": "4000m",
+            "nvidia.com/gpu": "1"
+          },
+          "limits": {
+            "memory": "40Gi",
+            "cpu": "8000m",
+            "nvidia.com/gpu": "1"
+          }
+        },
+        "env": [
+          {
+            "name": "MODEL_TYPE",
+            "value": "deepseek-r1"
+          },
+          {
+            "name": "MAX_SEQUENCE_LENGTH",
+            "value": "8192"
+          },
+          {
+            "name": "REASONING_MODE",
+            "value": "distilled"
+          },
+          {
+            "name": "CHAIN_OF_THOUGHT",
+            "value": "enabled"
+          }
+        ]
+      }
+    },
+    "replicas": 6
+  },
+  "status": {
+    "conditions": [
+      {
+        "type": "Ready",
+        "status": "True",
+        "lastTransitionTime": "2024-01-15T19:30:00Z",
+        "reason": "ModelLoaded",
+        "message": "DeepSeek-R1 Distill Llama 8B model loaded with reasoning capabilities"
+      },
+      {
+        "type": "PredictorReady",
+        "status": "True",
+        "lastTransitionTime": "2024-01-15T19:28:15Z",
+        "reason": "PredictorInitialized",
+        "message": "vLLM predictor initialized with chain-of-thought optimizations"
+      }
+    ],
+    "replicas": 6,
+    "readyReplicas": 6,
+    "url": "http://deepseek-r1-distill-llama-8b.production.svc.cluster.local"
+  }
+}

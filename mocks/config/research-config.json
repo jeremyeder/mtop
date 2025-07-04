@@ -1,0 +1,45 @@
+{
+  "metadata": {
+    "name": "research-config",
+    "namespace": "research"
+  },
+  "spec": {
+    "defaultRuntime": "vllm",
+    "supportedRuntimes": [
+      "vllm",
+      "pytorch",
+      "custom-runtime"
+    ],
+    "resourceLimits": {
+      "maxGpuPerModel": 64,
+      "maxMemoryPerModel": "4Ti",
+      "maxCpuPerModel": "512000m"
+    },
+    "researchFeatures": {
+      "experimentalRuntimes": true,
+      "customModels": true,
+      "distributedTraining": true,
+      "modelVersioning": true
+    },
+    "scalingConfig": {
+      "defaultMinReplicas": 0,
+      "defaultMaxReplicas": 5,
+      "scaleUpCooldown": "1m",
+      "scaleDownCooldown": "5m",
+      "scaleToZero": true
+    },
+    "experimentalConfig": {
+      "alphaFeatures": true,
+      "betaFeatures": true,
+      "unsafeOperations": true,
+      "debugMode": true
+    },
+    "monitoringConfig": {
+      "metricsEnabled": true,
+      "loggingLevel": "debug",
+      "tracingEnabled": true,
+      "alertingEnabled": false,
+      "experimentMetrics": true
+    }
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "topology": "enterprise",
+  "step": 0,
+  "description": "Enterprise multi-tenant deployment topology",
+  "namespaces": {
+    "production": {
+      "models": ["gpt-4-turbo", "claude-3-haiku", "granite-3-8b-instruct"],
+      "replicas": {
+        "gpt-4-turbo": 8,
+        "claude-3-haiku": 3,
+        "granite-3-8b-instruct": 8
+      },
+      "traffic_split": {
+        "gpt-4-turbo": 40,
+        "claude-3-haiku": 35,
+        "granite-3-8b-instruct": 25
+      }
+    },
+    "staging": {
+      "models": ["llama-3-70b-instruct", "phi-3-medium-instruct"],
+      "replicas": {
+        "llama-3-70b-instruct": 2,
+        "phi-3-medium-instruct": 6
+      },
+      "traffic_split": {
+        "llama-3-70b-instruct": 30,
+        "phi-3-medium-instruct": 70
+      }
+    }
+  },
+  "global_config": {
+    "load_balancing": "weighted-round-robin",
+    "failover_enabled": true,
+    "monitoring_enabled": true
+  }
+}

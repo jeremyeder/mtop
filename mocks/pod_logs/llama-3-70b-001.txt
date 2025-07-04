@@ -1,0 +1,15 @@
+2024-01-15T11:40:00.001Z INFO [vllm] vLLM v0.2.5 starting with Llama-3 70B
+2024-01-15T11:40:00.002Z INFO [vllm] Tensor parallelism: 8 GPUs, Pipeline parallelism: 1
+2024-01-15T11:40:05.123Z INFO [vllm] Loading model: meta-llama/Meta-Llama-3-70B-Instruct
+2024-01-15T11:40:05.124Z WARN [vllm] Large model detected, this may take several minutes
+2024-01-15T11:42:30.456Z INFO [vllm] Model loading progress: 25% (17.5GB loaded)
+2024-01-15T11:44:15.789Z INFO [vllm] Model loading progress: 50% (35GB loaded)
+2024-01-15T11:45:45.012Z INFO [vllm] Model loading progress: 75% (52.5GB loaded)
+2024-01-15T11:47:00.345Z INFO [vllm] Model loaded successfully, total size: 70GB
+2024-01-15T11:47:01.000Z INFO [vllm] GPU memory distribution across 8 GPUs: 8.75GB each
+2024-01-15T11:47:02.000Z INFO [vllm] Initializing distributed attention mechanisms
+2024-01-15T11:47:05.000Z INFO [vllm] KV cache initialized: 32GB total
+2024-01-15T11:47:10.000Z ERROR [vllm] Failed to initialize, retrying...
+2024-01-15T11:47:15.000Z INFO [vllm] Retry successful, server starting
+2024-01-15T11:47:20.000Z INFO [health] Model ready for inference
+2024-01-15T11:50:00.123Z INFO [metrics] Initial RPS: 2.1, Latency P95: 3.2s, GPU Util: 76%

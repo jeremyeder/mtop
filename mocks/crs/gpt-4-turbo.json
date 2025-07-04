@@ -1,0 +1,73 @@
+{
+  "metadata": {
+    "name": "gpt-4-turbo",
+    "namespace": "production",
+    "labels": {
+      "model-size": "large",
+      "provider": "openai",
+      "use-case": "chat"
+    },
+    "annotations": {
+      "deployment.strategy": "canary",
+      "scaling.minReplicas": "5",
+      "scaling.maxReplicas": "50"
+    }
+  },
+  "spec": {
+    "predictor": {
+      "model": {
+        "modelName": "gpt-4-turbo-2024-04-09",
+        "runtime": "triton",
+        "storageUri": "gs://openai-models/gpt-4-turbo",
+        "resources": {
+          "requests": {
+            "memory": "32Gi",
+            "cpu": "8000m",
+            "nvidia.com/gpu": "4"
+          },
+          "limits": {
+            "memory": "64Gi",
+            "cpu": "16000m", 
+            "nvidia.com/gpu": "4"
+          }
+        },
+        "env": [
+          {
+            "name": "MODEL_TYPE",
+            "value": "gpt"
+          },
+          {
+            "name": "MAX_SEQUENCE_LENGTH",
+            "value": "128000"
+          },
+          {
+            "name": "TENSOR_PARALLELISM",
+            "value": "4"
+          }
+        ]
+      }
+    },
+    "replicas": 8
+  },
+  "status": {
+    "conditions": [
+      {
+        "type": "Ready",
+        "status": "True", 
+        "lastTransitionTime": "2024-01-15T09:15:00Z",
+        "reason": "ModelLoaded",
+        "message": "GPT-4 Turbo model loaded and serving requests"
+      },
+      {
+        "type": "PredictorReady",
+        "status": "True",
+        "lastTransitionTime": "2024-01-15T09:10:30Z", 
+        "reason": "PredictorInitialized",
+        "message": "Triton inference server initialized with tensor parallelism"
+      }
+    ],
+    "replicas": 8,
+    "readyReplicas": 8,
+    "url": "http://gpt-4-turbo.production.svc.cluster.local"
+  }
+}

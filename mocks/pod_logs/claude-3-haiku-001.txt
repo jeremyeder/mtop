@@ -1,0 +1,16 @@
+2024-01-15T10:28:00.123Z INFO [vllm] Starting vLLM inference server v0.2.5
+2024-01-15T10:28:00.124Z INFO [vllm] Loading model: claude-3-haiku-20240307
+2024-01-15T10:28:00.125Z INFO [vllm] Model type: claude, Max sequence length: 200000
+2024-01-15T10:28:05.234Z INFO [vllm] Loading model weights from s3://anthropic-models/claude-3-haiku
+2024-01-15T10:28:15.456Z INFO [vllm] Model loaded successfully, size: 8.1GB
+2024-01-15T10:28:15.457Z INFO [vllm] GPU memory usage: 8.3GB / 16GB (52%)
+2024-01-15T10:28:15.500Z INFO [vllm] Starting tokenizer initialization
+2024-01-15T10:28:16.000Z INFO [vllm] Tokenizer loaded: claude-3-tokenizer
+2024-01-15T10:28:16.100Z INFO [vllm] Initializing KV cache with size: 4GB
+2024-01-15T10:28:17.200Z INFO [vllm] Server ready on port 8000
+2024-01-15T10:28:17.201Z INFO [health] Health check endpoint active
+2024-01-15T10:30:15.345Z INFO [metrics] RPS: 45.2, Latency P95: 120ms, GPU Util: 68%
+2024-01-15T10:32:30.567Z INFO [metrics] RPS: 67.8, Latency P95: 98ms, GPU Util: 75%
+2024-01-15T10:35:45.789Z INFO [metrics] RPS: 89.1, Latency P95: 134ms, GPU Util: 82%
+2024-01-15T10:40:12.012Z INFO [scaling] Received scaling signal: target=3 replicas
+2024-01-15T10:42:33.333Z INFO [metrics] RPS: 123.4, Latency P95: 89ms, GPU Util: 91%

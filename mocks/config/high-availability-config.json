@@ -1,0 +1,45 @@
+{
+  "metadata": {
+    "name": "high-availability-config",
+    "namespace": "ha-production"
+  },
+  "spec": {
+    "defaultRuntime": "triton",
+    "supportedRuntimes": [
+      "triton",
+      "vllm",
+      "tensorflow-serving"
+    ],
+    "resourceLimits": {
+      "maxGpuPerModel": 16,
+      "maxMemoryPerModel": "1Ti",
+      "maxCpuPerModel": "128000m"
+    },
+    "highAvailability": {
+      "multiRegion": true,
+      "crossAZDeployment": true,
+      "failoverEnabled": true,
+      "loadBalancing": "weighted-round-robin"
+    },
+    "scalingConfig": {
+      "defaultMinReplicas": 5,
+      "defaultMaxReplicas": 100,
+      "scaleUpCooldown": "1m",
+      "scaleDownCooldown": "10m"
+    },
+    "reliabilityConfig": {
+      "healthChecks": "aggressive",
+      "readinessProbes": "strict",
+      "circuitBreaker": true,
+      "retryPolicy": "exponential-backoff"
+    },
+    "monitoringConfig": {
+      "metricsEnabled": true,
+      "loggingLevel": "info",
+      "tracingEnabled": true,
+      "alertingEnabled": true,
+      "sloMetrics": true,
+      "availabilityMetrics": true
+    }
+  }
+}

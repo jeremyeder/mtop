@@ -1,0 +1,14 @@
+2024-01-15T07:25:00.001Z INFO [vllm] Llama-3 8B Instruct starting with high throughput config
+2024-01-15T07:25:00.002Z INFO [vllm] INT8 quantization enabled for memory efficiency
+2024-01-15T07:25:03.123Z INFO [vllm] Loading quantized model weights
+2024-01-15T07:25:08.456Z INFO [vllm] Model loaded: 8B parameters (quantized to 4.2GB)
+2024-01-15T07:25:09.000Z INFO [vllm] GPU memory usage: 12GB / 32GB (37%)
+2024-01-15T07:25:10.000Z INFO [vllm] High throughput mode: batch size 32
+2024-01-15T07:25:12.000Z INFO [vllm] KV cache configured for maximum throughput
+2024-01-15T07:25:15.000Z INFO [health] High-throughput endpoint ready
+2024-01-15T07:28:30.234Z INFO [metrics] RPS: 234.5, Latency P95: 89ms, GPU Util: 67%
+2024-01-15T07:30:45.567Z INFO [throughput] Batch processing efficiency: 94%
+2024-01-15T07:32:00.890Z INFO [metrics] RPS: 289.1, Latency P95: 76ms, GPU Util: 74%
+2024-01-15T07:35:15.123Z INFO [scaling] Optimal concurrency: 128 requests
+2024-01-15T07:37:30.456Z INFO [metrics] RPS: 345.7, Latency P95: 67ms, GPU Util: 82%
+2024-01-15T07:40:00.789Z INFO [quantization] INT8 providing 58% memory savings

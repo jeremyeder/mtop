@@ -1,0 +1,14 @@
+2024-01-15T19:25:00.001Z INFO [vllm] DeepSeek-R1 Distill Llama 8B starting
+2024-01-15T19:25:00.002Z INFO [reasoning] Chain-of-thought optimizations enabled
+2024-01-15T19:25:05.123Z INFO [vllm] Loading reasoning model with distilled capabilities
+2024-01-15T19:25:10.456Z INFO [reasoning] Reasoning pipeline initialized
+2024-01-15T19:25:12.789Z INFO [vllm] Model loaded: 8B parameters with reasoning head
+2024-01-15T19:25:13.000Z INFO [vllm] GPU memory usage: 18GB / 32GB (56%)
+2024-01-15T19:25:15.000Z INFO [reasoning] Chain-of-thought tokenizer configured
+2024-01-15T19:25:18.000Z INFO [health] Reasoning endpoint ready
+2024-01-15T19:28:30.234Z INFO [metrics] RPS: 32.4, Latency P95: 456ms, GPU Util: 68%
+2024-01-15T19:30:45.567Z INFO [reasoning] Reasoning success rate: 89.2%
+2024-01-15T19:32:00.890Z INFO [reasoning] Avg reasoning steps: 4.7 per query
+2024-01-15T19:35:15.123Z INFO [metrics] RPS: 41.7, Latency P95: 398ms, GPU Util: 74%
+2024-01-15T19:37:30.456Z INFO [reasoning] Complex reasoning queries: 23% of total
+2024-01-15T19:40:00.789Z INFO [metrics] RPS: 48.3, Latency P95: 367ms, GPU Util: 79%

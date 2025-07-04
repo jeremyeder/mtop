@@ -1,0 +1,49 @@
+{
+  "step": 1,
+  "timestamp": "00:00",
+  "strategy": "shadow",
+  "scenario": "shadow-testing",
+  "primary": {
+    "gemini-pro": {
+      "status": "Ready",
+      "replicas": 5,
+      "version": "v1.0.0",
+      "traffic_weight": 100
+    },
+    "codellama-34b-instruct": {
+      "status": "Ready", 
+      "replicas": 2,
+      "version": "v3.2.1",
+      "traffic_weight": 100
+    }
+  },
+  "shadow": {
+    "gemini-pro": {
+      "status": "Ready",
+      "replicas": 1,
+      "version": "v1.1.0-beta",
+      "traffic_weight": 0,
+      "shadow_mode": true
+    },
+    "codellama-34b-instruct": {
+      "status": "Starting",
+      "replicas": 1,
+      "version": "v3.3.0-alpha",
+      "traffic_weight": 0,
+      "shadow_mode": true
+    }
+  },
+  "metrics": {
+    "primary": {
+      "error_rate": 0.05,
+      "latency_p95": 0.89,
+      "total_rps": 456
+    },
+    "shadow": {
+      "error_rate": 0.12,
+      "latency_p95": 1.23,
+      "total_rps": 0,
+      "comparison_accuracy": 94.2
+    }
+  }
+}

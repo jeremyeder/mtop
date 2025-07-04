@@ -1,0 +1,14 @@
+2024-01-15T14:25:00.001Z INFO [vllm] CodeLlama 34B starting with code completion mode
+2024-01-15T14:25:00.002Z INFO [vllm] Tensor parallelism: 4 GPUs
+2024-01-15T14:25:05.123Z INFO [vllm] Loading CodeLlama weights with FIM support
+2024-01-15T14:25:15.456Z INFO [vllm] Code tokenizer loaded: CodeLlama-34b-tokenizer
+2024-01-15T14:25:20.789Z INFO [vllm] Model loaded: 34B parameters across 4 GPUs
+2024-01-15T14:25:21.000Z INFO [vllm] Special tokens configured for code completion
+2024-01-15T14:25:22.000Z INFO [vllm] Fill-in-middle (FIM) mode enabled
+2024-01-15T14:25:25.000Z INFO [health] Code completion endpoint ready
+2024-01-15T14:28:30.234Z INFO [metrics] RPS: 15.2, Latency P95: 892ms, GPU Util: 71%
+2024-01-15T14:30:45.567Z INFO [completion] Code completion requests: 89% success rate
+2024-01-15T14:33:00.890Z INFO [metrics] RPS: 22.7, Latency P95: 756ms, GPU Util: 79%
+2024-01-15T14:35:15.123Z INFO [languages] Top languages: Python (45%), JavaScript (28%), Go (12%)
+2024-01-15T14:37:30.456Z INFO [metrics] RPS: 31.4, Latency P95: 634ms, GPU Util: 86%
+2024-01-15T14:40:00.789Z INFO [fim] Fill-in-middle success rate: 94%

@@ -1,0 +1,38 @@
+{
+  "metadata": {
+    "name": "multi-tenant-config",
+    "namespace": "platform"
+  },
+  "spec": {
+    "defaultRuntime": "triton",
+    "supportedRuntimes": [
+      "triton",
+      "vllm",
+      "tensorflow-serving"
+    ],
+    "resourceLimits": {
+      "maxGpuPerModel": 16,
+      "maxMemoryPerModel": "1Ti",
+      "maxCpuPerModel": "128000m"
+    },
+    "tenantIsolation": {
+      "enabled": true,
+      "networkPolicies": true,
+      "resourceQuotas": true,
+      "namespaceIsolation": true
+    },
+    "scalingConfig": {
+      "defaultMinReplicas": 3,
+      "defaultMaxReplicas": 100,
+      "scaleUpCooldown": "2m",
+      "scaleDownCooldown": "15m"
+    },
+    "monitoringConfig": {
+      "metricsEnabled": true,
+      "loggingLevel": "info",
+      "tracingEnabled": true,
+      "alertingEnabled": true,
+      "tenantMetrics": true
+    }
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "metadata": {
+    "name": "gpu-cluster-config",
+    "namespace": "gpu-cluster"
+  },
+  "spec": {
+    "defaultRuntime": "vllm",
+    "supportedRuntimes": [
+      "vllm",
+      "triton",
+      "tensorrt",
+      "fastertransformer"
+    ],
+    "resourceLimits": {
+      "maxGpuPerModel": 32,
+      "maxMemoryPerModel": "2Ti",
+      "maxCpuPerModel": "256000m"
+    },
+    "gpuConfig": {
+      "gpuTypes": ["A100", "H100", "V100"],
+      "tensorParallelism": true,
+      "pipelineParallelism": true,
+      "multiNodeSupport": true
+    },
+    "scalingConfig": {
+      "defaultMinReplicas": 1,
+      "defaultMaxReplicas": 20,
+      "scaleUpCooldown": "10m",
+      "scaleDownCooldown": "30m"
+    },
+    "performanceOptimizations": {
+      "flashAttention": true,
+      "fusedKernels": true,
+      "mixedPrecision": "fp16",
+      "kvcache": "enabled"
+    },
+    "monitoringConfig": {
+      "metricsEnabled": true,
+      "loggingLevel": "info",
+      "tracingEnabled": true,
+      "alertingEnabled": true,
+      "gpuMetrics": true
+    }
+  }
+}

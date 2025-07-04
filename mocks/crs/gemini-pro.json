@@ -1,0 +1,73 @@
+{
+  "metadata": {
+    "name": "gemini-pro",
+    "namespace": "production",
+    "labels": {
+      "model-size": "large",
+      "provider": "google",
+      "use-case": "multimodal"
+    },
+    "annotations": {
+      "deployment.strategy": "shadow",
+      "scaling.minReplicas": "3",
+      "scaling.maxReplicas": "15"
+    }
+  },
+  "spec": {
+    "predictor": {
+      "model": {
+        "modelName": "gemini-1.5-pro-001",
+        "runtime": "tensorflow-serving",
+        "storageUri": "gs://google-models/gemini-pro",
+        "resources": {
+          "requests": {
+            "memory": "24Gi", 
+            "cpu": "6000m",
+            "nvidia.com/gpu": "2"
+          },
+          "limits": {
+            "memory": "48Gi",
+            "cpu": "12000m",
+            "nvidia.com/gpu": "2"
+          }
+        },
+        "env": [
+          {
+            "name": "MODEL_TYPE",
+            "value": "gemini"
+          },
+          {
+            "name": "MAX_SEQUENCE_LENGTH",
+            "value": "2097152"
+          },
+          {
+            "name": "MULTIMODAL_SUPPORT",
+            "value": "true"
+          }
+        ]
+      }
+    },
+    "replicas": 5
+  },
+  "status": {
+    "conditions": [
+      {
+        "type": "Ready",
+        "status": "True",
+        "lastTransitionTime": "2024-01-15T08:20:00Z", 
+        "reason": "ModelLoaded",
+        "message": "Gemini Pro model loaded with multimodal capabilities"
+      },
+      {
+        "type": "PredictorReady",
+        "status": "True",
+        "lastTransitionTime": "2024-01-15T08:18:15Z",
+        "reason": "PredictorInitialized",
+        "message": "TensorFlow Serving predictor initialized"
+      }
+    ],
+    "replicas": 5,
+    "readyReplicas": 5,
+    "url": "http://gemini-pro.production.svc.cluster.local"
+  }
+}

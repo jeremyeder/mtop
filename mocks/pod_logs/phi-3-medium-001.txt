@@ -1,0 +1,14 @@
+2024-01-15T15:40:00.001Z INFO [onnx] ONNX Runtime v1.16.3 starting
+2024-01-15T15:40:00.002Z INFO [onnx] Loading Phi-3 Medium 4K Instruct model
+2024-01-15T15:40:02.123Z INFO [onnx] Graph optimization level: all
+2024-01-15T15:40:02.456Z INFO [onnx] Execution provider: CUDA
+2024-01-15T15:40:05.789Z INFO [onnx] Model loaded with optimizations: kernel fusion, memory planning
+2024-01-15T15:40:06.000Z INFO [onnx] GPU memory usage: 14GB / 16GB (87%)
+2024-01-15T15:40:07.000Z INFO [onnx] FP16 precision enabled for inference
+2024-01-15T15:40:10.000Z INFO [health] ONNX inference endpoint ready
+2024-01-15T15:43:30.234Z INFO [metrics] RPS: 78.5, Latency P95: 145ms, GPU Util: 72%
+2024-01-15T15:45:45.567Z INFO [onnx] Memory optimization: 23% memory saved
+2024-01-15T15:47:00.890Z INFO [metrics] RPS: 96.2, Latency P95: 128ms, GPU Util: 79%
+2024-01-15T15:50:15.123Z INFO [scaling] Optimal batch size detected: 16
+2024-01-15T15:52:30.456Z INFO [metrics] RPS: 124.7, Latency P95: 112ms, GPU Util: 85%
+2024-01-15T15:55:00.789Z INFO [onnx] Graph optimizations providing 31% speedup

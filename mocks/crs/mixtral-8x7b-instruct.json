@@ -1,0 +1,73 @@
+{
+  "metadata": {
+    "name": "mixtral-8x7b-instruct",
+    "namespace": "production",
+    "labels": {
+      "model-size": "medium",
+      "provider": "mistral",
+      "use-case": "instruction"
+    },
+    "annotations": {
+      "deployment.strategy": "canary",
+      "scaling.minReplicas": "2",
+      "scaling.maxReplicas": "12"
+    }
+  },
+  "spec": {
+    "predictor": {
+      "model": {
+        "modelName": "mistralai/Mixtral-8x7B-Instruct-v0.1",
+        "runtime": "vllm",
+        "storageUri": "hf://mistralai/Mixtral-8x7B-Instruct-v0.1",
+        "resources": {
+          "requests": {
+            "memory": "48Gi",
+            "cpu": "8000m", 
+            "nvidia.com/gpu": "2"
+          },
+          "limits": {
+            "memory": "96Gi",
+            "cpu": "16000m",
+            "nvidia.com/gpu": "2"
+          }
+        },
+        "env": [
+          {
+            "name": "MODEL_TYPE",
+            "value": "mixtral"
+          },
+          {
+            "name": "MAX_SEQUENCE_LENGTH",
+            "value": "32768"
+          },
+          {
+            "name": "EXPERT_PARALLELISM",
+            "value": "2"
+          }
+        ]
+      }
+    },
+    "replicas": 6
+  },
+  "status": {
+    "conditions": [
+      {
+        "type": "Ready",
+        "status": "True",
+        "lastTransitionTime": "2024-01-15T12:10:00Z",
+        "reason": "ModelLoaded", 
+        "message": "Mixtral 8x7B Instruct model loaded with expert parallelism"
+      },
+      {
+        "type": "PredictorReady",
+        "status": "True",
+        "lastTransitionTime": "2024-01-15T12:08:30Z",
+        "reason": "PredictorInitialized",
+        "message": "vLLM predictor initialized with MoE optimizations"
+      }
+    ],
+    "replicas": 6,
+    "readyReplicas": 6,
+    "url": "http://mixtral-8x7b-instruct.production.svc.cluster.local"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "topology": "research",
+  "step": 0,
+  "description": "Research cluster with experimental models",
+  "experiments": {
+    "experiment-a": {
+      "models": ["claude-3-opus", "llama-3-70b-instruct"],
+      "replicas": {
+        "claude-3-opus": 1,
+        "llama-3-70b-instruct": 2
+      },
+      "experiment_config": {
+        "type": "reasoning-comparison",
+        "duration": "7d",
+        "metrics": ["accuracy", "reasoning_depth", "latency"]
+      }
+    },
+    "experiment-b": {
+      "models": ["mixtral-8x7b-instruct", "deepseek-r1-distill-llama-8b"],
+      "replicas": {
+        "mixtral-8x7b-instruct": 3,
+        "deepseek-r1-distill-llama-8b": 4
+      },
+      "experiment_config": {
+        "type": "efficiency-study",
+        "duration": "14d",
+        "metrics": ["throughput", "resource_usage", "cost_efficiency"]
+      }
+    }
+  },
+  "research_config": {
+    "data_collection": true,
+    "telemetry_enhanced": true,
+    "experimental_features": true
+  }
+}

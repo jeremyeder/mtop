@@ -1,0 +1,14 @@
+2024-01-15T09:05:00.001Z INFO [triton] Triton Inference Server v2.41.0 starting
+2024-01-15T09:05:00.002Z INFO [triton] Loading model repository: /models/gpt-4-turbo
+2024-01-15T09:05:00.003Z INFO [triton] Model: gpt-4-turbo-2024-04-09, Backend: tensorrt
+2024-01-15T09:05:30.123Z INFO [triton] Model loaded with tensor parallelism: 4 GPUs
+2024-01-15T09:06:00.456Z INFO [triton] GPU memory allocation: 28GB per GPU (112GB total)
+2024-01-15T09:06:01.000Z WARN [triton] High GPU memory usage detected: 87%
+2024-01-15T09:07:15.234Z INFO [triton] Model optimization complete, ready for inference
+2024-01-15T09:07:15.235Z INFO [health] All health checks passed
+2024-01-15T09:10:30.567Z INFO [metrics] RPS: 12.3, Latency P95: 2.1s, GPU Util: 89%
+2024-01-15T09:15:45.789Z INFO [metrics] RPS: 18.7, Latency P95: 1.8s, GPU Util: 92%
+2024-01-15T09:20:12.012Z INFO [autoscaling] Current load: 95%, triggering scale-up
+2024-01-15T09:25:33.333Z INFO [metrics] RPS: 24.1, Latency P95: 1.6s, GPU Util: 94%
+2024-01-15T09:30:44.444Z WARN [triton] Memory pressure detected, optimizing KV cache
+2024-01-15T09:35:55.555Z INFO [metrics] RPS: 31.5, Latency P95: 1.4s, GPU Util: 96%

@@ -1,0 +1,77 @@
+{
+  "metadata": {
+    "name": "stable-code-instruct-3b",
+    "namespace": "development",
+    "labels": {
+      "model-size": "small",
+      "provider": "stability-ai",
+      "use-case": "code-generation"
+    },
+    "annotations": {
+      "deployment.strategy": "blue-green",
+      "scaling.minReplicas": "2",
+      "scaling.maxReplicas": "15"
+    }
+  },
+  "spec": {
+    "predictor": {
+      "model": {
+        "modelName": "stabilityai/stable-code-instruct-3b",
+        "runtime": "vllm",
+        "storageUri": "hf://stabilityai/stable-code-instruct-3b",
+        "resources": {
+          "requests": {
+            "memory": "8Gi",
+            "cpu": "2000m",
+            "nvidia.com/gpu": "1"
+          },
+          "limits": {
+            "memory": "16Gi",
+            "cpu": "4000m",
+            "nvidia.com/gpu": "1"
+          }
+        },
+        "env": [
+          {
+            "name": "MODEL_TYPE",
+            "value": "stable-code"
+          },
+          {
+            "name": "MAX_SEQUENCE_LENGTH",
+            "value": "16384"
+          },
+          {
+            "name": "CODE_LANGUAGES",
+            "value": "python,javascript,go,rust,java"
+          },
+          {
+            "name": "FILL_IN_MIDDLE",
+            "value": "true"
+          }
+        ]
+      }
+    },
+    "replicas": 6
+  },
+  "status": {
+    "conditions": [
+      {
+        "type": "Ready",
+        "status": "True",
+        "lastTransitionTime": "2024-01-15T16:20:00Z",
+        "reason": "ModelLoaded",
+        "message": "Stable Code Instruct 3B model loaded for code generation"
+      },
+      {
+        "type": "PredictorReady",
+        "status": "True",
+        "lastTransitionTime": "2024-01-15T16:18:45Z",
+        "reason": "PredictorInitialized",
+        "message": "vLLM predictor initialized with FIM support"
+      }
+    ],
+    "replicas": 6,
+    "readyReplicas": 6,
+    "url": "http://stable-code-instruct-3b.development.svc.cluster.local"
+  }
+}

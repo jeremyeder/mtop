@@ -1,0 +1,37 @@
+{
+  "metadata": {
+    "name": "development-config",
+    "namespace": "development"
+  },
+  "spec": {
+    "defaultRuntime": "onnx",
+    "supportedRuntimes": [
+      "onnx",
+      "vllm",
+      "pytorch"
+    ],
+    "resourceLimits": {
+      "maxGpuPerModel": 2,
+      "maxMemoryPerModel": "64Gi",
+      "maxCpuPerModel": "16000m"
+    },
+    "scalingConfig": {
+      "defaultMinReplicas": 1,
+      "defaultMaxReplicas": 8,
+      "scaleUpCooldown": "1m",
+      "scaleDownCooldown": "3m"
+    },
+    "monitoringConfig": {
+      "metricsEnabled": true,
+      "loggingLevel": "debug",
+      "tracingEnabled": false,
+      "alertingEnabled": false
+    },
+    "developmentFeatures": {
+      "hotReloadEnabled": true,
+      "debugModeEnabled": true,
+      "mockDataEnabled": true,
+      "cpuOnlyMode": true
+    }
+  }
+}

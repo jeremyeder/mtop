@@ -1,0 +1,49 @@
+{
+  "step": 1,
+  "timestamp": "00:00",
+  "strategy": "blue-green",
+  "scenario": "production-deployment",
+  "environment": {
+    "blue": {
+      "claude-3-opus": {
+        "status": "Ready",
+        "replicas": 2,
+        "version": "v2.1.0",
+        "traffic_weight": 100
+      },
+      "granite-3-8b-instruct": {
+        "status": "Ready",
+        "replicas": 8,
+        "version": "v1.4.2",
+        "traffic_weight": 100
+      }
+    },
+    "green": {
+      "claude-3-opus": {
+        "status": "Deploying",
+        "replicas": 0,
+        "version": "v2.2.0",
+        "traffic_weight": 0
+      },
+      "granite-3-8b-instruct": {
+        "status": "Deploying",
+        "replicas": 0,
+        "version": "v1.5.0",
+        "traffic_weight": 0
+      }
+    }
+  },
+  "active_environment": "blue",
+  "metrics": {
+    "blue": {
+      "error_rate": 0.08,
+      "latency_p95": 1.8,
+      "total_rps": 234
+    },
+    "green": {
+      "error_rate": null,
+      "latency_p95": null,
+      "total_rps": 0
+    }
+  }
+}

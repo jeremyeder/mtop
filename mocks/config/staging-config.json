@@ -1,0 +1,36 @@
+{
+  "metadata": {
+    "name": "staging-config",
+    "namespace": "staging"
+  },
+  "spec": {
+    "defaultRuntime": "vllm",
+    "supportedRuntimes": [
+      "vllm",
+      "onnx",
+      "triton"
+    ],
+    "resourceLimits": {
+      "maxGpuPerModel": 4,
+      "maxMemoryPerModel": "200Gi",
+      "maxCpuPerModel": "32000m"
+    },
+    "scalingConfig": {
+      "defaultMinReplicas": 1,
+      "defaultMaxReplicas": 20,
+      "scaleUpCooldown": "3m",
+      "scaleDownCooldown": "7m"
+    },
+    "monitoringConfig": {
+      "metricsEnabled": true,
+      "loggingLevel": "debug",
+      "tracingEnabled": true,
+      "alertingEnabled": false
+    },
+    "experimentalFeatures": {
+      "quantizationEnabled": true,
+      "mixedPrecisionEnabled": true,
+      "dynamicBatchingEnabled": true
+    }
+  }
+}
