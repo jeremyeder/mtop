@@ -1,8 +1,10 @@
 import json
-import pytest
 from pathlib import Path
 
+import pytest
+
 BASE = Path("mocks/states/rollout")
+
 
 @pytest.mark.parametrize("topology", ["canary", "bluegreen", "rolling", "shadow"])
 def test_rollout_topology_structure(topology):

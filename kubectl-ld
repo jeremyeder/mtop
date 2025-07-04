@@ -1,245 +1,300 @@
 #!/usr/bin/env python3
-import os
-import json
-import argparse
-import subprocess
+"""kubectl-ld - Mock CLI tool for debugging LLMInferenceService CRDs"""
+
 import sys
-import time
-import shutil
-import datetime
+
+# Check Python version early
+if sys.version_info < (3, 11):
+    print("Error: kubectl-ld requires Python 3.11 or later")
+    print(f"Current version: {sys.version}")
+    sys.exit(1)
+
+import argparse
+import json
+import os
+import subprocess
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
+
+import yaml
 from termcolor import colored
 
 
-def simulate_rollout(topology):
-    dir_path = Path(f"mocks/states/rollout/{topology}")
-    steps = sorted(dir_path.glob("step*.json"))
-    if not steps:
-        print(f"❌ No rollout steps found for topology: {topology}")
-        return
-    print(f"📡 Simulating rollout for '{topology}' with {len(steps)} steps...")
-    for step_path in steps:
-        with open(step_path) as f:
-            step = json.load(f)
+class KubectlLD:
+    def __init__(self, mode: str = "mock") -> None:
+        self.mode = mode
+        self.is_live = mode == "live"
+        self.mock_root = Path(__file__).parent / "mocks"
+        self.crs_dir = self.mock_root / "crs"
+        self.config_path = self.mock_root / "config" / "llminferenceserviceconfig.json"
+        self.logs_dir = self.mock_root / "pod_logs"
+        self.states_dir = self.mock_root / "states" / "rollout"
+
+    def kubectl_get(self, resource: str, name: Optional[str] = None, namespace: str = "default") -> Dict[str, Any]:
+        """Execute kubectl get command and return JSON"""
+        cmd = ["kubectl", "get", resource]
+        if name:
+            cmd.append(name)
+        cmd.extend(["-n", namespace, "-o", "json"])
+        
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode != 0:
+            print(colored(f"Error: {result.stderr.strip()}", "red"))
+            sys.exit(1)
+        return json.loads(result.stdout)
+
+    def list_crs(self) -> None:
+        """List all LLMInferenceService resources"""
+        if self.is_live:
+            data = self.kubectl_get("llminferenceservice")
+            for item in data.get("items", []):
+                name = item["metadata"]["name"]
+                ready = next((c for c in item.get("status", {}).get("conditions", []) 
+                            if c["type"] == "Ready"), {})
+                status = ready.get("status", "Unknown")
+                color = "green" if status == "True" else "red"
+                print(f"{name:35} | Ready: " + colored(status, color))
+        else:
+            for cr_file in sorted(self.crs_dir.glob("*.json")):
+                with open(cr_file) as f:
+                    data = json.load(f)
+                name = data["metadata"]["name"]
+                ready = next((c for c in data.get("status", {}).get("conditions", []) 
+                            if c["type"] == "Ready"), {})
+                status = ready.get("status", "Unknown") 
+                color = "green" if status == "True" else "red"
+                print(f"{name:35} | Ready: " + colored(status, color))
+
+    def get_cr(self, name: str, output_json: bool = False) -> None:
+        """Get a specific CR by name"""
+        if self.is_live:
+            data = self.kubectl_get("llminferenceservice", name)
+        else:
+            cr_path = self.crs_dir / f"{name}.json"
+            if not cr_path.exists():
+                print(colored(f"❌ {name} not found.", "red"))
+                return
+            with open(cr_path) as f:
+                data = json.load(f)
+        
+        if output_json:
+            print(json.dumps(data, indent=2))
+        else:
+            print(yaml.safe_dump(data, sort_keys=False))
+
+    def get_config(self, output_json: bool = False) -> None:
+        """Show LLMInferenceServiceConfig"""
+        if self.is_live:
+            data = self.kubectl_get("llminferenceserviceconfig")
+        else:
+            if not self.config_path.exists():
+                print(colored(f"⚠️ No config found at {self.config_path}", "yellow"))
+                return
+            with open(self.config_path) as f:
+                data = json.load(f)
+        
+        if output_json:
+            print(json.dumps(data, indent=2))
+        else:
+            print(yaml.safe_dump(data, sort_keys=False))
+
+    def check_cr(self, name: str) -> None:
+        """Check status of a CR"""
+        if self.is_live:
+            data = self.kubectl_get("llminferenceservice", name)
+        else:
+            cr_path = self.crs_dir / f"{name}.json"
+            if not cr_path.exists():
+                print(colored(f"{name} not found.", "red"))
+                return
+            with open(cr_path) as f:
+                data = json.load(f)
+        
+        print(f"🔍 {name} status:")
+        for cond in data.get("status", {}).get("conditions", []):
+            print(f" - [{cond['type']}] Status: {cond['status']} - {cond.get('message', '')}")
+
+    def show_logs(self, name: str) -> None:
+        """Show logs for a service"""
+        if self.is_live:
+            cmd = ["kubectl", "logs", f"deployment/{name}", "-n", "default"]
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            print(result.stdout if result.returncode == 0 else result.stderr)
+        else:
+            log_path = self.logs_dir / f"{name}.txt"
+            if log_path.exists():
+                print(log_path.read_text())
+            else:
+                print(f"No logs found for {name}.")
+
+    def delete_cr(self, name: str) -> None:
+        """Delete a CR"""
+        if self.is_live:
+            cmd = ["kubectl", "delete", "llminferenceservice", name, "-n", "default"]
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            print(result.stdout if result.returncode == 0 else result.stderr)
+        else:
+            cr_path = self.crs_dir / f"{name}.json"
+            if cr_path.exists():
+                cr_path.unlink()
+                print(colored(f"✅ {name} deleted.", "green"))
+            else:
+                print(colored(f"{name} not found.", "red"))
+
+    def create_cr(self, file_path: Union[str, Path]) -> None:
+        """Create a CR from file"""
+        file_path = Path(file_path)
+        if not file_path.exists():
+            print(colored(f"❌ File not found: {file_path}", "red"))
+            return
+        
+        try:
+            with open(file_path) as f:
+                if file_path.suffix == ".yaml":
+                    data = yaml.safe_load(f)
+                else:
+                    data = json.load(f)
+        except (json.JSONDecodeError, yaml.YAMLError) as e:
+            print(colored(f"❌ Error parsing {file_path.suffix} file: {e}", "red"))
+            return
+        except Exception as e:
+            print(colored(f"❌ Error reading file {file_path}: {e}", "red"))
+            return
+        
+        try:
+            if self.is_live:
+                cmd = ["kubectl", "apply", "-f", str(file_path)]
+                result = subprocess.run(cmd, capture_output=True, text=True)
+                print(result.stdout if result.returncode == 0 else result.stderr)
+            else:
+                if not isinstance(data, dict) or "metadata" not in data or "name" not in data["metadata"]:
+                    print(f"❌ Invalid CR format: missing metadata.name field")
+                    return
+                
+                name = data["metadata"]["name"]
+                cr_path = self.crs_dir / f"{name}.json"
+                self.crs_dir.mkdir(parents=True, exist_ok=True)
+                
+                with open(cr_path, "w") as f:
+                    json.dump(data, f, indent=2)
+                print(colored(f"✅ Created {name}", "green"))
+        except Exception as e:
+            print(f"❌ Error creating CR: {e}")
+            return
+
+    def simulate_rollout(self, topology: str) -> None:
+        """Simulate a rollout"""
+        topology_dir = self.states_dir / topology
+        if not topology_dir.exists():
+            print(colored(f"❌ No rollout steps found for topology: {topology}", "red"))
+            return
+        
+        steps = sorted(topology_dir.glob("step*.json"))
+        print(colored(f"📡 Simulating rollout for '{topology}' with {len(steps)} steps...", "blue"))
+        
+        for step_path in steps:
+            with open(step_path) as f:
+                step = json.load(f)
             print(f"Step {step['step']} @ {step['timestamp']}:")
             for model, status in step['status'].items():
                 traffic = step['traffic'].get(model, 0)
                 print(f"  - {model:25s} {status['status']:12s} {traffic:>3}%")
-                print("✅ Simulation complete.")
+        
+        print(colored("✅ Simulation complete.", "green"))
 
-                def list_topologies():
-                    base = Path("mocks/states/rollout")
-                    if not base.exists():
-                        print("❌ No rollout topologies found.")
-                        return
-                    print("📦 Available rollout topologies:")
-                    for d in sorted(base.iterdir()):
-                        if d.is_dir():
-                            print(f"  - {d.name}")
-
-
-                            def print_output(data, as_json=False):
-                                if as_json:
-                                    print(json.dumps(data, indent=2))
-                                    elif args.command == "simulate":
-                                    simulate_rollout(args.topology)
-                                    elif args.command == "list-topologies":
-                                    list_topologies()
-                                    else:
-                                    print(yaml.safe_dump(data, sort_keys=False))
-import yaml
-from pathlib import Path
-
-                                    MOCK_ROOT = os.path.join(os.path.dirname(__file__), "mocks")
-                                    CRS_DIR = os.path.join(MOCK_ROOT, "crs")
-                                    CONFIG_PATH = os.path.join(MOCK_ROOT, "config", "llminferenceserviceconfig.json")
-                                    LOGS_DIR = os.path.join(MOCK_ROOT, "pod_logs")
-
-                                    MODE = os.environ.get("LLD_MODE", "mock")
-                                    IS_LIVE = False
-
-                                    def detect_mode(arg_mode):
-                                        global IS_LIVE
-                                        mode = arg_mode if arg_mode else MODE
-                                        IS_LIVE = (mode == "live")
-                                        return mode
-
-                                    def kubectl_get(resource, name=None, output="json", namespace="default"):
-                                        cmd = ["kubectl", "get", resource]
-                                        if name:
-                                            cmd.append(name)
-                                            cmd += ["-n", namespace, "-o", output]
-                                            result = subprocess.run(cmd, capture_output=True, text=True)
-                                            if result.returncode != 0:
-                                                print(f"Error: {result.stderr.strip()}")
-                                                exit(1)
-                                                return json.loads(result.stdout)
-
-                                            def list_crs():
-                                                if IS_LIVE:
-                                                    crs = kubectl_get("llminferenceservice")
-                                                    for item in crs.get("items", []):
-                                                        name = item["metadata"]["name"]
-                                                        ready = next((c for c in item.get("status", {}).get("conditions", []) if c["type"] == "Ready"), {})
-                                                        status = ready.get("status", "Unknown")
-                                                        color = "green" if status == "True" else "red"
-                                                        print(f"{name:35} | Ready: " + colored(status, color))
-                                                        elif args.command == "simulate":
-                                                        simulate_rollout(args.topology)
-                                                        elif args.command == "list-topologies":
-                                                        list_topologies()
-                                                        else:
-                                                        for filename in sorted(os.listdir(CRS_DIR)):
-                                                            if filename.endswith(".json"):
-                                                                with open(os.path.join(CRS_DIR, filename)) as f:
-                                                                    data = json.load(f)
-                                                                    name = data["metadata"]["name"]
-                                                                    ready = next((c for c in data.get("status", {}).get("conditions", []) if c["type"] == "Ready"), {})
-                                                                    status = ready.get("status", "Unknown")
-                                                                    color = "green" if status == "True" else "red"
-                                                                    print(f"{name:35} | Ready: " + colored(status, color))
-
-                                                                    def get_config(as_json=False):
-                                                                        if IS_LIVE:
-                                                                            config = kubectl_get("llminferenceserviceconfig")
-                                                                            print_output(config, as_json)
-                                                                            elif args.command == "simulate":
-                                                                            simulate_rollout(args.topology)
-                                                                            elif args.command == "list-topologies":
-                                                                            list_topologies()
-                                                                            else:
-                                                                            print(f"🔧 Mode: mock")
-                                                                            print(f"🔍 Looking for config at: {CONFIG_PATH}")
-                                                                            if not os.path.exists(CONFIG_PATH):
-                                                                                print(f"⚠️ No config found at {CONFIG_PATH}")
-                                                                                return
-                                                                            with open(CONFIG_PATH) as f:
-                                                                                config = json.load(f)
-                                                                                print_output(config, as_json)
-
-                                                                                def get_cr(name, as_json=False):
-                                                                                    path = os.path.join(CRS_DIR, f"{name}.json")
-                                                                                    if not os.path.exists(path):
-                                                                                        print(f"❌ {name} not found.")
-                                                                                        return
-                                                                                    with open(path) as f:
-                                                                                        data = json.load(f)
-                                                                                        print_output(data, as_json)
-
-                                                                                        def check_cr(name):
-                                                                                            path = os.path.join(CRS_DIR, f"{name}.json")
-                                                                                            if not os.path.exists(path):
-                                                                                                print(f"{name} not found.")
-                                                                                                return
-                                                                                            with open(path) as f:
-                                                                                                cr = json.load(f)
-                                                                                                print(f"🔍 {name} status:")
-                                                                                                for cond in cr.get("status", {}).get("conditions", []):
-                                                                                                    print(f" - [{cond['type']}] Status: {cond['status']} - {cond.get('message', '')}")
-
-                                                                                                    def show_logs(name):
-                                                                                                        log_path = os.path.join(LOGS_DIR, f"{name}.txt")
-                                                                                                        if os.path.exists(log_path):
-                                                                                                            with open(log_path) as f:
-                                                                                                                print(f.read())
-                                                                                                                elif args.command == "simulate":
-                                                                                                                simulate_rollout(args.topology)
-                                                                                                                elif args.command == "list-topologies":
-                                                                                                                list_topologies()
-                                                                                                                else:
-                                                                                                                print(f"No logs found for {name}.")
-
-                                                                                                                def delete_cr(name):
-                                                                                                                    path = os.path.join(CRS_DIR, f"{name}.json")
-                                                                                                                    if os.path.exists(path):
-                                                                                                                        os.remove(path)
-                                                                                                                        print(f"{name} deleted.")
-                                                                                                                        elif args.command == "simulate":
-                                                                                                                        simulate_rollout(args.topology)
-                                                                                                                        elif args.command == "list-topologies":
-                                                                                                                        list_topologies()
-                                                                                                                        else:
-                                                                                                                        print(f"{name} not found.")
+    def list_topologies(self) -> None:
+        """List available rollout topologies"""
+        if not self.states_dir.exists():
+            print("❌ No rollout topologies found.")
+            return
+        
+        print("📦 Available rollout topologies:")
+        for d in sorted(self.states_dir.iterdir()):
+            if d.is_dir():
+                print(f"  - {d.name}")
 
 
-                                                                                                                        def main():
-                                                                                                                            parser = argparse.ArgumentParser(prog="kubectl ld", description="Mock/Live LLMInferenceService CLI")
-                                                                                                                            parser.add_argument('--mode', choices=['mock', 'live'], help='Execution mode (mock or live)')
-                                                                                                                            parser.add_argument('--json', action='store_true', help='Output in JSON instead of YAML')
-    sub = parser.add_subparsers(dest="command")
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        prog="kubectl-ld",
+        description="🚀 kubectl-ld: Mock CLI tool for debugging LLMInferenceService CRDs",
+        epilog="""
+Examples:
+  %(prog)s list                    # List all LLMInferenceServices  
+  %(prog)s get gpt2               # Get specific CR in YAML format
+  %(prog)s --json get gpt2        # Get specific CR in JSON format
+  %(prog)s simulate canary        # Simulate canary rollout
+  %(prog)s --mode live list       # Use live Kubernetes cluster
+  %(prog)s create model.yaml      # Create CR from file
+  
+For more information: https://github.com/jeremyeder/kubectl-ld
+        """,
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument("--mode", choices=["mock", "live"], 
+                       help="Execution mode: 'mock' uses local files, 'live' uses kubectl")
+    parser.add_argument("--json", action="store_true", 
+                       help="Output in JSON format (default: YAML)")
+    parser.add_argument("--verbose", "-v", action="store_true", 
+                       help="Enable verbose output for debugging")
+    
+    subparsers = parser.add_subparsers(dest="command", help="Available commands",
+                                     title="commands", metavar="<command>")
+    
+    # Simple commands
+    subparsers.add_parser("list", help="List all LLMInferenceServices with their status")
+    subparsers.add_parser("config", help="Display the global LLM configuration")
+    subparsers.add_parser("list-topologies", help="List available rollout topology types")
+    subparsers.add_parser("help", help="Show detailed help information")
+    
+    # Commands with arguments
+    get_parser = subparsers.add_parser("get", help="Retrieve and display a specific LLMInferenceService")
+    get_parser.add_argument("name", help="CR name")
+    
+    check_parser = subparsers.add_parser("check", help="Check the detailed status of a specific service")
+    check_parser.add_argument("name", help="CR name")
+    
+    logs_parser = subparsers.add_parser("logs", help="Display logs for a specific service")
+    logs_parser.add_argument("name", help="Service name")
+    
+    delete_parser = subparsers.add_parser("delete", help="Delete a specific LLMInferenceService")
+    delete_parser.add_argument("name", help="CR name")
+    
+    create_parser = subparsers.add_parser("create", help="Create a new LLMInferenceService from file")
+    create_parser.add_argument("file", help="JSON/YAML file path")
+    
+    simulate_parser = subparsers.add_parser("simulate", help="Simulate a deployment rollout with specified topology")
+    simulate_parser.add_argument("topology", help="Topology name")
+    
+    args = parser.parse_args()
+    
+    # Determine mode
+    mode = args.mode or os.environ.get("LLD_MODE", "mock")
+    # Don't show mode output when using --json flag for get/config commands
+    show_mode = mode == "mock" and not (hasattr(args, 'json') and args.json)
+    if show_mode:
+        print(colored(f"🔧 Mode: {mode}", "cyan"))
+    
+    cli = KubectlLD(mode=mode)
+    
+    # Command dispatch
+    commands = {
+        "list": cli.list_crs,
+        "config": lambda: cli.get_config(args.json),
+        "get": lambda: cli.get_cr(args.name, args.json),
+        "check": lambda: cli.check_cr(args.name),
+        "logs": lambda: cli.show_logs(args.name),
+        "delete": lambda: cli.delete_cr(args.name),
+        "create": lambda: cli.create_cr(args.file),
+        "simulate": lambda: cli.simulate_rollout(args.topology),
+        "list-topologies": cli.list_topologies,
+        "help": parser.print_help,
+        None: parser.print_help
+    }
+    
+    command_func = commands.get(args.command, parser.print_help)
+    command_func()
 
-    sub.add_parser("list", help="List all LLMInferenceServices")
-    sub.add_parser("config", help="Show current LLMInferenceServiceConfig")
-    sub.add_parser("list-topologies", help="List available rollout topologies")
 
-    get = sub.add_parser("get", help="Get an LLMInferenceService by name")
-                                                                                                                            get.add_argument("name")
-
-    delete = sub.add_parser("delete", help="Delete an LLMInferenceService")
-                                                                                                                            delete.add_argument("name")
-
-    create = sub.add_parser("create", help="Create a new LLMInferenceService")
-                                                                                                                            create.add_argument("file")
-
-    simulate = sub.add_parser("simulate", help="Simulate a rollout")
-                                                                                                                            simulate.add_argument("topology")
-
-    sub.add_parser("help", help="Show usage help")
-
-    roll = sub.add_parser("simulate", help="Simulate a rollout")
-                                                                                                                            roll.add_argument("topology")
-    sub.add_parser("list-topologies", help="List available rollout topologies")
-    sub.add_parser("help", help="Show usage help")
-    sub.add_parser("list", help="List all LLMInferenceServices")
-    sub.add_parser("config", help="Show LLMInferenceServiceConfig")
-
-    get = sub.add_parser("get", help="Get a specific LLMInferenceService JSON")
-                                                                                                                            get.add_argument("name")
-
-    check = sub.add_parser("check", help="Check status of a service")
-                                                                                                                            check.add_argument("name")
-
-    logs = sub.add_parser("logs", help="Show logs for a service")
-                                                                                                                            logs.add_argument("name")
-
-    delete = sub.add_parser("delete", help="Delete a service")
-                                                                                                                            delete.add_argument("name")
-
-                                                                                                                            args = parser.parse_args()
-                                                                                                                            mode = detect_mode(args.mode)
-                                                                                                                            print(f"🔧 Mode: {mode}")
-
-                                                                                                                            if args.command == "help":
-                                                                                                                                parser.print_help()
-                                                                                                                                elif args.command == "list":
-                                                                                                                                list_crs()
-                                                                                                                                elif args.command == "config":
-                                                                                                                                get_config(args.json)
-                                                                                                                                elif args.command == "get":
-                                                                                                                                get_cr(args.name, args.json)
-                                                                                                                                elif args.command == "check":
-                                                                                                                                check_cr(args.name)
-                                                                                                                                elif args.command == "logs":
-                                                                                                                                show_logs(args.name)
-                                                                                                                                elif args.command == "delete":
-                                                                                                                                delete_cr(args.name)
-                                                                                                                                elif args.command == "simulate":
-                                                                                                                                simulate_rollout(args.topology)
-                                                                                                                                elif args.command == "list-topologies":
-                                                                                                                                list_topologies()
-                                                                                                                                else:
-                                                                                                                                parser.print_help()
-
-
-                                                                                                                                if __name__ == "__main__":
-                                                                                                                                    main()
-
-
-                                                                                                                                    def print_output(data, as_json=False):
-                                                                                                                                        if as_json:
-                                                                                                                                            print_output(data, as_json)
-                                                                                                                                            elif args.command == "simulate":
-                                                                                                                                            simulate_rollout(args.topology)
-                                                                                                                                            elif args.command == "list-topologies":
-                                                                                                                                            list_topologies()
-                                                                                                                                            else:
-                                                                                                                                            print(yaml.safe_dump(data, sort_keys=False))
+if __name__ == "__main__":
+    main()
