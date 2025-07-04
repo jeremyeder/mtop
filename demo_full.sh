@@ -4,6 +4,19 @@ set -e
 
 echo "🎬 Starting kubectl-ld full demo (narrated)..."
 sleep 1
+
+# Check if virtual environment exists, if not create it
+if [ ! -d "venv" ]; then
+    echo "🔧 Creating virtual environment..."
+    python3 -m venv venv
+    echo "📦 Installing dependencies..."
+    source venv/bin/activate
+    pip install -r requirements.txt > /dev/null 2>&1
+else
+    echo "🔧 Activating virtual environment..."
+    source venv/bin/activate
+fi
+
 export LLD_MODE=mock
 
 echo ""
