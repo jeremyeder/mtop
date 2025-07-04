@@ -1,0 +1,16 @@
+{
+    "demo_type": "basic",
+    "command": "./demo.sh --headless",
+    "title": "kubectl-ld Basic Demo", 
+    "duration": "60s",
+    "dimensions": {
+        "cols": 120,
+        "rows": 30
+    },
+    "quality": "high",
+    "headless": true,
+    "recorded_at": "2025-07-04T04:27:09Z",
+    "file_size": 7171,
+    "version": "dev",
+    "commit": "unknown"
+}

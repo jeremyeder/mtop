@@ -69,7 +69,7 @@ tmux new-session -d -s "$SESSION_NAME"
 
 # Split horizontally (top 55%, bottom 45%)
 tmux split-window -v -t "$SESSION_NAME"
-tmux resize-pane -t "$SESSION_NAME:0.1" -y 45%
+sleep 1  # Give tmux time to create the panes
 
 # Set up top pane (narrator)
 NARRATOR_CMD="python3 demo_narrator.py --scenario $SCENARIO"

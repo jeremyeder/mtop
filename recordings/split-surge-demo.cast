@@ -1,0 +1,4 @@
+{"version": 2, "width": 80, "height": 24, "timestamp": 1751603424, "env": {"SHELL": "/opt/homebrew/bin/bash", "TERM": "xterm-256color"}, "title": "kubectl-ld Split-Screen Demo: surge"}
+[0.012674, "o", "🔧 Activating virtual environment...\r\n"]
+[0.022525, "o", "🎬 Starting split-screen kubectl-ld demo...\r\n🎯 Scenario: surge\r\n🔧 Setting up tmux environment...\r\n"]
+[1.062288, "o", "can't find window: 0\r\n"]

@@ -1,0 +1,16 @@
+{
+    "demo_type": "full",
+    "command": "./demo_full.sh --headless",
+    "title": "kubectl-ld Full Demo", 
+    "duration": "180s",
+    "dimensions": {
+        "cols": 120,
+        "rows": 35
+    },
+    "quality": "high",
+    "headless": true,
+    "recorded_at": "2025-07-04T04:27:40Z",
+    "file_size": 10207,
+    "version": "dev",
+    "commit": "unknown"
+}
