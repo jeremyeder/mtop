@@ -42,9 +42,9 @@ python3 watch_rollout.py --topology bluegreen --autoplay --delay 1
 sleep 2
 
 echo ""
-echo "🧠 Step 4: Doctor will diagnose a mock service..."
+echo "🧠 Step 4: Check detailed status of a mock service..."
 sleep 1
-./kubectl-ld doctor gpt2 || echo 'Mock: diagnosis fallback.'
+./kubectl-ld check gpt2
 sleep 2
 
 echo ""
@@ -54,9 +54,9 @@ sleep 1
 sleep 2
 
 echo ""
-echo "📊 Step 6: View model health summary..."
+echo "📊 Step 6: View all models with status summary..."
 sleep 1
-./kubectl-ld health || echo 'Mock: health summary not yet implemented.'
+./kubectl-ld list
 sleep 1
 
 echo ""
