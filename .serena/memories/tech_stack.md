@@ -24,7 +24,7 @@
 ## Build System
 - **setuptools** (45+) with setuptools_scm for versioning
 - **pyproject.toml** configuration for modern Python packaging
-- **Entry points**: kubectl-ld and watch-rollout scripts
+- **Entry points**: mtop and watch-rollout scripts
 
 ## External Dependencies
 - **kubectl** (when in live mode) - Kubernetes CLI tool

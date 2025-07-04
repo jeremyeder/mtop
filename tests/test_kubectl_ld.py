@@ -4,7 +4,7 @@ import subprocess
 
 import pytest
 
-CLI = "./kubectl-ld"
+CLI = "./mtop-main"
 
 
 @pytest.fixture(scope="module", autouse=True)

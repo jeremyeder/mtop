@@ -12,7 +12,7 @@ pip install -r requirements.txt
 pip install -e .[dev]
 
 # Make CLI executable
-chmod +x kubectl-ld
+chmod +x mtop
 ```
 
 ## Testing Commands
@@ -54,20 +54,20 @@ radon cc . --min B
 ## Running the Application
 ```bash
 # Basic usage
-./kubectl-ld help
-./kubectl-ld list
-./kubectl-ld get gpt2
+./mtop help
+./mtop list
+./mtop get gpt2
 
 # Real-time monitoring
-./kubectl-ld ldtop
+./mtop
 
 # Mode switching
 export LLD_MODE=live    # Use live Kubernetes cluster
 export LLD_MODE=mock    # Use local mock files (default)
 
 # Per-command mode override
-./kubectl-ld --mode live list
-./kubectl-ld --mode mock simulate canary
+./mtop --mode live list
+./mtop --mode mock simulate canary
 ```
 
 ## System Commands (Darwin)

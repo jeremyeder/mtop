@@ -1,8 +1,8 @@
-# kubectl-ld Architecture Guide
+# mtop Architecture Guide
 
 ## Overview
 
-kubectl-ld has been upgraded with a modern, extensible architecture that provides better performance, maintainability, and testing capabilities. This document outlines the key architectural components and design decisions.
+mtop has been upgraded with a modern, extensible architecture that provides better performance, maintainability, and testing capabilities. This document outlines the key architectural components and design decisions.
 
 ## Key Improvements
 
@@ -11,7 +11,7 @@ kubectl-ld has been upgraded with a modern, extensible architecture that provide
 **Problem Solved**: Runtime errors due to unclear contracts between components
 
 **Implementation**:
-- Comprehensive Protocol definitions in `kubectl_ld/interfaces.py`
+- Comprehensive Protocol definitions in `mtop/interfaces.py`
 - Strict mypy configuration with full type checking enabled
 - Abstract base classes for extensibility
 
@@ -29,14 +29,14 @@ kubectl-ld has been upgraded with a modern, extensible architecture that provide
 **Problem Solved**: Hard-coded dependencies making testing and extension difficult
 
 **Implementation**:
-- Lightweight DI container in `kubectl_ld/container.py`
+- Lightweight DI container in `mtop/container.py`
 - Automatic dependency resolution via type annotations
 - Support for singletons, transients, and factory patterns
 
 **Usage Example**:
 ```python
-from kubectl_ld.container import inject, singleton
-from kubectl_ld.interfaces import Logger
+from mtop.container import inject, singleton
+from mtop.interfaces import Logger
 
 @singleton(Logger)
 class MyLogger:
@@ -53,12 +53,12 @@ def my_function(logger: Logger = inject(Logger)) -> None:
 **Problem Solved**: Blocking operations in live mode, poor performance with multiple resources
 
 **Implementation**:
-- Async CLI operations in `kubectl_ld/async_cli.py`
+- Async CLI operations in `mtop/async_cli.py`
 - Concurrent resource fetching and operations
 - Non-blocking monitoring with configurable intervals
 
 **Key Features**:
-- `AsyncKubectlLD` - Async version of all CLI operations
+- `AsyncMTop` - Async version of all CLI operations
 - `AsyncResourceMonitor` - Real-time resource monitoring
 - Batch operations with concurrent execution
 - Proper error handling and cancellation support
@@ -68,7 +68,7 @@ def my_function(logger: Logger = inject(Logger)) -> None:
 **Problem Solved**: Poor observability and debugging capabilities
 
 **Implementation**:
-- Structured logging with JSON output in `kubectl_ld/logging.py`
+- Structured logging with JSON output in `mtop/logging.py`
 - Context-aware logging with operation tracking
 - Configurable log levels and output formats
 - Rotating file handlers with size limits
@@ -84,7 +84,7 @@ def my_function(logger: Logger = inject(Logger)) -> None:
 **Problem Solved**: Poor performance with large datasets, memory leaks in long-running processes
 
 **Implementation**:
-- Intelligent caching system in `kubectl_ld/cache.py`
+- Intelligent caching system in `mtop/cache.py`
 - LRU cache with TTL support
 - Async cache for concurrent operations
 - Memory-efficient data structures
@@ -99,7 +99,7 @@ def my_function(logger: Logger = inject(Logger)) -> None:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    kubectl-ld CLI                          │
+│                       mtop CLI                             │
 ├─────────────────────────────────────────────────────────────┤
 │                 Dependency Injection                       │
 │  ┌─────────────┐ ┌──────────────┐ ┌──────────────────────┐ │
@@ -129,7 +129,7 @@ The new architecture supports comprehensive configuration via environment variab
 ```bash
 # Logging Configuration
 export LDCTL_LOG_LEVEL=DEBUG
-export LDCTL_LOG_FILE=/var/log/kubectl-ld.log
+export LDCTL_LOG_FILE=/var/log/mtop.log
 export LDCTL_LOG_FORMAT=structured  # or 'simple'
 
 # Mode Configuration
@@ -185,12 +185,12 @@ kubectl_ld.list_crs()
 **New Pattern**:
 ```python
 # Dependency injection
-from kubectl_ld.async_cli import AsyncKubectlLD
-from kubectl_ld.container import inject
+from mtop.async_cli import AsyncMTop
+from mtop.container import inject
 
 async def main():
-    kubectl_ld = AsyncKubectlLD(mode="live")
-    crs = await kubectl_ld.list_crs()
+    mtop = AsyncMTop(mode="live")
+    crs = await mtop.list_crs()
 ```
 
 ### For Operators
@@ -199,13 +199,13 @@ The CLI interface remains unchanged, but new features are available:
 
 ```bash
 # Enhanced logging
-LDCTL_LOG_LEVEL=DEBUG kubectl-ld list
+LDCTL_LOG_LEVEL=DEBUG mtop list
 
 # Performance monitoring
-LDCTL_LOG_FORMAT=structured kubectl-ld ldtop
+LDCTL_LOG_FORMAT=structured mtop
 
 # Custom configuration
-LDCTL_CONFIG_PATH=/etc/my-config.yaml kubectl-ld simulate canary
+LDCTL_CONFIG_PATH=/etc/my-config.yaml mtop simulate canary
 ```
 
 ## Future Extensibility
@@ -223,7 +223,7 @@ The new architecture provides clean extension points:
 ### Before Architecture Update
 - Synchronous operations blocking UI
 - No caching of configuration or resources
-- Memory growth in long-running ldtop sessions
+- Memory growth in long-running mtop sessions
 - Poor error handling and debugging
 
 ### After Architecture Update
@@ -243,4 +243,4 @@ The new architecture provides clean extension points:
 - `ijson` for streaming JSON parsing (optional)
 - Enhanced mypy configuration for strict typing
 
-This architecture provides a solid foundation for kubectl-ld's continued evolution while maintaining backward compatibility and improving developer experience.
+This architecture provides a solid foundation for mtop's continued evolution while maintaining backward compatibility and improving developer experience.
