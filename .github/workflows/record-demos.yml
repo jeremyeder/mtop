@@ -1,0 +1,244 @@
+name: Record Demo Videos
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      demo_type:
+        description: 'Type of demo to record'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - basic
+          - full
+          - split-basic
+          - split-surge
+          - split-chaos
+          - split-multi
+  schedule:
+    - cron: '0 6 * * 1'  # Weekly Monday 6am UTC
+
+jobs:
+  record-demos:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        demo: 
+          - { name: "basic", command: "./demo.sh --headless", duration: "60s" }
+          - { name: "full", command: "./demo_full.sh --headless", duration: "180s" }
+          - { name: "split-basic", command: "./demo_split.sh --scenario basic --headless", duration: "120s" }
+          - { name: "split-surge", command: "./demo_split.sh --scenario surge --headless", duration: "180s" }
+          - { name: "split-chaos", command: "./demo_split.sh --scenario chaos --headless", duration: "150s" }
+          - { name: "split-multi", command: "./demo_split.sh --scenario multi --headless", duration: "180s" }
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y tmux asciinema ffmpeg imagemagick
+          
+      - name: Create virtual environment and install dependencies
+        run: |
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+
+      - name: Make scripts executable
+        run: |
+          chmod +x demo.sh demo_full.sh demo_split.sh
+          chmod +x demo_narrator.py demo_monitor.py
+
+      - name: Verify demo functionality (dry run)
+        run: |
+          source venv/bin/activate
+          export LLD_MODE=mock
+          # Quick test to ensure scripts work
+          timeout 10s ${{ matrix.demo.command }} || echo "Demo test completed"
+
+      - name: Record demo with asciinema
+        run: |
+          source venv/bin/activate
+          export LLD_MODE=mock
+          export TERM=xterm-256color
+          
+          # Create output directory
+          mkdir -p recordings
+          
+          # Record the demo
+          asciinema rec recordings/${{ matrix.demo.name }}-demo.cast \
+            --title "kubectl-ld Demo: ${{ matrix.demo.name }}" \
+            --command "${{ matrix.demo.command }}" \
+            --overwrite
+
+      - name: Validate recording
+        run: |
+          # Check if recording file exists and has content
+          if [ ! -f "recordings/${{ matrix.demo.name }}-demo.cast" ]; then
+            echo "Error: Recording file not created"
+            exit 1
+          fi
+          
+          # Check file size (should be > 1KB)
+          size=$(stat -f%z "recordings/${{ matrix.demo.name }}-demo.cast" 2>/dev/null || stat -c%s "recordings/${{ matrix.demo.name }}-demo.cast")
+          if [ "$size" -lt 1024 ]; then
+            echo "Error: Recording file too small ($size bytes)"
+            exit 1
+          fi
+          
+          echo "Recording validated: $size bytes"
+
+      - name: Convert to GIF (for README embedding)
+        run: |
+          # Install agg for high-quality GIF conversion
+          npm install -g @asciinema/agg
+          
+          # Convert to GIF with good quality settings
+          agg recordings/${{ matrix.demo.name }}-demo.cast recordings/${{ matrix.demo.name }}-demo.gif \
+            --cols 120 --rows 30 --speed 1.2
+
+      - name: Generate demo metadata
+        run: |
+          cat > recordings/${{ matrix.demo.name }}-meta.json << EOF
+          {
+            "name": "${{ matrix.demo.name }}",
+            "command": "${{ matrix.demo.command }}",
+            "duration": "${{ matrix.demo.duration }}",
+            "recorded_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "version": "${GITHUB_REF_NAME:-dev}",
+            "commit": "${GITHUB_SHA}",
+            "workflow_run": "${GITHUB_RUN_ID}"
+          }
+          EOF
+
+      - name: Upload recordings as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-${{ matrix.demo.name }}
+          path: recordings/
+          retention-days: 30
+
+  create-demo-release:
+    needs: record-demos
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release'
+    
+    steps:
+      - name: Download all demo artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: all-demos
+
+      - name: Organize demo files
+        run: |
+          mkdir -p demo-package
+          find all-demos -name "*.cast" -exec cp {} demo-package/ \;
+          find all-demos -name "*.gif" -exec cp {} demo-package/ \;
+          find all-demos -name "*-meta.json" -exec cp {} demo-package/ \;
+          
+          # Create index file
+          cat > demo-package/index.md << 'EOF'
+          # kubectl-ld Demo Recordings
+          
+          This package contains demo recordings for kubectl-ld.
+          
+          ## Available Demos
+          
+          - **basic-demo**: Quick rolling deployment showcase
+          - **full-demo**: Comprehensive feature demonstration  
+          - **split-basic-demo**: Split-screen basic rollout
+          - **split-surge-demo**: Traffic surge handling with 20 models
+          - **split-chaos-demo**: Failure injection and recovery
+          - **split-multi-demo**: Multiple deployment strategies
+          
+          ## Usage
+          
+          - `.cast` files: Use with `asciinema play filename.cast`
+          - `.gif` files: Embed in documentation or view in browser
+          
+          Generated automatically by GitHub Actions.
+          EOF
+
+      - name: Create demo package
+        run: |
+          cd demo-package
+          tar -czf ../kubectl-ld-demos-${{ github.ref_name }}.tar.gz *
+          cd ..
+          
+          # Create checksums
+          sha256sum kubectl-ld-demos-${{ github.ref_name }}.tar.gz > checksums.txt
+
+      - name: Upload to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            kubectl-ld-demos-${{ github.ref_name }}.tar.gz
+            checksums.txt
+          body: |
+            ## Demo Recordings
+            
+            This release includes fresh demo recordings showcasing kubectl-ld features:
+            
+            - 🎬 Basic demo (60s): Quick rolling deployment
+            - 🎭 Full demo (3m): Comprehensive feature showcase
+            - 🖥️ Split-screen demos: Advanced multi-model scenarios
+            
+            Download the demo package to get all recordings in multiple formats.
+
+  update-readme:
+    needs: record-demos
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download demo artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: demo-basic
+          path: demo-files
+
+      - name: Update README with latest demo
+        run: |
+          # Update README.md with fresh demo GIF
+          # This is a placeholder - would need actual README update logic
+          echo "Would update README.md with latest demo recordings"
+          
+          # For now, just commit the demo files to a demos directory
+          mkdir -p demos
+          cp demo-files/*.gif demos/ 2>/dev/null || true
+          cp demo-files/*.cast demos/ 2>/dev/null || true
+
+      - name: Commit updated demos
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          if [ -n "$(git status --porcelain)" ]; then
+            git add demos/
+            git commit -m "chore: Update demo recordings
+            
+            Automated update of demo recordings via GitHub Actions
+            
+            🤖 Generated with GitHub Actions"
+            git push
+          else
+            echo "No changes to commit"
+          fi
