@@ -36,8 +36,8 @@ except ImportError:
 
 # Import configuration system
 try:
-    from config_loader import Config, load_config, get_default_config
     from column_engine import TableRenderer
+    from config_loader import Config, get_default_config, load_config
     CONFIG_AVAILABLE = True
 except ImportError:
     CONFIG_AVAILABLE = False

@@ -3,9 +3,9 @@ requires = ["setuptools>=45", "wheel", "setuptools_scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "kubectl-ld"
+name = "mtop"
 dynamic = ["version"]
-description = "Mock CLI tool for debugging and simulating LLMInferenceService CRDs"
+description = "Model Top - Real-time ML monitoring and debugging tool for LLMInferenceService CRDs"
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
@@ -14,7 +14,7 @@ authors = [
 maintainers = [
     {name = "Jeremy Eder", email = "jeder@redhat.com"},
 ]
-keywords = ["kubernetes", "llm", "debugging", "simulation", "kubectl", "plugin"]
+keywords = ["kubernetes", "llm", "monitoring", "debugging", "simulation", "mtop", "model-top"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Environment :: Console",
@@ -51,7 +51,7 @@ performance = [
     "ijson>=3.2.0,<4.0",
 ]
 dev = [
-    "kubectl-ld[test,security,performance]",
+    "mtop[test,security,performance]",
     "black>=23.0.0",
     "isort>=5.12.0",
     "mypy>=1.0.0",
@@ -60,17 +60,17 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/jeremyeder/kubectl-ld"
-Repository = "https://github.com/jeremyeder/kubectl-ld.git"
-Issues = "https://github.com/jeremyeder/kubectl-ld/issues"
-Changelog = "https://github.com/jeremyeder/kubectl-ld/releases"
+Homepage = "https://github.com/jeremyeder/mtop"
+Repository = "https://github.com/jeremyeder/mtop.git"
+Issues = "https://github.com/jeremyeder/mtop/issues"
+Changelog = "https://github.com/jeremyeder/mtop/releases"
 
 [project.scripts]
-kubectl-ld = "kubectl_ld:main"
+mtop = "mtop:main"
 watch-rollout = "watch_rollout:main"
 
 [tool.setuptools_scm]
-write_to = "kubectl_ld/_version.py"
+write_to = "mtop/_version.py"
 
 [tool.black]
 line-length = 100
@@ -129,9 +129,9 @@ omit = [
     "*/venv/*",
     "*/.venv/*",
     "watch_rollout.py",
-    "kubectl_ld/watch_rollout.py",
-    "kubectl_ld/__init__.py",
-    "kubectl_ld/_version.py",
+    "mtop/watch_rollout.py",
+    "mtop/__init__.py",
+    "mtop/_version.py",
 ]
 
 [tool.coverage.report]

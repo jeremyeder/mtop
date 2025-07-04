@@ -2,8 +2,8 @@
 
 ## Root Directory Layout
 ```
-kubectl-ld/
-├── kubectl-ld                 # Main CLI entry point (Python script)
+mtop/
+├── mtop                       # Main CLI entry point (Python script)
 ├── kubectl_ld/               # Python package
 │   ├── __init__.py           # Package entry point
 │   └── watch_rollout.py      # Rollout watching functionality

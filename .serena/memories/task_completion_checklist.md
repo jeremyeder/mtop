@@ -36,12 +36,12 @@ bandit -r . -f json
 ### 4. Integration Testing (For CLI Changes)
 ```bash
 # Test basic CLI functionality
-./kubectl-ld help
-./kubectl-ld list
-./kubectl-ld config
+./mtop help
+./mtop list
+./mtop config
 
 # Test mode switching
-LLD_MODE=mock ./kubectl-ld list
+LLD_MODE=mock ./mtop list
 ```
 
 ### 5. Documentation Updates (When Applicable)
