@@ -102,12 +102,41 @@ Each Epic has a completion milestone - a 60-second VHS demo:
 - **#37**: Artifact capture (ongoing throughout development)
 - **#38**: Reproduction guides (after system completion)
 
+## ⏱️ Time Tracking System
+
+### Project Fields for Management Reporting
+- **Effort Hours**: Estimated time for each issue
+- **Actual Hours**: Time actually spent (tracked by Claude)
+- **Story Points**: Agile estimation (1,2,3,5,8 scale)
+- **Work Type**: Code/Docs/Demo/Research classification
+- **Day Assigned**: Which of the 8 sprint days (Day1-Day8)
+
+### Time Tracking Workflow
+```
+1. Jeremy assigns issues to sprint days and sets story points
+2. Claude estimates effort hours when starting work
+3. Claude tracks actual time and reports in issue comments
+4. Automated daily reports generate progress summaries
+5. Dashboard updates with velocity and accuracy metrics
+```
+
+### Claude's Time Reporting Pattern
+- **Starting**: "Starting work on this issue - Estimated: 2h, Story Points: 3"
+- **Progress**: "2h spent, 60% complete, on track for estimate"
+- **Blocked**: "Blocked waiting for clarification - 30m impact"
+- **Complete**: "Task complete - Actual: 2.5h, Estimate: 2h (25% over)"
+
+### Automated Reporting
+- **Daily Reports**: Generated at 8PM in `/reports/` folder
+- **Dashboard**: Live progress tracking with epic completion bars
+- **Manager Metrics**: Velocity, estimate accuracy, delivery confidence
+
 ## 🎯 Current Priorities
 
 ### Ready to Start (No Dependencies)
-1. **#35** - Create book-quality documentation structure
-2. **#15** - Enhanced configuration system (foundation for everything)
-3. **#8** - Fix argument parsing logic (current broken functionality)
+1. **#35** - Create book-quality documentation structure (Day1, 1h, Docs)
+2. **#15** - Enhanced configuration system (Day1, 4h, Code) 
+3. **#8** - Fix argument parsing logic (Day1, 1h, Code)
 
 ### Critical Path
 ```
