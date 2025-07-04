@@ -24,7 +24,10 @@ This directory contains **interactive terminal recordings** that showcase kubect
 |-----------|----------|-------------|-----------|
 | **🎬 Basic Demo** | ~60s | Essential kubectl-ld commands and workflows | 7.1 KB |
 | **🎭 Full Demo** | ~180s | Comprehensive feature showcase | 10.2 KB |
-| **🖥️ Split-Screen Demos** | ~120-180s | Advanced multi-model scenarios | ⚠️ *In Progress* |
+| **🖥️ Split-Basic Demo** | ~30s | Simple 3-model split-screen monitoring | 538 KB |
+| **🚀 Split-Surge Demo** | ~30s | Traffic surge with 20+ models | 149 KB |
+| **⚡ Split-Chaos Demo** | ~30s | Failure injection and recovery | 145 KB |
+| **🎯 Split-Multi Demo** | ~30s | Multiple deployment strategies | 38 KB |
 
 ---
 
@@ -109,12 +112,12 @@ kubectl-ld scale --replicas 5
 **Advanced scenarios** - Multi-model management at scale
 
 **Scenarios Available:**
-- **Basic** - Simple 3-model deployment
-- **Surge** - Black Friday traffic with 20+ models
-- **Chaos** - Failure injection and recovery
-- **Multi** - Multiple deployment strategies
+- **Basic** - Simple 3-model deployment monitoring
+- **Surge** - Black Friday traffic surge across 20+ models  
+- **Chaos** - Failure injection and recovery scenarios
+- **Multi** - Multiple deployment strategies (Blue/Green, Canary, Shadow, Rolling)
 
-> **⚠️ Note:** Split-screen demos are currently being refined. They require tmux and may have compatibility issues in certain environments. Use `./demo_split.sh --help` for manual execution.
+These demos showcase kubectl-ld's advanced monitoring capabilities with realistic traffic patterns and deployment strategies.
 
 ---
 
