@@ -1,6 +1,76 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kubectl-ld"
+dynamic = ["version"]
+description = "Mock CLI tool for debugging and simulating LLMInferenceService CRDs"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Jeremy Eder", email = "jeder@redhat.com"},
+]
+maintainers = [
+    {name = "Jeremy Eder", email = "jeder@redhat.com"},
+]
+keywords = ["kubernetes", "llm", "debugging", "simulation", "kubectl", "plugin"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Debuggers",
+    "Topic :: System :: Systems Administration",
+    "Topic :: Utilities",
+]
+requires-python = ">=3.11"
+dependencies = [
+    "pyyaml>=6.0,<7.0",
+    "termcolor>=2.3.0,<4.0",
+    "rich>=13.0.0,<15.0",
+    "readchar>=4.0.0,<5.0",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.0.0,<9.0",
+    "pytest-cov>=4.0.0,<7.0",
+]
+security = [
+    "safety>=3.0.0,<4.0",
+    "bandit>=1.7.0,<2.0",
+]
+dev = [
+    "kubectl-ld[test,security]",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "mypy>=1.0.0",
+    "pylint>=2.17.0",
+    "radon>=6.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/jeremyeder/kubectl-ld"
+Repository = "https://github.com/jeremyeder/kubectl-ld.git"
+Issues = "https://github.com/jeremyeder/kubectl-ld/issues"
+Changelog = "https://github.com/jeremyeder/kubectl-ld/releases"
+
+[project.scripts]
+kubectl-ld = "kubectl_ld:main"
+watch-rollout = "watch_rollout:main"
+
+[tool.setuptools_scm]
+write_to = "kubectl_ld/_version.py"
+
 [tool.black]
 line-length = 100
-target-version = ['py38', 'py39', 'py310', 'py311']
+target-version = ['py311', 'py312']
 include = '\.pyi?$'
 extend-exclude = '''
 /(
@@ -26,7 +96,7 @@ use_parentheses = true
 ensure_newline_before_comments = true
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.11"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false
@@ -37,3 +107,33 @@ disable = "C0330, C0326, C0103, W0622, R0903, R0913"
 
 [tool.pylint.format]
 max-line-length = "100"
+
+[tool.coverage.run]
+source = ["."]
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+    "*/__pycache__/*",
+    "*/site-packages/*",
+    "setup.py",
+    "*/venv/*",
+    "*/.venv/*",
+    "watch_rollout.py",
+    "kubectl_ld/watch_rollout.py",
+    "kubectl_ld/__init__.py",
+    "kubectl_ld/_version.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]

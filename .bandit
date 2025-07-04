@@ -1,0 +1,16 @@
+# Configuration for bandit security linter
+exclude_dirs:
+  - .git
+  - .pytest_cache
+  - .mypy_cache
+  - __pycache__
+  - build
+  - dist
+  - .venv
+  - venv
+  - tests
+
+# Skips for specific tests that may generate false positives
+skips:
+  - B101  # assert_used - we use asserts in tests
+  - B603  # subprocess_without_shell_equals_true - we need shell=False for security
