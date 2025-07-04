@@ -117,6 +117,12 @@ kubectl-ld scale --replicas 5
 - **Chaos** - Failure injection and recovery scenarios
 - **Multi** - Multiple deployment strategies (Blue/Green, Canary, Shadow, Rolling)
 
+**Interactive Controls:**
+- **Focus starts on TOP pane** (narrator) - this is where you interact
+- **Press any key** to advance through demo steps
+- **Press Q** to quit the demo cleanly
+- **Ctrl+B then D** to detach from tmux session
+
 These demos showcase kubectl-ld's advanced monitoring capabilities with realistic traffic patterns and deployment strategies.
 
 ---

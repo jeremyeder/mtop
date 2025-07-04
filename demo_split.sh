@@ -121,9 +121,13 @@ fi
 
 tmux send-keys -t "$PANE1" "$MONITOR_CMD" Enter
 
+# Set focus to the top pane (narrator) where user interaction happens
+tmux select-pane -t "$PANE0"
+
 # Attach to session
 echo "🚀 Launching split-screen demo..."
-echo "💡 Use Ctrl+B then D to detach, or Q in narrator to quit"
+echo "💡 Focus is on TOP pane (narrator) - press any key to advance"
+echo "💡 Press Q to quit, or Ctrl+B then D to detach from tmux"
 sleep 1
 tmux attach-session -t "$SESSION_NAME"
 
