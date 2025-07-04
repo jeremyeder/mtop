@@ -34,7 +34,7 @@ jobs:
         zip -r kubectl-ld-${{ github.ref_name }}.zip kubectl-ld watch_rollout.py mocks/ requirements.txt README.md LICENSE
     
     - name: Create GitHub Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         files: kubectl-ld-${{ github.ref_name }}.zip
         generate_release_notes: true
