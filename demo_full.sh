@@ -2,62 +2,71 @@
 
 set -e
 
-echo "🎬 Starting kubectl-ld full demo (narrated)..."
-sleep 1
+# Parse command line arguments
+HEADLESS=false
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --headless)
+            HEADLESS=true
+            shift
+            ;;
+        *)
+            echo "Usage: $0 [--headless]"
+            echo "  --headless    Run demo automatically with delays (no user interaction)"
+            exit 1
+            ;;
+    esac
+done
 
-# Check if virtual environment exists, if not create it
-if [ ! -d "venv" ]; then
-    echo "🔧 Creating virtual environment..."
-    python3 -m venv venv
-    echo "📦 Installing dependencies..."
-    source venv/bin/activate
-    pip install -r requirements.txt > /dev/null 2>&1
+# Source shared functions
+source "$(dirname "$0")/demo_functions.sh"
+
+echo "🎬 Starting kubectl-ld full demo (comprehensive showcase)..."
+if [ "$HEADLESS" = true ]; then
+    echo "🤖 Running in headless mode with automatic progression"
 else
-    echo "🔧 Activating virtual environment..."
-    source venv/bin/activate
+    echo "👆 Interactive mode - press any key between steps"
 fi
 
-export LLD_MODE=mock
+# Setup environment
+setup_environment
 
 echo ""
 echo "👋 Welcome to kubectl-ld — your LLM debugging Swiss Army knife."
-sleep 2
+delay_or_wait $HEADLESS 3
 
-echo ""
-echo "📦 Step 1: List supported rollout topologies..."
-sleep 1
+# Step 1: List rollout topologies
+show_step 1 "List supported rollout topologies"
 ./kubectl-ld list-topologies
-sleep 2
+delay_or_wait $HEADLESS 3
 
-echo ""
-echo "🧪 Step 2: Simulate a 'bluegreen' rollout (realistic model upgrade)..."
-sleep 1
+# Step 2: Simulate bluegreen rollout
+show_step 2 "Simulate a 'bluegreen' rollout (realistic model upgrade)"
 ./kubectl-ld simulate bluegreen
-sleep 2
+delay_or_wait $HEADLESS 3
 
-echo ""
-echo "🎥 Step 3: Playback that rollout visually (autoplay with 1s delay)..."
-sleep 2
-python3 watch_rollout.py --topology bluegreen --autoplay --delay 1
-sleep 2
+# Step 3: Visual playback
+show_step 3 "Playback that rollout visually"
+if [ "$HEADLESS" = true ]; then
+    python3 watch_rollout.py --topology bluegreen --autoplay --delay 2
+else
+    python3 watch_rollout.py --topology bluegreen --autoplay --delay 1
+fi
+delay_or_wait $HEADLESS 3
 
-echo ""
-echo "🧠 Step 4: Check detailed status of a mock service..."
-sleep 1
+# Step 4: Check detailed status
+show_step 4 "Check detailed status of a mock service"
 ./kubectl-ld check gpt2
-sleep 2
+delay_or_wait $HEADLESS 3
 
-echo ""
-echo "📜 Step 5: Show a real CR (gpt2) in YAML format..."
-sleep 1
+# Step 5: Show CR in YAML
+show_step 5 "Show a real CR (gpt2) in YAML format"
 ./kubectl-ld get gpt2
-sleep 2
+delay_or_wait $HEADLESS 3
 
-echo ""
-echo "📊 Step 6: View all models with status summary..."
-sleep 1
+# Step 6: List all models
+show_step 6 "View all models with status summary"
 ./kubectl-ld list
-sleep 1
+delay_or_wait $HEADLESS 3
 
-echo ""
-echo "✅ Demo complete. kubectl-ld is your LLM debug toolkit!"
+show_completion

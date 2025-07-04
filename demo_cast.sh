@@ -4,19 +4,35 @@
 
 set -e
 
+# Parse command line arguments
+HEADLESS=false
+DEMO_SCRIPT="./demo.sh"
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --headless)
+            HEADLESS=true
+            shift
+            ;;
+        --full)
+            DEMO_SCRIPT="./demo_full.sh"
+            shift
+            ;;
+        *)
+            echo "Usage: $0 [--headless] [--full]"
+            echo "  --headless    Record demo in headless mode (automatic progression)"
+            echo "  --full        Record the full demo instead of the basic demo"
+            exit 1
+            ;;
+    esac
+done
+
+# Source shared functions
+source "$(dirname "$0")/demo_functions.sh"
+
 echo "🎬 Recording kubectl-ld demo with asciinema..."
 
-# Check if virtual environment exists, if not create it
-if [ ! -d "venv" ]; then
-    echo "🔧 Creating virtual environment..."
-    python3 -m venv venv
-    echo "📦 Installing dependencies..."
-    source venv/bin/activate
-    pip install -r requirements.txt > /dev/null 2>&1
-else
-    echo "🔧 Activating virtual environment..."
-    source venv/bin/activate
-fi
+# Setup environment
+setup_environment
 
 # Check if asciinema is installed
 if ! command -v asciinema &> /dev/null; then
@@ -27,5 +43,19 @@ if ! command -v asciinema &> /dev/null; then
     exit 1
 fi
 
+# Prepare command
+if [ "$HEADLESS" = true ]; then
+    DEMO_CMD="$DEMO_SCRIPT --headless"
+else
+    DEMO_CMD="$DEMO_SCRIPT"
+fi
+
 # Record the demo
-asciinema rec kubectl-ld-demo.cast -c "./demo.sh" --title "kubectl-ld Demo" --overwrite
+OUTPUT_FILE="kubectl-ld-demo.cast"
+if [[ "$DEMO_SCRIPT" == *"full"* ]]; then
+    OUTPUT_FILE="kubectl-ld-demo-full.cast"
+fi
+
+echo "📹 Recording: $DEMO_CMD"
+echo "💾 Output: $OUTPUT_FILE"
+asciinema rec "$OUTPUT_FILE" -c "$DEMO_CMD" --title "kubectl-ld Demo" --overwrite

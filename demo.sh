@@ -2,34 +2,51 @@
 
 set -e
 
-echo "🎬 Starting kubectl-ld demo (5 seconds)..."
-sleep 1
+# Parse command line arguments
+HEADLESS=false
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --headless)
+            HEADLESS=true
+            shift
+            ;;
+        *)
+            echo "Usage: $0 [--headless]"
+            echo "  --headless    Run demo automatically with delays (no user interaction)"
+            exit 1
+            ;;
+    esac
+done
 
-# Check if virtual environment exists, if not create it
-if [ ! -d "venv" ]; then
-    echo "🔧 Creating virtual environment..."
-    python3 -m venv venv
-    echo "📦 Installing dependencies..."
-    source venv/bin/activate
-    pip install -r requirements.txt > /dev/null 2>&1
+# Source shared functions
+source "$(dirname "$0")/demo_functions.sh"
+
+echo "🎬 Starting kubectl-ld demo..."
+if [ "$HEADLESS" = true ]; then
+    echo "🤖 Running in headless mode with automatic progression"
 else
-    echo "🔧 Activating virtual environment..."
-    source venv/bin/activate
+    echo "👆 Interactive mode - press any key between steps"
 fi
 
-# Activate mock mode
-export LLD_MODE=mock
+# Setup environment
+setup_environment
 
-# Show available topologies
-echo -e "\n📦 Listing available rollout topologies:"
+# Step 1: Show available topologies
+show_step 1 "Listing available rollout topologies"
 ./kubectl-ld list-topologies
-sleep 1
+delay_or_wait $HEADLESS 3
 
-# Run a quick simulated rollout
-echo -e "\n🚀 Simulating 'rolling' rollout topology:"
+# Step 2: Run a quick simulated rollout
+show_step 2 "Simulating 'rolling' rollout topology"
 ./kubectl-ld simulate rolling
-sleep 1
+delay_or_wait $HEADLESS 3
 
-# Launch visual viewer in autoplay mode with short delay
-echo -e "\n🎥 Visual rollout playback (auto mode, 1s delay):"
-python3 watch_rollout.py --topology rolling --autoplay --delay 1
+# Step 3: Launch visual viewer
+show_step 3 "Visual rollout playback"
+if [ "$HEADLESS" = true ]; then
+    python3 watch_rollout.py --topology rolling --autoplay --delay 2
+else
+    python3 watch_rollout.py --topology rolling --autoplay --delay 1
+fi
+
+show_completion
