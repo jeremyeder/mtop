@@ -45,7 +45,7 @@
 ---
 
 ## 🔗 Quick Links
-- [Project Board](https://github.com/users/jeremyeder/projects/3)
+- [Project Board](https://github.com/users/jeremyeder/projects/4) **PUBLIC - Collaborative!**
 - [Collaboration Guide](./COLLABORATION.md)
 - [Daily Reports](./reports/)
 - [Issue Templates](./.github/ISSUE_TEMPLATE/)

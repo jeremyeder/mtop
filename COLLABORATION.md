@@ -11,7 +11,8 @@ This document explains our manual collaboration workflow for the GPU Heartbeat &
 ## 📋 Project Board Workflow
 
 ### GitHub Project Board
-- **URL**: https://github.com/users/jeremyeder/projects/3
+- **URL**: https://github.com/users/jeremyeder/projects/4
+- **Visibility**: PUBLIC - accessible to all collaborators!
 - **Columns**: Backlog → TODO → In Progress → Done
 - **45 Total Issues**: 4 Epics + 41 implementation tasks
 
