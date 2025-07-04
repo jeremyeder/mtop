@@ -5,8 +5,14 @@ set -e
 echo "🎬 Starting kubectl-ld demo (5 seconds)..."
 sleep 1
 
-# Activate virtual environment if it exists
-if [ -d "venv" ]; then
+# Check if virtual environment exists, if not create it
+if [ ! -d "venv" ]; then
+    echo "🔧 Creating virtual environment..."
+    python3 -m venv venv
+    echo "📦 Installing dependencies..."
+    source venv/bin/activate
+    pip install -r requirements.txt > /dev/null 2>&1
+else
     echo "🔧 Activating virtual environment..."
     source venv/bin/activate
 fi
@@ -25,5 +31,5 @@ echo -e "\n🚀 Simulating 'rolling' rollout topology:"
 sleep 1
 
 # Launch visual viewer in autoplay mode with short delay
-echo -e "\n🎥 Visual rollout playbook (auto mode, 1s delay):"
+echo -e "\n🎥 Visual rollout playback (auto mode, 1s delay):"
 python3 watch_rollout.py --topology rolling --autoplay --delay 1
