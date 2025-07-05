@@ -13,8 +13,10 @@ from mtop.token_metrics import (
     TokenMetrics,
     TokenTracker,
     TTFTCalculator,
+    QueueMetrics,
     create_token_tracker,
     create_ttft_calculator,
+    create_queue_metrics,
 )
 
 
@@ -723,3 +725,328 @@ class TestIntegrationWithConfigs:
         # TPS should be close to SLO target
         avg_tps = sum(tps_values) / len(tps_values)
         assert abs(avg_tps - 3000) < 500  # Within reasonable tolerance
+
+
+class TestQueueMetrics:
+    """Test QueueMetrics functionality."""
+
+    def test_queue_metrics_creation(self):
+        """Test creating QueueMetrics with default values."""
+        queue_metrics = QueueMetrics()
+        
+        assert queue_metrics.max_queue_depth == 100
+        assert queue_metrics.current_depth == 0
+        assert len(queue_metrics.depth_history) == 0
+
+    def test_queue_metrics_validation(self):
+        """Test QueueMetrics validation in __post_init__."""
+        # Test invalid max_queue_depth
+        with pytest.raises(ValueError, match="max_queue_depth must be positive"):
+            QueueMetrics(max_queue_depth=0)
+        
+        with pytest.raises(ValueError, match="max_queue_depth must be positive"):
+            QueueMetrics(max_queue_depth=-1)
+        
+        # Test negative current_depth
+        with pytest.raises(ValueError, match="current_depth cannot be negative"):
+            QueueMetrics(current_depth=-1)
+
+    def test_update_queue_depth(self):
+        """Test updating queue depth."""
+        queue_metrics = QueueMetrics()
+        
+        queue_metrics.update_queue_depth(5)
+        assert queue_metrics.get_current_depth() == 5
+        assert len(queue_metrics.depth_history) == 1
+        
+        queue_metrics.update_queue_depth(10)
+        assert queue_metrics.get_current_depth() == 10
+        assert len(queue_metrics.depth_history) == 2
+
+    def test_update_queue_depth_validation(self):
+        """Test queue depth update validation."""
+        queue_metrics = QueueMetrics()
+        
+        with pytest.raises(ValueError, match="depth cannot be negative"):
+            queue_metrics.update_queue_depth(-1)
+
+    def test_queue_depth_statistics_empty(self):
+        """Test statistics with no history."""
+        queue_metrics = QueueMetrics()
+        
+        assert queue_metrics.get_average_depth() == 0.0
+        assert queue_metrics.get_max_depth() == 0
+        assert queue_metrics.get_min_depth() == 0
+
+    def test_queue_depth_statistics_with_data(self):
+        """Test statistics with depth history."""
+        queue_metrics = QueueMetrics()
+        
+        depths = [1, 3, 5, 2, 4]
+        for depth in depths:
+            queue_metrics.update_queue_depth(depth)
+        
+        assert queue_metrics.get_average_depth() == 3.0  # (1+3+5+2+4)/5
+        assert queue_metrics.get_max_depth() == 5
+        assert queue_metrics.get_min_depth() == 1
+
+    def test_depth_impact_on_ttft(self):
+        """Test TTFT impact calculation."""
+        queue_metrics = QueueMetrics()
+        
+        # No queue depth
+        assert queue_metrics.get_depth_impact_on_ttft() == 0.0
+        
+        # With queue depth
+        queue_metrics.update_queue_depth(3)
+        impact = queue_metrics.get_depth_impact_on_ttft()
+        assert impact == 30.0  # 3 * 10ms per request
+
+    def test_depth_percentile_calculations(self):
+        """Test percentile calculations."""
+        queue_metrics = QueueMetrics()
+        
+        # Not enough data
+        assert queue_metrics.get_depth_percentile(50) is None
+        
+        # Add sufficient data
+        for i in range(20):
+            queue_metrics.update_queue_depth(i)  # 0-19
+        
+        # Test percentiles
+        assert queue_metrics.get_depth_percentile(0) == 0.0
+        assert queue_metrics.get_depth_percentile(100) == 19.0
+        
+        p50 = queue_metrics.get_depth_percentile(50)
+        assert p50 is not None
+        assert 9 <= p50 <= 10  # Should be around median
+
+    def test_depth_percentile_validation(self):
+        """Test percentile validation."""
+        queue_metrics = QueueMetrics()
+        
+        with pytest.raises(ValueError, match="percentile must be between 0 and 100"):
+            queue_metrics.get_depth_percentile(-1)
+        
+        with pytest.raises(ValueError, match="percentile must be between 0 and 100"):
+            queue_metrics.get_depth_percentile(101)
+
+    def test_queue_utilization(self):
+        """Test queue utilization calculation."""
+        queue_metrics = QueueMetrics(max_queue_depth=10)
+        
+        # Empty queue
+        assert queue_metrics.get_queue_utilization() == 0.0
+        
+        # Half full
+        queue_metrics.update_queue_depth(5)
+        assert queue_metrics.get_queue_utilization() == 50.0
+        
+        # Full queue
+        queue_metrics.update_queue_depth(10)
+        assert queue_metrics.get_queue_utilization() == 100.0
+
+    def test_is_queue_full(self):
+        """Test queue full detection."""
+        queue_metrics = QueueMetrics(max_queue_depth=5)
+        
+        assert not queue_metrics.is_queue_full()
+        
+        queue_metrics.update_queue_depth(4)
+        assert not queue_metrics.is_queue_full()
+        
+        queue_metrics.update_queue_depth(5)
+        assert queue_metrics.is_queue_full()
+        
+        queue_metrics.update_queue_depth(6)  # Over capacity
+        assert queue_metrics.is_queue_full()
+
+    def test_depth_statistics_comprehensive(self):
+        """Test comprehensive depth statistics."""
+        queue_metrics = QueueMetrics()
+        
+        # Empty statistics
+        stats = queue_metrics.get_depth_statistics()
+        expected_empty = {
+            "current_depth": 0,
+            "max_queue_depth": 100,
+            "history_count": 0,
+            "estimated_ttft_impact_ms": 0.0,
+        }
+        assert stats == expected_empty
+        
+        # Add data for full statistics
+        depths = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+        for depth in depths:
+            queue_metrics.update_queue_depth(depth)
+        
+        stats = queue_metrics.get_depth_statistics()
+        
+        # Check required fields
+        assert stats["current_depth"] == 12
+        assert stats["max_queue_depth"] == 100
+        assert stats["history_count"] == 12
+        assert stats["average_depth"] == 6.5  # (1+...+12)/12
+        assert stats["min_depth"] == 1
+        assert stats["max_depth"] == 12
+        assert stats["estimated_ttft_impact_ms"] == 120.0  # 12 * 10ms
+        
+        # Check percentiles (should be present with 12+ data points)
+        assert "p50_depth" in stats
+        assert "p95_depth" in stats
+        assert "p99_depth" in stats
+
+    def test_reset_history(self):
+        """Test resetting depth history."""
+        queue_metrics = QueueMetrics()
+        
+        # Add some history
+        for i in range(5):
+            queue_metrics.update_queue_depth(i + 1)
+        
+        assert len(queue_metrics.depth_history) == 5
+        assert queue_metrics.get_current_depth() == 5
+        
+        # Reset history
+        queue_metrics.reset_history()
+        
+        assert len(queue_metrics.depth_history) == 0
+        assert queue_metrics.get_current_depth() == 5  # Current depth preserved
+        assert queue_metrics.get_average_depth() == 0.0  # No history
+
+    def test_thread_safety(self):
+        """Test thread safety of QueueMetrics operations."""
+        import threading
+        import time
+        
+        queue_metrics = QueueMetrics()
+        
+        def update_depths():
+            for i in range(50):
+                queue_metrics.update_queue_depth(i % 10)
+                time.sleep(0.001)  # Small delay to increase contention
+        
+        # Start multiple threads
+        threads = [threading.Thread(target=update_depths) for _ in range(3)]
+        for thread in threads:
+            thread.start()
+        
+        for thread in threads:
+            thread.join()
+        
+        # Should have recorded 150 measurements total
+        assert len(queue_metrics.depth_history) == 150
+
+    def test_rolling_window_behavior(self):
+        """Test rolling window behavior with maxlen=1000."""
+        queue_metrics = QueueMetrics()
+        
+        # Add more than 1000 measurements
+        for i in range(1200):
+            queue_metrics.update_queue_depth(i % 20)
+        
+        # Should only keep the last 1000
+        assert len(queue_metrics.depth_history) == 1000
+
+
+class TestQueueMetricsFactory:
+    """Test factory function for creating QueueMetrics."""
+
+    def test_create_queue_metrics_basic(self):
+        """Test basic queue metrics creation."""
+        queue_metrics = create_queue_metrics()
+        
+        assert isinstance(queue_metrics, QueueMetrics)
+        assert queue_metrics.max_queue_depth == 100
+        assert queue_metrics.current_depth == 0
+
+    def test_create_queue_metrics_custom(self):
+        """Test queue metrics creation with custom values."""
+        queue_metrics = create_queue_metrics(max_queue_depth=50)
+        
+        assert queue_metrics.max_queue_depth == 50
+
+    def test_create_queue_metrics_validation(self):
+        """Test queue metrics creation validation."""
+        with pytest.raises(ValueError, match="max_queue_depth must be positive"):
+            create_queue_metrics(max_queue_depth=0)
+
+
+class TestTokenTrackerWithQueueMetrics:
+    """Test TokenTracker integration with QueueMetrics."""
+
+    def test_token_tracker_creates_queue_metrics(self):
+        """Test that TokenTracker creates queue metrics for each model."""
+        tracker = TokenTracker()
+        
+        metrics = tracker.create_metrics("test-model")
+        queue_metrics = tracker.get_queue_metrics("test-model")
+        
+        assert metrics is not None
+        assert queue_metrics is not None
+        assert isinstance(queue_metrics, QueueMetrics)
+
+    def test_queue_depth_updates_both_metrics(self):
+        """Test that updating queue depth updates both metrics."""
+        tracker = TokenTracker()
+        tracker.create_metrics("test-model")
+        
+        tracker.update_queue_depth("test-model", 7)
+        
+        # Check TokenMetrics
+        metrics = tracker.get_metrics("test-model")
+        assert metrics.queue_depth == 7
+        
+        # Check QueueMetrics
+        queue_metrics = tracker.get_queue_metrics("test-model")
+        assert queue_metrics.get_current_depth() == 7
+        assert len(queue_metrics.depth_history) == 1
+
+    def test_simulation_updates_queue_metrics(self):
+        """Test that simulation updates queue metrics."""
+        tracker = TokenTracker()
+        
+        metrics = tracker.simulate_token_generation("test-model", target_tokens=50)
+        queue_metrics = tracker.get_queue_metrics("test-model")
+        
+        assert metrics is not None
+        assert queue_metrics is not None
+        assert len(queue_metrics.depth_history) > 0  # Should have depth history from simulation
+
+    def test_reset_clears_queue_metrics(self):
+        """Test that reset clears queue metrics."""
+        tracker = TokenTracker()
+        tracker.create_metrics("test-model-1")
+        tracker.create_metrics("test-model-2")
+        
+        # Reset single model
+        tracker.reset_metrics("test-model-1")
+        
+        assert tracker.get_metrics("test-model-1") is None
+        assert tracker.get_queue_metrics("test-model-1") is None
+        assert tracker.get_metrics("test-model-2") is not None
+        assert tracker.get_queue_metrics("test-model-2") is not None
+        
+        # Reset all
+        tracker.reset_metrics()
+        
+        assert len(tracker.get_all_metrics()) == 0
+        assert len(tracker.get_all_queue_metrics()) == 0
+
+    def test_summary_stats_includes_queue_data(self):
+        """Test that summary stats include queue metrics data."""
+        tracker = TokenTracker()
+        
+        # Create models with different queue depths
+        tracker.create_metrics("model-1")
+        tracker.create_metrics("model-2")
+        
+        tracker.update_queue_depth("model-1", 3)
+        tracker.update_queue_depth("model-2", 7)
+        
+        stats = tracker.get_summary_stats()
+        
+        # Should include queue statistics
+        assert "avg_queue_depth" in stats
+        assert "avg_queue_utilization_percent" in stats
+        assert stats["avg_queue_depth"] == 5.0  # (3+7)/2
