@@ -1,6 +1,6 @@
 """Dependency injection container for kubectl-ld."""
 
-from typing import Any, Callable, Dict, Type, TypeVar, Union, cast
+from typing import Any, Callable, Dict, Type, TypeVar, Union, cast, get_origin, get_args
 import inspect
 from threading import Lock
 
@@ -74,14 +74,22 @@ class Container:
                 continue
             
             if param.annotation and param.annotation != inspect.Parameter.empty:
+                # Handle Optional[T] types by extracting T
+                actual_type = param.annotation
+                if get_origin(param.annotation) is Union:
+                    args = get_args(param.annotation)
+                    # Check if it's Optional[T] (Union[T, None])
+                    if len(args) == 2 and type(None) in args:
+                        actual_type = args[0] if args[1] is type(None) else args[1]
+                
                 try:
-                    kwargs[param_name] = self.get(param.annotation)
+                    kwargs[param_name] = self.get(actual_type)
                 except ValueError:
                     if param.default != inspect.Parameter.empty:
                         kwargs[param_name] = param.default
                     else:
                         raise ValueError(
-                            f"Cannot resolve dependency {param.annotation} for parameter {param_name}"
+                            f"Cannot resolve dependency {actual_type} for parameter {param_name}"
                         )
         
         if inspect.isclass(target):
