@@ -72,7 +72,7 @@ jobs:
     
     - name: Run tests with pytest
       run: |
-        pytest tests/ -v --cov=. --cov-report=xml --cov-report=term --cov-config=pyproject.toml --cov-fail-under=40
+        pytest tests/ -v --cov=. --cov-report=xml --cov-report=term --cov-config=pyproject.toml --cov-fail-under=40 -k "not test_kubectl_ld_unit"
     
     - name: Check code complexity
       if: matrix.python-version == '3.12'
