@@ -158,3 +158,9 @@ audit.json
 
 # Old demo recordings
 kubectl-ld-demo.castclaude-slash-repo/
+
+# Serena AI assistant files
+.serena/
+
+# Claude Code progress tracking (local only)
+CLAUDE_PROGRESS.md

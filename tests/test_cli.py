@@ -2,7 +2,7 @@ import json
 import subprocess
 from pathlib import Path
 
-BIN = "./kubectl-ld"
+BIN = "./mtop-main"
 MOCK_ENV = {"LLD_MODE": "mock"}
 
 

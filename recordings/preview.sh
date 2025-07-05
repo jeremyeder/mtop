@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Quick preview script for kubectl-ld demos
+# Quick preview script for mtop demos
 # Shows first 10 seconds of each demo
 
-echo "🎬 kubectl-ld Demo Previews"
+echo "🎬 mtop Demo Previews"
 echo "=========================="
 
 for demo in *.cast; do

@@ -1,0 +1,63 @@
+{
+  "package": "mtop-vhs-tapes",
+  "version": "1.0",
+  "generated": "2025-07-05T19:27:08Z",
+  "description": "VHS tape files for mtop sales demo recordings",
+  "scenarios": [
+    {
+      "id": "load-handling",
+      "title": "Load Handling - Auto-scaling for traffic spikes",
+      "tape_file": "load-handling.tape",
+      "outputs": [
+        "recordings/sales/load-handling.gif",
+        "recordings/sales/load-handling.mp4",
+        "recordings/sales/load-handling.webm"
+      ]
+    },
+    {
+      "id": "slo-compliance",
+      "title": "SLO Compliance - Sub-500ms TTFT guarantee",
+      "tape_file": "slo-compliance.tape",
+      "outputs": [
+        "recordings/sales/slo-compliance.gif",
+        "recordings/sales/slo-compliance.mp4",
+        "recordings/sales/slo-compliance.webm"
+      ]
+    },
+    {
+      "id": "gpu-efficiency",
+      "title": "GPU Efficiency - 3x model density",
+      "tape_file": "gpu-efficiency.tape",
+      "outputs": [
+        "recordings/sales/gpu-efficiency.gif",
+        "recordings/sales/gpu-efficiency.mp4",
+        "recordings/sales/gpu-efficiency.webm"
+      ]
+    },
+    {
+      "id": "cost-optimization",
+      "title": "Cost Optimization - 40% GPU cost reduction",
+      "tape_file": "cost-optimization.tape",
+      "outputs": [
+        "recordings/sales/cost-optimization.gif",
+        "recordings/sales/cost-optimization.mp4",
+        "recordings/sales/cost-optimization.webm"
+      ]
+    },
+    {
+      "id": "multi-model",
+      "title": "Multi-Model - Unified LLM portfolio monitoring",
+      "tape_file": "multi-model.tape",
+      "outputs": [
+        "recordings/sales/multi-model.gif",
+        "recordings/sales/multi-model.mp4",
+        "recordings/sales/multi-model.webm"
+      ]
+    }
+  ],
+  "usage": {
+    "command": "vhs <tape_file>",
+    "requirements": ["vhs", "ffmpeg"],
+    "install": "brew install vhs ffmpeg"
+  }
+}

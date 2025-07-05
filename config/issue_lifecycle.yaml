@@ -1,0 +1,128 @@
+# Issue Lifecycle Manager Configuration
+# This file defines the rules for automated issue closure to serve as a quality safety net
+
+closure_rules:
+  # Minimum age before an issue can be auto-closed (prevents premature closure)
+  minimum_age_hours: 0.5  # 30 minutes - very permissive for initial testing
+  
+  # Require all tests to pass before closing any issue
+  require_tests_pass: true
+  
+  # Require all dependencies to be met before closing
+  require_dependencies_met: true
+  
+  # Keywords that indicate an issue should be closed when referenced
+  closing_keywords:
+    - fixes
+    - closes
+    - resolves
+    - addresses
+    - completes
+    - implements
+  
+  # Keywords that just reference an issue but don't close it
+  reference_keywords:
+    - references
+    - relates to
+    - see
+    - mentioned in
+    - part of
+
+# Different rules for different types of issues
+issue_types:
+  bug:
+    minimum_age_hours: 0.25  # Bugs can be closed quickly once fixed
+    require_tests_pass: true
+    
+  feature:
+    minimum_age_hours: 1.0   # Features need a bit more time to ensure completeness
+    require_tests_pass: true
+    
+  documentation:
+    minimum_age_hours: 0.25  # Documentation can be closed quickly
+    require_tests_pass: false  # Documentation doesn't need code tests
+    
+  test:
+    minimum_age_hours: 0.5   # Test issues need tests to pass
+    require_tests_pass: true
+    
+  demo:
+    minimum_age_hours: 0.1   # Demo issues can be closed quickly once files exist
+    require_tests_pass: false  # Demo files don't always need tests
+    
+  epic:
+    minimum_age_hours: 2.0   # Epics need more time and careful review
+    require_tests_pass: true
+
+# Issues that should NEVER be auto-closed
+exclusions:
+  # Labels that prevent auto-closure
+  labels:
+    - critical
+    - security
+    - do-not-auto-close
+    - blocked
+    - waiting-for-review
+    - needs-discussion
+    
+  # Title patterns that prevent auto-closure
+  title_patterns:
+    - "Epic:"
+    - "EPIC:"
+    - "RFC:"
+    - "Discussion:"
+    - "Question:"
+    - "Help:"
+    
+  # Specific assignees whose issues should not be auto-closed
+  assignees: []
+
+# Notification settings
+notifications:
+  enable_slack: false
+  enable_email: false
+  mass_closure_threshold: 5  # Alert if more than 5 issues closed in one run
+
+# Safety controls
+safety:
+  max_closures_per_run: 10     # Maximum issues to close in a single run
+  enable_rollback: true        # Allow reopening issues if needed
+  audit_retention_days: 90     # Keep audit logs for 90 days
+  
+  # Additional safety checks
+  require_commit_references: true    # Only close issues with commit references
+  require_file_changes: false       # Don't require actual file changes (for now)
+  check_branch_naming: true         # Check if branch names reference issues
+
+# Staleness detection
+staleness:
+  warn_after_days: 30      # Warn about stale issues after 30 days
+  flag_after_days: 60      # Flag issues as stale after 60 days
+  consider_closed_after_days: 90  # Consider auto-closing after 90 days of inactivity
+
+# Quality gates
+quality_gates:
+  # Code quality requirements
+  require_lint_pass: false     # Don't require linting for now
+  require_type_check: false    # Don't require type checking for now
+  require_security_scan: false # Don't require security scans for now
+  
+  # Coverage requirements
+  require_coverage_threshold: false  # Don't require coverage for now
+  coverage_threshold: 80             # 80% coverage if enabled
+  
+  # Review requirements
+  require_code_review: false   # Don't require code review for auto-closure
+  require_maintainer_approval: false  # Don't require maintainer approval
+
+# Reporting
+reporting:
+  generate_daily_summary: true
+  include_test_results: true
+  include_commit_analysis: true
+  include_dependency_analysis: true
+  
+  # Report format options
+  format: markdown
+  include_statistics: true
+  include_recommendations: true

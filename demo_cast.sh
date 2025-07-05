@@ -29,7 +29,7 @@ done
 # Source shared functions
 source "$(dirname "$0")/demo_functions.sh"
 
-echo "🎬 Recording kubectl-ld demo with asciinema..."
+echo "🎬 Recording mtop demo with asciinema..."
 
 # Setup environment
 setup_environment
@@ -51,11 +51,11 @@ else
 fi
 
 # Record the demo
-OUTPUT_FILE="kubectl-ld-demo.cast"
+OUTPUT_FILE="mtop-demo.cast"
 if [[ "$DEMO_SCRIPT" == *"full"* ]]; then
-    OUTPUT_FILE="kubectl-ld-demo-full.cast"
+    OUTPUT_FILE="mtop-demo-full.cast"
 fi
 
 echo "📹 Recording: $DEMO_CMD"
 echo "💾 Output: $OUTPUT_FILE"
-asciinema rec "$OUTPUT_FILE" -c "$DEMO_CMD" --title "kubectl-ld Demo" --overwrite
+asciinema rec "$OUTPUT_FILE" -c "$DEMO_CMD" --title "mtop Demo" --overwrite

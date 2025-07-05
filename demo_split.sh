@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Split-screen demo for kubectl-ld
+# Split-screen demo for mtop
 # Top pane: Narration and controls
 # Bottom pane: Live monitoring with multi-model support
 
@@ -55,12 +55,12 @@ fi
 setup_environment
 
 # Kill any existing demo session
-tmux kill-session -t kubectl-ld-demo 2>/dev/null || true
+tmux kill-session -t mtop-demo 2>/dev/null || true
 
 # Create new tmux session with split panes
-SESSION_NAME="kubectl-ld-demo"
+SESSION_NAME="mtop-demo"
 
-echo "🎬 Starting split-screen kubectl-ld demo..."
+echo "🎬 Starting split-screen mtop demo..."
 echo "🎯 Scenario: $SCENARIO"
 echo "🔧 Setting up tmux environment..."
 

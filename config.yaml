@@ -26,13 +26,13 @@ display:
       field: "status"
       width: 12
       justify: "center"
-      format: "emoji_status"                 # Custom formatter
+      format: "string"                       # Use string format for status
       
     - name: "QPS"
       field: "current_qps" 
       width: 8
       justify: "right"
-      format: "integer_comma"                # 1,234 format
+      format: "int"                          # Integer format
       sortable: true
       sort_key: "qps"
       
@@ -40,7 +40,7 @@ display:
       field: "cpu_percent"                   # Note: cpu_percent represents GPU
       width: 9 
       justify: "center"
-      format: "percentage"
+      format: "percent"
       color_thresholds:
         - max: 50
           color: "green"
@@ -55,7 +55,7 @@ display:
       field: "error_rate"
       width: 7
       justify: "center"
-      format: "percentage_1dp"               # 1.2% format
+      format: "percent"                      # Percentage format
       color_thresholds:
         - max: 1.0
           color: "green"
@@ -70,13 +70,13 @@ display:
       field: "latency_p95"
       width: 8
       justify: "center"
-      format: "latency_ms"                   # "127ms" format
+      format: "duration"                     # Duration format
       
     - name: "Replicas"
       field: "replicas"
       width: 8
       justify: "center"
-      format: "integer"
+      format: "int"
 
   sorting:
     default_key: "qps"
@@ -87,3 +87,24 @@ display:
     show_sort_key: true
     show_mode: true
     show_namespace: true
+
+# Technology Configuration (GPU & Infrastructure)
+technology:
+  gpu_types:
+    nvidia-a100:
+      memory_gb: 80
+      hourly_cost: 3.00
+    nvidia-h100:
+      memory_gb: 80
+      hourly_cost: 5.00
+
+# SLO Definitions (Service Level Objectives)
+slo:
+  ttft_p95_ms: 500                                # Time to first token, 95th percentile (ms)
+  error_rate_percent: 0.1                         # Target error rate (%)
+  tokens_per_second: 1000                         # Target throughput (tokens/sec)
+
+# Workload Configuration (Load Testing & Simulation)
+workload:
+  baseline_qps: 100                               # Baseline queries per second
+  spike_multiplier: 2.0                           # Spike testing multiplier (2x = 200 QPS)
