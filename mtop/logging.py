@@ -128,17 +128,17 @@ class DefaultLogger(StructuredLogger):
     """Default logger implementation."""
 
     def __init__(self) -> None:
-        level = os.environ.get("LDCTL_LOG_LEVEL", "INFO")
+        level = os.environ.get("MTOP_LOG_LEVEL", "INFO")
 
         # Determine log file location
         log_file = None
-        if os.environ.get("LDCTL_LOG_FILE"):
-            log_file = Path(os.environ["LDCTL_LOG_FILE"])
-        elif os.environ.get("LDCTL_LOG_DIR"):
-            log_dir = Path(os.environ["LDCTL_LOG_DIR"])
+        if os.environ.get("MTOP_LOG_FILE"):
+            log_file = Path(os.environ["MTOP_LOG_FILE"])
+        elif os.environ.get("MTOP_LOG_DIR"):
+            log_dir = Path(os.environ["MTOP_LOG_DIR"])
             log_file = log_dir / "mtop.log"
 
-        structured = os.environ.get("LDCTL_LOG_FORMAT", "structured") == "structured"
+        structured = os.environ.get("MTOP_LOG_FORMAT", "structured") == "structured"
 
         super().__init__(name="mtop", level=level, log_file=log_file, structured=structured)
 
@@ -186,7 +186,7 @@ class OperationLogger:
 def get_logger(name: Optional[str] = None) -> Logger:
     """Get a logger instance."""
     if name:
-        level = os.environ.get("LDCTL_LOG_LEVEL", "INFO")
+        level = os.environ.get("MTOP_LOG_LEVEL", "INFO")
         return StructuredLogger(name, level)
     else:
         from .container import inject
@@ -206,12 +206,12 @@ def configure_logging(
 ) -> None:
     """Configure global logging settings."""
     # Set environment variables for default logger
-    os.environ["LDCTL_LOG_LEVEL"] = level
+    os.environ["MTOP_LOG_LEVEL"] = level
     if log_file:
-        os.environ["LDCTL_LOG_FILE"] = str(log_file)
-    os.environ["LDCTL_LOG_FORMAT"] = "structured" if structured else "simple"
+        os.environ["MTOP_LOG_FILE"] = str(log_file)
+    os.environ["MTOP_LOG_FORMAT"] = "structured" if structured else "simple"
 
-    # Suppress urllib3 warnings in kubectl operations
+    # Suppress urllib3 warnings in k8s operations
     logging.getLogger("urllib3").setLevel(logging.WARNING)
 
     # Suppress other noisy loggers

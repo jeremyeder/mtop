@@ -1,4 +1,4 @@
-# 🎬 kubectl-ld Demo Recordings
+# 🎬 mtop Demo Recordings
 
 ```
 ██╗░░██╗██╗░░░██╗██████╗░███████╗░█████╗░████████╗██╗░░░░░░░░░██╗██████╗░
@@ -10,19 +10,19 @@
                     Demo Recordings Collection
 ```
 
-> **✨ Interactive demonstrations of kubectl-ld's LLM inference service management capabilities**
+> **✨ Interactive demonstrations of mtop's LLM inference service management capabilities**
 
 ---
 
 ## 🎯 What You're Looking At
 
-This directory contains **interactive terminal recordings** that showcase kubectl-ld's powerful features for managing Large Language Model (LLM) inference services in Kubernetes. Each demo demonstrates different deployment strategies, monitoring capabilities, and real-world scenarios.
+This directory contains **interactive terminal recordings** that showcase mtop's powerful features for managing Large Language Model (LLM) inference services in Kubernetes. Each demo demonstrates different deployment strategies, monitoring capabilities, and real-world scenarios.
 
 ### 📁 Available Demos
 
 | Demo Type | Duration | Description | File Size |
 |-----------|----------|-------------|-----------|
-| **🎬 Basic Demo** | ~60s | Essential kubectl-ld commands and workflows | 7.1 KB |
+| **🎬 Basic Demo** | ~60s | Essential mtop commands and workflows | 7.1 KB |
 | **🎭 Full Demo** | ~180s | Comprehensive feature showcase | 10.2 KB |
 | **🖥️ Split-Basic Demo** | ~30s | Simple 3-model split-screen monitoring | 538 KB |
 | **🚀 Split-Surge Demo** | ~30s | Traffic surge with 20+ models | 149 KB |
@@ -77,7 +77,7 @@ While playing demos, you can use these controls:
 ## 🎨 Demo Breakdown
 
 ### 🎬 Basic Demo (`basic-demo.cast`)
-**Perfect for newcomers** - Shows essential kubectl-ld functionality
+**Perfect for newcomers** - Shows essential mtop functionality
 
 **What you'll see:**
 - 📦 Listing available rollout topologies
@@ -87,9 +87,9 @@ While playing demos, you can use these controls:
 
 **Key Commands Demonstrated:**
 ```bash
-kubectl-ld list topologies
-kubectl-ld check status
-kubectl-ld watch rollout
+mtop list topologies
+mtop check status
+mtop watch rollout
 ```
 
 ### 🎭 Full Demo (`full-demo.cast`)
@@ -103,9 +103,9 @@ kubectl-ld watch rollout
 
 **Key Commands Demonstrated:**
 ```bash
-kubectl-ld deploy --strategy canary
-kubectl-ld rollback --to-revision 2
-kubectl-ld scale --replicas 5
+mtop deploy --strategy canary
+mtop rollback --to-revision 2
+mtop scale --replicas 5
 ```
 
 ### 🖥️ Split-Screen Demos
@@ -123,7 +123,7 @@ kubectl-ld scale --replicas 5
 - **Press Q** to quit the demo cleanly
 - **Ctrl+B then D** to detach from tmux session
 
-These demos showcase kubectl-ld's advanced monitoring capabilities with realistic traffic patterns and deployment strategies.
+These demos showcase mtop's advanced monitoring capabilities with realistic traffic patterns and deployment strategies.
 
 ---
 
@@ -142,7 +142,7 @@ These demos showcase kubectl-ld's advanced monitoring capabilities with realisti
 ### 🎯 Demo Environment
 
 All demos run in **mock mode** - a safe simulation environment that:
-- ✅ Shows realistic kubectl-ld behavior
+- ✅ Shows realistic mtop behavior
 - ✅ Doesn't require actual Kubernetes cluster
 - ✅ Uses synthetic data for demonstrations
 - ✅ Safe to run anywhere
@@ -170,7 +170,7 @@ Each demo includes a metadata file (`.json`) with:
 ./scripts/record_demo.sh --type basic --headless
 
 # Manual recording
-asciinema rec my-demo.cast --title "My kubectl-ld Demo"
+asciinema rec my-demo.cast --title "My mtop Demo"
 ```
 
 ### 🎨 Convert to Other Formats
@@ -202,7 +202,7 @@ agg basic-demo.cast basic-demo.gif --cols 120 --rows 30
 
 ### 🎭 Full Demo Preview
 ```
-🚀 Starting comprehensive kubectl-ld demonstration...
+🚀 Starting comprehensive mtop demonstration...
 🎯 Scenario: Full feature showcase
 🔧 Setting up mock environment...
 ═══════════════════════════════════════════════════════════════
@@ -277,13 +277,13 @@ tmux -V
 **Demo Recordings:** Automatically generated using GitHub Actions  
 **Recording Tools:** asciinema, tmux, rich (Python)  
 **Conversion Tools:** @asciinema/agg, ffmpeg  
-**Mock Environment:** kubectl-ld mock mode  
+**Mock Environment:** mtop mock mode  
 
 ---
 
 ## 🔗 Quick Links
 
-- 📚 [Main kubectl-ld Documentation](../README.md)
+- 📚 [Main mtop Documentation](../README.md)
 - 🚀 [Getting Started Guide](../README.md#getting-started)
 - 🛠️ [Installation Instructions](../README.md#installation)
 - 🐛 [Issue Tracker](https://github.com/jeder/ldctl/issues)
@@ -292,8 +292,8 @@ tmux -V
 
 <div align="center">
 
-**🎬 Lights, Camera, kubectl-ld! 🎭**
+**🎬 Lights, Camera, mtop! 🎭**
 
-*Made with ❤️ by the kubectl-ld team*
+*Made with ❤️ by the mtop team*
 
 </div>

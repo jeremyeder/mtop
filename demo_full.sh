@@ -21,7 +21,7 @@ done
 # Source shared functions
 source "$(dirname "$0")/demo_functions.sh"
 
-echo "🎬 Starting kubectl-ld full demo (comprehensive showcase)..."
+echo "🎬 Starting mtop full demo (comprehensive showcase)..."
 if [ "$HEADLESS" = true ]; then
     echo "🤖 Running in headless mode with automatic progression"
 else
@@ -32,17 +32,17 @@ fi
 setup_environment
 
 echo ""
-echo "👋 Welcome to kubectl-ld — your LLM debugging Swiss Army knife."
+echo "👋 Welcome to mtop — your LLM debugging Swiss Army knife."
 delay_or_wait $HEADLESS 3
 
 # Step 1: List rollout topologies
 show_step 1 "List supported rollout topologies"
-./kubectl-ld list-topologies
+./mtop-main list-topologies
 delay_or_wait $HEADLESS 3
 
 # Step 2: Simulate bluegreen rollout
 show_step 2 "Simulate a 'bluegreen' rollout (realistic model upgrade)"
-./kubectl-ld simulate bluegreen
+./mtop-main simulate bluegreen
 delay_or_wait $HEADLESS 3
 
 # Step 3: Visual playback
@@ -56,17 +56,17 @@ delay_or_wait $HEADLESS 3
 
 # Step 4: Check detailed status
 show_step 4 "Check detailed status of a mock service"
-./kubectl-ld check gpt2
+./mtop-main check gpt2
 delay_or_wait $HEADLESS 3
 
 # Step 5: Show CR in YAML
 show_step 5 "Show a real CR (gpt2) in YAML format"
-./kubectl-ld get gpt2
+./mtop-main get gpt2
 delay_or_wait $HEADLESS 3
 
 # Step 6: List all models
 show_step 6 "View all models with status summary"
-./kubectl-ld list
+./mtop-main list
 delay_or_wait $HEADLESS 3
 
 show_completion

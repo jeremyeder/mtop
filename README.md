@@ -1,6 +1,6 @@
 # mtop
 
-![CI](https://github.com/jeremyeder/kubectl-ld/workflows/CI/badge.svg)
+![CI](https://github.com/jeremyeder/mtop/workflows/CI/badge.svg)
 ![Tests](https://img.shields.io/badge/tests-53%20passing-green.svg)
 ![Coverage](https://img.shields.io/badge/coverage-comprehensive-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)

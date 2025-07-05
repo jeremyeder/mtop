@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Shared functions for kubectl-ld demo scripts
+# Shared functions for mtop demo scripts
 
 # Setup virtual environment
 setup_environment() {
@@ -48,6 +48,6 @@ show_step() {
 show_completion() {
     echo ""
     echo "═══════════════════════════════════════════════════════════════"
-    echo "✅ Demo complete. kubectl-ld is your LLM debug toolkit!"
+    echo "✅ Demo complete. mtop is your LLM debug toolkit!"
     echo "═══════════════════════════════════════════════════════════════"
 }

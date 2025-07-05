@@ -74,14 +74,14 @@ export TERM=xterm-256color
 case $DEMO_TYPE in
     basic)
         COMMAND="./demo.sh"
-        TITLE="kubectl-ld Basic Demo"
+        TITLE="mtop Basic Demo"
         DURATION="60s"
         COLS=120
         ROWS=30
         ;;
     full)
         COMMAND="./demo_full.sh"
-        TITLE="kubectl-ld Full Demo"
+        TITLE="mtop Full Demo"
         DURATION="180s"
         COLS=120
         ROWS=35
@@ -89,7 +89,7 @@ case $DEMO_TYPE in
     split-*)
         SCENARIO=${DEMO_TYPE#split-}
         COMMAND="./demo_split.sh --scenario $SCENARIO"
-        TITLE="kubectl-ld Split-Screen Demo: $SCENARIO"
+        TITLE="mtop Split-Screen Demo: $SCENARIO"
         DURATION="180s"
         COLS=140
         ROWS=40

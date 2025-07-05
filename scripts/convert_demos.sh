@@ -226,7 +226,7 @@ cat > "$OUTPUT_DIR/index.html" << 'EOF'
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>kubectl-ld Demo Recordings</title>
+    <title>mtop Demo Recordings</title>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 40px; }
         .demo { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
@@ -237,8 +237,8 @@ cat > "$OUTPUT_DIR/index.html" << 'EOF'
     </style>
 </head>
 <body>
-    <h1>🎬 kubectl-ld Demo Recordings</h1>
-    <p>Interactive demonstrations of kubectl-ld features and capabilities.</p>
+    <h1>🎬 mtop Demo Recordings</h1>
+    <p>Interactive demonstrations of mtop features and capabilities.</p>
 EOF
 
 # Add demo entries
@@ -291,7 +291,7 @@ done
 cat >> "$OUTPUT_DIR/index.html" << 'EOF'
     
     <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; color: #666;">
-        <p>Generated automatically by kubectl-ld demo conversion script.</p>
+        <p>Generated automatically by mtop demo conversion script.</p>
         <p>To play .cast files: <code>asciinema play filename.cast</code></p>
     </footer>
 </body>

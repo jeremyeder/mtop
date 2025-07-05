@@ -10,6 +10,11 @@ from .container import singleton, transient
 from .interfaces import FileSystem, KubernetesClient, Logger
 
 
+def get_kubectl_command() -> str:
+    """Get kubectl command name, could be configurable in future."""
+    return "kubectl"
+
+
 @singleton(FileSystem)
 class LocalFileSystem:
     """Local file system implementation."""
@@ -57,7 +62,7 @@ class KubectlClient:
         self, resource_type: str, name: Optional[str] = None, namespace: str = "default"
     ) -> Dict[str, Any]:
         """Get Kubernetes resource."""
-        cmd = ["kubectl", "get", resource_type]
+        cmd = [get_kubectl_command(), "get", resource_type]
         if name:
             cmd.append(name)
         cmd.extend(["-n", namespace, "-o", "json"])
@@ -72,15 +77,15 @@ class KubectlClient:
 
             if result.returncode != 0:
                 error_msg = stderr.decode().strip()
-                self.logger.error(f"kubectl command failed: {error_msg}")
-                raise RuntimeError(f"kubectl error: {error_msg}")
+                self.logger.error(f"{get_kubectl_command()} command failed: {error_msg}")
+                raise RuntimeError(f"{get_kubectl_command()} error: {error_msg}")
 
             return json.loads(stdout.decode())
         except json.JSONDecodeError as e:
-            self.logger.error(f"Failed to parse kubectl JSON output: {e}")
+            self.logger.error(f"Failed to parse {get_kubectl_command()} JSON output: {e}")
             raise
         except Exception as e:
-            self.logger.error(f"kubectl command failed: {e}")
+            self.logger.error(f"{get_kubectl_command()} command failed: {e}")
             raise
 
     async def create_resource(self, resource_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -93,7 +98,7 @@ class KubectlClient:
             temp_file = f.name
 
         try:
-            cmd = ["kubectl", "apply", "-f", temp_file]
+            cmd = [get_kubectl_command(), "apply", "-f", temp_file]
             self.logger.debug(f"Running command: {' '.join(cmd)}")
 
             result = await asyncio.create_subprocess_exec(
@@ -103,8 +108,8 @@ class KubectlClient:
 
             if result.returncode != 0:
                 error_msg = stderr.decode().strip()
-                self.logger.error(f"kubectl create failed: {error_msg}")
-                raise RuntimeError(f"kubectl error: {error_msg}")
+                self.logger.error(f"{get_kubectl_command()} create failed: {error_msg}")
+                raise RuntimeError(f"{get_kubectl_command()} error: {error_msg}")
 
             # Return the created resource
             resource_name = resource_data["metadata"]["name"]
@@ -119,7 +124,7 @@ class KubectlClient:
         self, resource_type: str, name: str, namespace: str = "default"
     ) -> bool:
         """Delete Kubernetes resource."""
-        cmd = ["kubectl", "delete", resource_type, name, "-n", namespace]
+        cmd = [get_kubectl_command(), "delete", resource_type, name, "-n", namespace]
         self.logger.debug(f"Running command: {' '.join(cmd)}")
 
         try:
@@ -129,12 +134,12 @@ class KubectlClient:
             await result.communicate()
             return result.returncode == 0
         except Exception as e:
-            self.logger.error(f"kubectl delete failed: {e}")
+            self.logger.error(f"{get_kubectl_command()} delete failed: {e}")
             return False
 
     async def get_logs(self, deployment_name: str, namespace: str = "default") -> str:
         """Get deployment logs."""
-        cmd = ["kubectl", "logs", f"deployment/{deployment_name}", "-n", namespace]
+        cmd = [get_kubectl_command(), "logs", f"deployment/{deployment_name}", "-n", namespace]
         self.logger.debug(f"Running command: {' '.join(cmd)}")
 
         try:
@@ -145,12 +150,12 @@ class KubectlClient:
 
             if result.returncode != 0:
                 error_msg = stderr.decode().strip()
-                self.logger.warning(f"kubectl logs failed: {error_msg}")
+                self.logger.warning(f"{get_kubectl_command()} logs failed: {error_msg}")
                 return f"Error getting logs: {error_msg}"
 
             return stdout.decode()
         except Exception as e:
-            self.logger.error(f"kubectl logs failed: {e}")
+            self.logger.error(f"{get_kubectl_command()} logs failed: {e}")
             return f"Error getting logs: {e}"
 
 

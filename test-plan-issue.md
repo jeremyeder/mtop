@@ -168,7 +168,7 @@ class TestBuildSystem:
         pass
     
     def test_build_kubectl_ld_variant(self):
-        """Test building kubectl-ld variant."""
+        """Test building mtop variant."""
         pass
     
     def test_custom_program_name(self):
@@ -269,7 +269,7 @@ class TestEndToEndWorkflows:
         pass
     
     def test_kubectl_ld_build_and_execution(self):
-        """Test complete kubectl-ld build and execution workflow."""
+        """Test complete mtop build and execution workflow."""
         pass
     
     def test_custom_config_build_and_run(self):
@@ -609,9 +609,9 @@ jobs:
 
 > A friendly, customizable monitoring tool for LLM inference workloads
 
-[![CI](https://github.com/jeremyeder/kubectl-ld/workflows/CI/badge.svg)](https://github.com/jeremyeder/kubectl-ld/actions)
-[![Coverage](https://codecov.io/gh/jeremyeder/kubectl-ld/branch/main/graph/badge.svg)](https://codecov.io/gh/jeremyeder/kubectl-ld)
-[![Security](https://github.com/jeremyeder/kubectl-ld/workflows/Security/badge.svg)](https://github.com/jeremyeder/kubectl-ld/actions)
+[![CI](https://github.com/jeremyeder/mtop/workflows/CI/badge.svg)](https://github.com/jeremyeder/mtop/actions)
+[![Coverage](https://codecov.io/gh/jeremyeder/mtop/branch/main/graph/badge.svg)](https://codecov.io/gh/jeremyeder/mtop)
+[![Security](https://github.com/jeremyeder/mtop/workflows/Security/badge.svg)](https://github.com/jeremyeder/mtop/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## What This Is
@@ -624,14 +624,14 @@ This tool helps you monitor LLM inference workloads with a beautiful, configurab
 
 1. **Get the code**
    ```bash
-   git clone https://github.com/jeremyeder/kubectl-ld.git
-   cd kubectl-ld
+   git clone https://github.com/jeremyeder/mtop.git
+   cd mtop
    pip install -e .
    ```
 
 2. **Try the default monitoring**
    ```bash
-   ./kubectl-ld ldtop
+   ./mtop ldtop
    ```
 
 3. **Build your own variant**
@@ -742,10 +742,10 @@ isort .
 
 ## Need Help?
 
-- 📖 [Documentation](https://github.com/jeremyeder/kubectl-ld/wiki)
-- 💬 [Discussions](https://github.com/jeremyeder/kubectl-ld/discussions) 
-- 🐛 [Issues](https://github.com/jeremyeder/kubectl-ld/issues)
-- 💡 [Feature Requests](https://github.com/jeremyeder/kubectl-ld/issues/new?template=feature_request.md)
+- 📖 [Documentation](https://github.com/jeremyeder/mtop/wiki)
+- 💬 [Discussions](https://github.com/jeremyeder/mtop/discussions) 
+- 🐛 [Issues](https://github.com/jeremyeder/mtop/issues)
+- 💡 [Feature Requests](https://github.com/jeremyeder/mtop/issues/new?template=feature_request.md)
 
 ## License
 

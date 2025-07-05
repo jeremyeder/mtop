@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""kubectl-ld - Mock CLI tool for debugging LLMInferenceService CRDs"""
+"""mtop - Mock CLI tool for debugging LLMInferenceService CRDs"""
 
 import sys
 
 # Check Python version early
 if sys.version_info < (3, 11):
-    print("Error: kubectl-ld requires Python 3.11 or later")
+    print("Error: mtop requires Python 3.11 or later")
     print(f"Current version: {sys.version}")
     sys.exit(1)
 
@@ -73,12 +73,12 @@ class ModelMetrics:
 
 
 class LLMTopMonitor:
-    """kubectl-ldtop monitoring functionality"""
-    def __init__(self, kubectl_ld: 'KubectlLD', interval: float = 0.5, namespace: str = "default"):
+    """mtop monitoring functionality"""
+    def __init__(self, mtop: 'MTop', interval: float = 0.5, namespace: str = "default"):
         if not RICH_AVAILABLE:
             raise ImportError("Rich library is required for ldtop. Install with: pip install rich")
             
-        self.kubectl_ld = kubectl_ld
+        self.mtop = mtop
         self.console = Console()
         self.interval = interval
         self.namespace = namespace
@@ -99,7 +99,7 @@ class LLMTopMonitor:
         """Load models from mock data or live cluster"""
         self.models = {}
         
-        if self.kubectl_ld.is_live:
+        if self.mtop.is_live:
             self._load_live_models()
         else:
             self._load_mock_models()
@@ -108,7 +108,7 @@ class LLMTopMonitor:
         """Load models from live Kubernetes cluster"""
         try:
             # Get LLMInferenceService resources from the cluster
-            data = self.kubectl_ld.kubectl_get("llminferenceservice", namespace=self.namespace)
+            data = self.mtop.k8s_get("llminferenceservice", namespace=self.namespace)
             if "items" in data:
                 for item in data["items"]:
                     name = item["metadata"]["name"]
@@ -126,7 +126,7 @@ class LLMTopMonitor:
             
     def _load_mock_models(self):
         """Load models from mock CRs"""
-        for cr_file in sorted(self.kubectl_ld.crs_dir.glob("*.json")):
+        for cr_file in sorted(self.mtop.crs_dir.glob("*.json")):
             try:
                 with open(cr_file) as f:
                     cr_data = json.load(f)
@@ -198,8 +198,8 @@ class LLMTopMonitor:
         runtime = time.time() - self.start_time
         
         summary_text = Text()
-        summary_text.append(f"🚀 kubectl-ldtop - LLM Inference Monitor\n", style="bold cyan")
-        summary_text.append(f"Mode: {self.kubectl_ld.mode} | Namespace: {self.namespace} | Runtime: {runtime:.0f}s | Sort: {self.sort_key}\n", style="dim")
+        summary_text.append(f"🚀 mtop - LLM Inference Monitor\n", style="bold cyan")
+        summary_text.append(f"Mode: {self.mtop.mode} | Namespace: {self.namespace} | Runtime: {runtime:.0f}s | Sort: {self.sort_key}\n", style="dim")
         summary_text.append(f"Total QPS: {int(total_qps):,} ", style="white")
         summary_text.append(f"• Models: {healthy_models}/{total_models} healthy ", style="green" if healthy_models == total_models else "yellow")
         summary_text.append(f"• Replicas: {total_replicas}\n", style="white")
@@ -229,7 +229,7 @@ class LLMTopMonitor:
         
     def run(self):
         """Run the ldtop monitor"""
-        self.console.print("[cyan]Starting kubectl-ldtop monitor...[/cyan]")
+        self.console.print("[cyan]Starting mtop monitor...[/cyan]")
         self.console.print("[dim]Press Ctrl+C to exit[/dim]")
         
         # Initial load
@@ -252,12 +252,12 @@ class LLMTopMonitor:
                     time.sleep(self.interval)
                     
         except KeyboardInterrupt:
-            self.console.print("\n[yellow]Exiting kubectl-ldtop...[/yellow]")
+            self.console.print("\n[yellow]Exiting mtop...[/yellow]")
         except Exception as e:
             self.console.print(f"[red]Error: {e}[/red]")
 
 
-class KubectlLD:
+class MTop:
     def __init__(self, mode: str = "mock") -> None:
         self.mode = mode
         self.is_live = mode == "live"
@@ -267,7 +267,7 @@ class KubectlLD:
         self.logs_dir = self.mock_root / "pod_logs"
         self.states_dir = self.mock_root / "states" / "rollout"
 
-    def kubectl_get(self, resource: str, name: Optional[str] = None, namespace: str = "default") -> Dict[str, Any]:
+    def k8s_get(self, resource: str, name: Optional[str] = None, namespace: str = "default") -> Dict[str, Any]:
         """Execute kubectl get command and return JSON"""
         cmd = ["kubectl", "get", resource]
         if name:
@@ -283,7 +283,7 @@ class KubectlLD:
     def list_crs(self) -> None:
         """List all LLMInferenceService resources"""
         if self.is_live:
-            data = self.kubectl_get("llminferenceservice")
+            data = self.k8s_get("llminferenceservice")
             for item in data.get("items", []):
                 name = item["metadata"]["name"]
                 ready = next((c for c in item.get("status", {}).get("conditions", []) 
@@ -305,7 +305,7 @@ class KubectlLD:
     def get_cr(self, name: str, output_json: bool = False) -> None:
         """Get a specific CR by name"""
         if self.is_live:
-            data = self.kubectl_get("llminferenceservice", name)
+            data = self.k8s_get("llminferenceservice", name)
         else:
             cr_path = self.crs_dir / f"{name}.json"
             if not cr_path.exists():
@@ -322,7 +322,7 @@ class KubectlLD:
     def get_config(self, output_json: bool = False) -> None:
         """Show LLMInferenceServiceConfig"""
         if self.is_live:
-            data = self.kubectl_get("llminferenceserviceconfig")
+            data = self.k8s_get("llminferenceserviceconfig")
         else:
             if not self.config_path.exists():
                 print(colored(f"⚠️ No config found at {self.config_path}", "yellow"))
@@ -338,7 +338,7 @@ class KubectlLD:
     def check_cr(self, name: str) -> None:
         """Check status of a CR"""
         if self.is_live:
-            data = self.kubectl_get("llminferenceservice", name)
+            data = self.k8s_get("llminferenceservice", name)
         else:
             cr_path = self.crs_dir / f"{name}.json"
             if not cr_path.exists():
@@ -451,7 +451,7 @@ class KubectlLD:
                 print(f"  - {d.name}")
                 
     def ldtop(self, interval: float = 0.5, namespace: str = "default", **kwargs) -> None:
-        """Run kubectl-ldtop monitoring"""
+        """Run mtop monitoring"""
         if not RICH_AVAILABLE:
             print(colored("❌ Rich library is required for ldtop. Install with: pip install rich", "red"))
             sys.exit(1)
@@ -461,10 +461,10 @@ class KubectlLD:
 
 
 def main() -> None:
-    # Check if running as kubectl-ldtop
+    # Check if running as mtop-monitor
     script_name = Path(sys.argv[0]).name
-    if script_name == "kubectl-ldtop":
-        # When called as kubectl-ldtop, insert ldtop command
+    if script_name == "mtop-monitor":
+        # When called as mtop-monitor, insert ldtop command
         if len(sys.argv) == 1:
             # No arguments, just run ldtop
             sys.argv.append("ldtop")
@@ -473,8 +473,8 @@ def main() -> None:
             sys.argv.insert(1, "ldtop")
     
     parser = argparse.ArgumentParser(
-        prog="kubectl-ld",
-        description="🚀 kubectl-ld: Mock CLI tool for debugging LLMInferenceService CRDs",
+        prog="mtop",
+        description="🚀 mtop: Mock CLI tool for debugging LLMInferenceService CRDs",
         epilog="""
 Examples:
   %(prog)s list                    # List all LLMInferenceServices  
@@ -486,7 +486,7 @@ Examples:
   %(prog)s ldtop                  # Real-time LLM inference monitoring
   %(prog)s --mode live ldtop      # Monitor live cluster
   
-For more information: https://github.com/jeremyeder/kubectl-ld
+For more information: https://github.com/jeremyeder/mtop
         """,
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
@@ -539,7 +539,7 @@ For more information: https://github.com/jeremyeder/kubectl-ld
     if show_mode:
         print(colored(f"🔧 Mode: {mode}", "cyan"))
     
-    cli = KubectlLD(mode=mode)
+    cli = MTop(mode=mode)
     
     # Command dispatch
     commands = {

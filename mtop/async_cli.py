@@ -7,8 +7,8 @@ from .container import inject
 from .interfaces import FileSystem, KubernetesClient, Logger
 
 
-class AsyncKubectlLD:
-    """Async version of KubectlLD operations."""
+class AsyncMTop:
+    """Async version of MTop operations."""
 
     def __init__(
         self,
@@ -142,9 +142,9 @@ class AsyncResourceMonitor:
     """Async resource monitoring with concurrent updates."""
 
     def __init__(
-        self, kubectl_ld: AsyncKubectlLD, interval: float = 1.0, logger: Optional[Logger] = None
+        self, mtop: AsyncMTop, interval: float = 1.0, logger: Optional[Logger] = None
     ) -> None:
-        self.kubectl_ld = kubectl_ld
+        self.mtop = mtop
         self.interval = interval
         self.logger = logger or inject(Logger)
         self._running = False
@@ -184,11 +184,11 @@ class AsyncResourceMonitor:
         """Update resource cache concurrently."""
         try:
             # Get all CRs concurrently
-            crs = await self.kubectl_ld.list_crs()
+            crs = await self.mtop.list_crs()
             names = [cr["metadata"]["name"] for cr in crs]
 
             # Update cache with latest data
-            updated_crs = await self.kubectl_ld.get_multiple_crs(names)
+            updated_crs = await self.mtop.get_multiple_crs(names)
 
             for name, cr_data in updated_crs.items():
                 if cr_data:
@@ -214,5 +214,5 @@ class AsyncResourceMonitor:
 
 async def run_concurrent_operations(operations: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """Run multiple mtop operations concurrently."""
-    kubectl_ld = AsyncKubectlLD()
-    return await kubectl_ld.batch_operations(operations)
+    mtop = AsyncMTop()
+    return await mtop.batch_operations(operations)

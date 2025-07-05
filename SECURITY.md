@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-The following versions of kubectl-ld are currently being supported with security updates:
+The following versions of mtop are currently being supported with security updates:
 
 | Version | Supported          |
 | ------- | ------------------ |
@@ -10,7 +10,7 @@ The following versions of kubectl-ld are currently being supported with security
 
 ## Reporting a Vulnerability
 
-We take the security of kubectl-ld seriously. If you believe you have found a security vulnerability, please report it to us as described below.
+We take the security of mtop seriously. If you believe you have found a security vulnerability, please report it to us as described below.
 
 ### Please do NOT:
 - Open a public GitHub issue for security vulnerabilities
@@ -33,7 +33,7 @@ We take the security of kubectl-ld seriously. If you believe you have found a se
 
 ## Security Features
 
-kubectl-ld implements several security measures:
+mtop implements several security measures:
 
 1. **Input Validation**: All user inputs are validated before processing
 2. **No Shell Execution**: The tool operates in mock mode by default, preventing actual system commands
@@ -44,7 +44,7 @@ kubectl-ld implements several security measures:
 
 ## Security Best Practices
 
-When using kubectl-ld:
+When using mtop:
 
 1. Always run in mock mode when testing or demonstrating
 2. Review any generated YAML/JSON before applying to a cluster

@@ -7,7 +7,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from mtop.async_cli import AsyncKubectlLD, AsyncResourceMonitor
+from mtop.async_cli import AsyncMTop, AsyncResourceMonitor
 from mtop.cache import AsyncCache, CacheManager, LRUCache
 from mtop.container import Container, get_container
 from mtop.implementations import LocalFileSystem, MockKubernetesClient
@@ -109,28 +109,28 @@ class TestAsyncOperations:
         return mock
 
     @pytest.fixture
-    def async_kubectl_ld(self, mock_k8s_client: Mock) -> AsyncKubectlLD:
-        """Create AsyncKubectlLD instance."""
+    def async_mtop(self, mock_k8s_client: Mock) -> AsyncMTop:
+        """Create AsyncMTop instance."""
         mock_logger = Mock(spec=Logger)
-        return AsyncKubectlLD(mode="mock", k8s_client=mock_k8s_client, logger=mock_logger)
+        return AsyncMTop(mode="mock", k8s_client=mock_k8s_client, logger=mock_logger)
 
     @pytest.mark.asyncio
-    async def test_list_crs(self, async_kubectl_ld: AsyncKubectlLD) -> None:
+    async def test_list_crs(self, async_mtop: AsyncMTop) -> None:
         """Test async CR listing."""
 
         # Mock the get_resource method to return a list
         async def mock_get_resource(*args, **kwargs):
             return {"items": [{"metadata": {"name": "cr1"}}, {"metadata": {"name": "cr2"}}]}
 
-        async_kubectl_ld.k8s_client.get_resource = mock_get_resource
+        async_mtop.k8s_client.get_resource = mock_get_resource
 
-        crs = await async_kubectl_ld.list_crs()
+        crs = await async_mtop.list_crs()
         assert len(crs) == 2
         assert crs[0]["metadata"]["name"] == "cr1"
         assert crs[1]["metadata"]["name"] == "cr2"
 
     @pytest.mark.asyncio
-    async def test_get_multiple_crs(self, async_kubectl_ld: AsyncKubectlLD) -> None:
+    async def test_get_multiple_crs(self, async_mtop: AsyncMTop) -> None:
         """Test concurrent CR retrieval."""
 
         async def mock_get_resource(
@@ -139,10 +139,10 @@ class TestAsyncOperations:
             # Return different data based on the name parameter
             return {"metadata": {"name": name or "unknown"}, "status": {"ready": True}}
 
-        async_kubectl_ld.k8s_client.get_resource = mock_get_resource
+        async_mtop.k8s_client.get_resource = mock_get_resource
 
         names = ["cr1", "cr2", "cr3"]
-        results = await async_kubectl_ld.get_multiple_crs(names)
+        results = await async_mtop.get_multiple_crs(names)
 
         assert len(results) == 3
         for name in names:
@@ -152,13 +152,13 @@ class TestAsyncOperations:
     @pytest.mark.asyncio
     async def test_resource_monitor(self) -> None:
         """Test async resource monitoring."""
-        mock_kubectl_ld = Mock(spec=AsyncKubectlLD)
-        mock_kubectl_ld.list_crs.return_value = [{"metadata": {"name": "test-cr"}}]
-        mock_kubectl_ld.get_multiple_crs.return_value = {
+        mock_mtop = Mock(spec=AsyncMTop)
+        mock_mtop.list_crs.return_value = [{"metadata": {"name": "test-cr"}}]
+        mock_mtop.get_multiple_crs.return_value = {
             "test-cr": {"metadata": {"name": "test-cr"}, "status": {"ready": True}}
         }
 
-        monitor = AsyncResourceMonitor(mock_kubectl_ld, interval=0.1)
+        monitor = AsyncResourceMonitor(mock_mtop, interval=0.1)
 
         # Start monitor briefly
         monitor_task = asyncio.create_task(monitor.start())

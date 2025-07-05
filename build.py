@@ -216,7 +216,7 @@ def create_readme_template():
         "ldtop": "${MONITOR_NAME}",
         "🚀": "${EMOJI}",
         "Mock CLI tool for debugging LLMInferenceService CRDs": "${PROGRAM_DESCRIPTION}",
-        "jeremyeder/kubectl-ld": "${GITHUB_REPO}",
+        "jeremyeder/mtop": "${GITHUB_REPO}",
     }
 
     template_content = content

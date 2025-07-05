@@ -99,8 +99,8 @@ class ConfigLoader:
         if not config_path.exists():
             # Try fallback config locations
             fallback_paths = [
-                Path.home() / ".ldctl" / "config.yaml",
-                Path("/etc/ldctl/config.yaml"),
+                Path.home() / ".mtop" / "config.yaml",
+                Path("/etc/mtop/config.yaml"),
                 Path("config.yaml"),
             ]
 

@@ -1,4 +1,4 @@
-_kubectl_ld_completions()
+_mtop_completions()
 {
     local cur prev opts crs
     COMPREPLY=()
@@ -18,9 +18,9 @@ _kubectl_ld_completions()
     fi
 }
 
-complete -F _kubectl_ld_completions ./kubectl-ld
+complete -F _mtop_completions ./mtop
 
-_kubectl_ld()
+_mtop()
 {
   local cur prev words cword
   _init_completion || return
@@ -32,4 +32,4 @@ _kubectl_ld()
       ;;
   esac
 }
-complete -F _kubectl_ld kubectl-ld
+complete -F _mtop mtop

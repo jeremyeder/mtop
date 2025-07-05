@@ -28,7 +28,7 @@ def setup_container() -> None:
     container.register_singleton(CacheManager, CacheManager())
 
     # Register Kubernetes client based on mode
-    mode = os.environ.get("LLD_MODE", "mock")
+    mode = os.environ.get("MTOP_MODE", "mock")
     if mode == "live":
         container.register_transient(KubernetesClient, KubectlClient)
     else:
@@ -41,9 +41,9 @@ def configure_logging() -> None:
 
     from .logging import configure_logging as _configure_logging
 
-    level = os.environ.get("LDCTL_LOG_LEVEL", "INFO")
-    log_file = os.environ.get("LDCTL_LOG_FILE")
-    structured = os.environ.get("LDCTL_LOG_FORMAT", "structured") == "structured"
+    level = os.environ.get("MTOP_LOG_LEVEL", "INFO")
+    log_file = os.environ.get("MTOP_LOG_FILE")
+    structured = os.environ.get("MTOP_LOG_FORMAT", "structured") == "structured"
 
     _configure_logging(level, log_file, structured)
 
@@ -66,12 +66,12 @@ def main() -> None:
     import importlib.util
 
     script_path = parent_dir / "mtop-main"
-    spec = importlib.util.spec_from_file_location("kubectl_ld_main", script_path)
-    kubectl_ld_main = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(kubectl_ld_main)
+    spec = importlib.util.spec_from_file_location("mtop_main", script_path)
+    mtop_main = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mtop_main)
 
     # Call the main function directly
-    kubectl_ld_main.main()
+    mtop_main.main()
 
 
 if __name__ == "__main__":
