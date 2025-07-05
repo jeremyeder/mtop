@@ -8,7 +8,6 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-
 from config_loader import ConfigLoader, SLOConfig
 
 
