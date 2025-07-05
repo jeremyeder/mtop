@@ -13,9 +13,19 @@ import yaml
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-# Mock the early Python version check
+# Mock the early Python version check and import KubectlLD
 with patch('sys.version_info', (3, 11, 0)):
-    exec(open(Path(__file__).parent.parent / 'kubectl-ld').read())
+    # Execute the kubectl-ld script to define all classes
+    kubectl_ld_path = Path(__file__).parent.parent / 'kubectl-ld'
+    kubectl_ld_globals = {
+        '__file__': str(kubectl_ld_path),  # Provide __file__ for Path(__file__) references
+        '__name__': 'kubectl-ld'  # Don't use __main__ to avoid calling main()
+    }
+    with open(kubectl_ld_path) as f:
+        exec(f.read(), kubectl_ld_globals)
+    # Extract the classes we need
+    KubectlLD = kubectl_ld_globals['KubectlLD']
+    ModelMetrics = kubectl_ld_globals.get('ModelMetrics')  # May be needed by some tests
 
 
 class TestKubectlLD:

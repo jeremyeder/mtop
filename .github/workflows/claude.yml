@@ -24,8 +24,8 @@ jobs:
       issues: read
       id-token: write
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: anthropics/claude-code-action@v0.0.28
         with:
           fetch-depth: 1
 
