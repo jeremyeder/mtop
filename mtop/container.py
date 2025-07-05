@@ -81,7 +81,7 @@ class Container:
                     # Check if it's Optional[T] (Union[T, None])
                     if len(args) == 2 and type(None) in args:
                         actual_type = args[0] if args[1] is type(None) else args[1]
-                
+
                 try:
                     kwargs[param_name] = self.get(actual_type)
                 except ValueError:

@@ -5,7 +5,7 @@ import logging
 import logging.handlers
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
@@ -149,7 +149,7 @@ class OperationLogger:
     def __init__(self, logger: Logger, operation: str) -> None:
         self.logger = logger
         self.operation = operation
-        self.start_time = datetime.now(datetime.UTC)
+        self.start_time = datetime.now(timezone.utc)
         self.context: Dict[str, Any] = {"operation": operation}
 
     def __enter__(self) -> "OperationLogger":
@@ -157,7 +157,7 @@ class OperationLogger:
         return self
 
     def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
-        duration = (datetime.now(datetime.UTC) - self.start_time).total_seconds()
+        duration = (datetime.now(timezone.utc) - self.start_time).total_seconds()
 
         if exc_type:
             self.logger.error(
@@ -179,7 +179,7 @@ class OperationLogger:
 
     def log_progress(self, message: str, **kwargs: Any) -> None:
         """Log progress during operation."""
-        elapsed = (datetime.now(datetime.UTC) - self.start_time).total_seconds()
+        elapsed = (datetime.now(timezone.utc) - self.start_time).total_seconds()
         self.logger.info(f"{self.operation}: {message}", elapsed=elapsed, **self.context, **kwargs)
 
 

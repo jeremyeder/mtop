@@ -194,12 +194,11 @@ class AsyncCache(Generic[T]):
         return {**self._cache.stats(), "pending_computations": len(self._pending)}
 
 
-@singleton(object)  # Using object as placeholder for CacheManager interface
 class CacheManager:
     """Global cache manager."""
 
     def __init__(self, logger: Optional[Logger] = None) -> None:
-        self.logger = logger or inject(Logger)
+        self.logger = logger
         self._caches: Dict[str, Union[LRUCache[Any], AsyncCache[Any]]] = {}
         self._memory_limit = 100 * 1024 * 1024  # 100MB default
 
@@ -219,7 +218,8 @@ class CacheManager:
         """Clear all caches."""
         for cache in self._caches.values():
             cache.clear()
-        self.logger.info("Cleared all caches")
+        if self.logger:
+            self.logger.info("Cleared all caches")
 
     def stats(self) -> Dict[str, Any]:
         """Get statistics for all caches."""

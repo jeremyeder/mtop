@@ -68,22 +68,30 @@ class TestDependencyInjection:
             def __init__(self, file_system: FileSystem, logger: Logger) -> None:
                 self.file_system = file_system
                 self.logger = logger
-        
+
         # Register and test our test class first
         container.register_transient(TestClient, TestClient)
         test_service = container.get(TestClient)
-        
+
         # These should work with exact type matches
-        assert test_service.logger is mock_logger, "Logger dependency injection failed for TestClient"
-        assert test_service.file_system is mock_filesystem, "FileSystem dependency injection failed for TestClient"
-        
+        assert (
+            test_service.logger is mock_logger
+        ), "Logger dependency injection failed for TestClient"
+        assert (
+            test_service.file_system is mock_filesystem
+        ), "FileSystem dependency injection failed for TestClient"
+
         # Now test MockKubernetesClient with Optional dependencies
         container.register_transient(MockKubernetesClient, MockKubernetesClient)
         mock_service = container.get(MockKubernetesClient)
-        
+
         # MockKubernetesClient should now receive injected dependencies even with Optional types
-        assert mock_service.logger is mock_logger, "Logger dependency injection failed for MockKubernetesClient"
-        assert mock_service.file_system is mock_filesystem, "FileSystem dependency injection failed for MockKubernetesClient"
+        assert (
+            mock_service.logger is mock_logger
+        ), "Logger dependency injection failed for MockKubernetesClient"
+        assert (
+            mock_service.file_system is mock_filesystem
+        ), "FileSystem dependency injection failed for MockKubernetesClient"
 
 
 class TestAsyncOperations:
@@ -93,8 +101,10 @@ class TestAsyncOperations:
     def mock_k8s_client(self) -> Mock:
         """Create mock Kubernetes client."""
         mock = Mock(spec=KubernetesClient)
+
         async def mock_get_resource(*args, **kwargs):
             return {"metadata": {"name": "test"}, "status": {"conditions": []}}
+
         mock.get_resource = mock_get_resource
         return mock
 
@@ -107,16 +117,13 @@ class TestAsyncOperations:
     @pytest.mark.asyncio
     async def test_list_crs(self, async_kubectl_ld: AsyncKubectlLD) -> None:
         """Test async CR listing."""
+
         # Mock the get_resource method to return a list
         async def mock_get_resource(*args, **kwargs):
-            return {
-                "items": [
-                    {"metadata": {"name": "cr1"}},
-                    {"metadata": {"name": "cr2"}}
-                ]
-            }
+            return {"items": [{"metadata": {"name": "cr1"}}, {"metadata": {"name": "cr2"}}]}
+
         async_kubectl_ld.k8s_client.get_resource = mock_get_resource
-        
+
         crs = await async_kubectl_ld.list_crs()
         assert len(crs) == 2
         assert crs[0]["metadata"]["name"] == "cr1"
@@ -125,12 +132,15 @@ class TestAsyncOperations:
     @pytest.mark.asyncio
     async def test_get_multiple_crs(self, async_kubectl_ld: AsyncKubectlLD) -> None:
         """Test concurrent CR retrieval."""
-        async def mock_get_resource(resource_type: str, name: str = None, namespace: str = "default") -> Dict[str, Any]:
+
+        async def mock_get_resource(
+            resource_type: str, name: str = None, namespace: str = "default"
+        ) -> Dict[str, Any]:
             # Return different data based on the name parameter
             return {"metadata": {"name": name or "unknown"}, "status": {"ready": True}}
-        
+
         async_kubectl_ld.k8s_client.get_resource = mock_get_resource
-        
+
         names = ["cr1", "cr2", "cr3"]
         results = await async_kubectl_ld.get_multiple_crs(names)
 
@@ -236,20 +246,20 @@ class TestCaching:
             call_count += 1
             await asyncio.sleep(0.01)  # Simulate work
             return f"result_{call_count}"
-        
+
         # Create the coroutine for the first call
         coroutine1 = expensive_computation()
         result1 = await cache.get_or_compute("key1", coroutine1)
         assert result1 == "result_1"
         assert call_count == 1
-        
+
         # Second call should use cache - but we need to pass a new coroutine
         # The cache should detect the key exists and not execute the coroutine
         coroutine2 = expensive_computation()
         result2 = await cache.get_or_compute("key1", coroutine2)
         assert result2 == "result_1"  # Same result from cache
         # Note: call_count might still be 1 if cache works, but the coroutine2 might not be awaited
-    
+
     def test_cache_manager(self) -> None:
         """Test cache manager."""
         manager = CacheManager()
