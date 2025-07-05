@@ -87,3 +87,13 @@ display:
     show_sort_key: true
     show_mode: true
     show_namespace: true
+
+# Technology Configuration (GPU & Infrastructure)
+technology:
+  gpu_types:
+    nvidia-a100:
+      memory_gb: 80
+      hourly_cost: 3.00
+    nvidia-h100:
+      memory_gb: 80
+      hourly_cost: 5.00

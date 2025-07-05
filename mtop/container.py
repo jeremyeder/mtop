@@ -2,7 +2,7 @@
 
 import inspect
 from threading import Lock
-from typing import Any, Callable, Dict, Type, TypeVar, Union, cast, get_origin, get_args
+from typing import Any, Callable, Dict, Type, TypeVar, Union, cast, get_args, get_origin
 
 T = TypeVar("T")
 

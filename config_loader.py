@@ -72,11 +72,35 @@ class BuildConfig:
 
 
 @dataclass
+class GPUType:
+    """GPU type configuration"""
+
+    name: str
+    memory_gb: int
+    hourly_cost: float
+
+    def __post_init__(self):
+        """Validate GPU configuration"""
+        if self.memory_gb <= 0:
+            raise ValueError(f"GPU memory must be positive, got {self.memory_gb}")
+        if self.hourly_cost < 0:
+            raise ValueError(f"GPU hourly cost cannot be negative, got {self.hourly_cost}")
+
+
+@dataclass
+class TechnologyConfig:
+    """Technology capabilities configuration"""
+
+    gpu_types: Dict[str, GPUType] = field(default_factory=dict)
+
+
+@dataclass
 class Config:
     """Complete configuration"""
 
     build: BuildConfig
     display: DisplayConfig
+    technology: Optional[TechnologyConfig] = None
 
 
 class ConfigLoader:
@@ -147,13 +171,38 @@ class ConfigLoader:
 
         # Define environment variable mappings
         env_mappings = {
-            "LDCTL_MODE": ["build", "mode"],
-            "LDCTL_OUTPUT_FORMAT": ["build", "output_format"],
-            "LDCTL_VERBOSE": ["build", "verbose"],
-            "LDCTL_COLOR_ENABLED": ["display", "colors", "enabled"],
-            "LDCTL_MAX_WIDTH": ["display", "table", "max_width"],
-            "LDCTL_TRUNCATE_LONG": ["display", "table", "truncate_long"],
-            "LDCTL_SORT_KEY": ["display", "table", "default_sort_key"],
+            "MTOP_MODE": ["build", "mode"],
+            "MTOP_OUTPUT_FORMAT": ["build", "output_format"],
+            "MTOP_VERBOSE": ["build", "verbose"],
+            "MTOP_COLOR_ENABLED": ["display", "colors", "enabled"],
+            "MTOP_MAX_WIDTH": ["display", "table", "max_width"],
+            "MTOP_TRUNCATE_LONG": ["display", "table", "truncate_long"],
+            "MTOP_SORT_KEY": ["display", "table", "default_sort_key"],
+            # Technology configuration overrides
+            "MTOP_TECHNOLOGY_GPU_A100_MEMORY": [
+                "technology",
+                "gpu_types",
+                "nvidia-a100",
+                "memory_gb",
+            ],
+            "MTOP_TECHNOLOGY_GPU_A100_COST": [
+                "technology",
+                "gpu_types",
+                "nvidia-a100",
+                "hourly_cost",
+            ],
+            "MTOP_TECHNOLOGY_GPU_H100_MEMORY": [
+                "technology",
+                "gpu_types",
+                "nvidia-h100",
+                "memory_gb",
+            ],
+            "MTOP_TECHNOLOGY_GPU_H100_COST": [
+                "technology",
+                "gpu_types",
+                "nvidia-h100",
+                "hourly_cost",
+            ],
         }
 
         for env_var, config_path in env_mappings.items():
@@ -164,6 +213,13 @@ class ConfigLoader:
                     env_value = env_value.lower() == "true"
                 elif env_value.isdigit():
                     env_value = int(env_value)
+                else:
+                    # Try to convert to float for decimal numbers
+                    try:
+                        env_value = float(env_value)
+                    except ValueError:
+                        # Keep as string if not a number
+                        pass
 
                 # Navigate to the config path and set the value
                 current = config
@@ -362,7 +418,37 @@ class ConfigLoader:
                 columns=columns, sorting=sorting_raw, summary=summary_raw
             )
 
-            return Config(build=build_config, display=display_config)
+            # Parse technology configuration (optional)
+            technology_config = None
+            if "technology" in raw_config:
+                technology_raw = raw_config["technology"]
+                if not isinstance(technology_raw, dict):
+                    raise ValueError("'technology' section must be a dictionary")
+
+                gpu_types = {}
+                gpu_types_raw = technology_raw.get("gpu_types", {})
+                if not isinstance(gpu_types_raw, dict):
+                    raise ValueError("technology.gpu_types must be a dictionary")
+
+                for gpu_name, gpu_data in gpu_types_raw.items():
+                    if not isinstance(gpu_data, dict):
+                        raise ValueError(f"GPU type '{gpu_name}' must be a dictionary")
+
+                    memory_gb = gpu_data.get("memory_gb", 0)
+                    if not isinstance(memory_gb, (int, float)):
+                        raise ValueError(f"GPU type '{gpu_name}': memory_gb must be a number")
+
+                    hourly_cost = gpu_data.get("hourly_cost", 0.0)
+                    if not isinstance(hourly_cost, (int, float)):
+                        raise ValueError(f"GPU type '{gpu_name}': hourly_cost must be a number")
+
+                    gpu_types[gpu_name] = GPUType(
+                        name=gpu_name, memory_gb=int(memory_gb), hourly_cost=float(hourly_cost)
+                    )
+
+                technology_config = TechnologyConfig(gpu_types=gpu_types)
+
+            return Config(build=build_config, display=display_config, technology=technology_config)
 
         except KeyError as e:
             raise ValueError(f"Missing required configuration key: {e}")

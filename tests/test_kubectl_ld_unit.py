@@ -29,9 +29,7 @@ class TestMTop:
             mtop = MTop(mode="mock")
             mtop.mock_root = Path(temp_dir)
             mtop.crs_dir = mtop.mock_root / "crs"
-            mtop.config_path = (
-                mtop.mock_root / "config" / "llminferenceserviceconfig.json"
-            )
+            mtop.config_path = mtop.mock_root / "config" / "llminferenceserviceconfig.json"
             mtop.logs_dir = mtop.mock_root / "pod_logs"
             mtop.states_dir = mtop.mock_root / "states" / "rollout"
 
