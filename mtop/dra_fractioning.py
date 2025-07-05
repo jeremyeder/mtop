@@ -201,6 +201,10 @@ class MemoryIsolation:
         Returns:
             Start position if available, None otherwise
         """
+        # Check if request exceeds total memory capacity
+        if required_memory_mb > self.total_memory_mb:
+            return None
+            
         # Sort allocated ranges by start position
         sorted_ranges = sorted(self._allocated_ranges)
         
