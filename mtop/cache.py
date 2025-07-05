@@ -8,7 +8,6 @@ from pathlib import Path
 from threading import RLock
 from typing import Any, Dict, Generic, Optional, TypeVar, Union
 
-from .container import inject, singleton
 from .interfaces import Logger
 
 T = TypeVar("T")

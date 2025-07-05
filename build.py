@@ -4,13 +4,12 @@ Build script for generating configurable program from templates
 Usage: python build.py [config.yaml]
 """
 
-import os
 import shutil
 import stat
 import sys
 from pathlib import Path
 from string import Template
-from typing import Any, Dict
+from typing import Dict
 
 # Import configuration system
 try:

@@ -10,11 +10,10 @@ import signal
 import sys
 import time
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict
 
 from rich.align import Align
 from rich.console import Console
-from rich.layout import Layout
 from rich.panel import Panel
 from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn
 from rich.text import Text
@@ -258,7 +257,7 @@ class DemoNarrator:
             BarColumn(),
             TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
         )
-        task = progress.add_task(
+        progress.add_task(
             f"Step {step_num}/{total_steps}",
             total=100,
             completed=(step_num - 1) * (100 / total_steps),
@@ -270,7 +269,7 @@ class DemoNarrator:
         content.append(step_info["description"], style="white")
         content.append(f"\n\n⏱️ Duration: ~{step_info['duration']}s", style="dim")
 
-        return Panel(content, title=f"📊 Demo Progress", border_style="green", padding=(1, 2))
+        return Panel(content, title="📊 Demo Progress", border_style="green", padding=(1, 2))
 
     def _create_controls_panel(self) -> Panel:
         """Create controls information panel"""

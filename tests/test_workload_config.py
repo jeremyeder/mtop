@@ -8,9 +8,8 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-import yaml
 
-from config_loader import Config, ConfigLoader, WorkloadConfig
+from config_loader import ConfigLoader, WorkloadConfig
 
 
 class TestWorkloadConfig(unittest.TestCase):

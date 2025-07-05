@@ -1,6 +1,5 @@
 """Type interfaces and protocols for mtop components."""
 
-import asyncio
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Protocol, runtime_checkable

@@ -4,9 +4,8 @@ from pathlib import Path
 from unittest.mock import mock_open, patch
 
 import pytest
-import yaml
 
-from config_loader import Config, ConfigLoader, GPUType, TechnologyConfig
+from config_loader import ConfigLoader, GPUType, TechnologyConfig
 
 
 class TestGPUType:

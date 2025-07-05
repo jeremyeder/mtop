@@ -8,9 +8,8 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-import yaml
 
-from config_loader import Config, ConfigLoader, SLOConfig
+from config_loader import ConfigLoader, SLOConfig
 
 
 class TestSLOConfig(unittest.TestCase):

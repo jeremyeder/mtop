@@ -31,8 +31,8 @@ jobs:
       run: |
         # stop the build if there are Python syntax errors or undefined names
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        # enforce flake8 rules - no exit-zero to fail on violations
+        flake8 . --count --max-complexity=10 --max-line-length=100 --statistics
     
     - name: Check formatting with black
       run: |
@@ -44,11 +44,11 @@ jobs:
     
     - name: Type checking with mypy
       run: |
-        mypy kubectl-ld watch_rollout.py || true
+        mypy .
     
     - name: Lint with pylint
       run: |
-        pylint kubectl-ld watch_rollout.py tests/ --exit-zero
+        pylint mtop/ config_loader.py column_engine.py --fail-under=8.0
 
   test:
     runs-on: ubuntu-latest
@@ -126,9 +126,8 @@ jobs:
     
     - name: Make executable
       run: |
-        chmod +x kubectl-ld
-        chmod +x watch_rollout.py
+        chmod +x mtop
     
     - name: Test CLI execution
       run: |
-        ./kubectl-ld help || true
+        ./mtop help

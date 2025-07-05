@@ -11,7 +11,7 @@ import time
 from collections import deque
 from dataclasses import dataclass, field
 from threading import Lock
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from config_loader import SLOConfig, TechnologyConfig
 
@@ -280,6 +280,225 @@ class TTFTCalculator:
             self.measurements.clear()
 
 
+@dataclass
+class CostCalculator:
+    """Cost calculation for LLM inference operations using GPU pricing.
+
+    Provides cost-per-million-tokens calculations, real-time cost tracking,
+    and cost efficiency metrics based on TechnologyConfig GPU pricing.
+    """
+
+    technology_config: TechnologyConfig
+
+    def __post_init__(self):
+        """Validate cost calculator configuration."""
+        if not isinstance(self.technology_config, TechnologyConfig):
+            raise ValueError("technology_config must be a valid TechnologyConfig instance")
+
+    def calculate_token_cost(self, tokens: int, gpu_type: str, duration_seconds: float) -> float:
+        """Calculate the cost for generating tokens on a specific GPU type.
+
+        Args:
+            tokens: Number of tokens generated
+            gpu_type: GPU type used for inference
+            duration_seconds: Duration of token generation in seconds
+
+        Returns:
+            Cost in dollars for the token generation
+
+        Raises:
+            ValueError: If GPU type is not found or invalid parameters
+        """
+        if tokens < 0:
+            raise ValueError(f"tokens cannot be negative, got {tokens}")
+
+        if duration_seconds < 0:
+            raise ValueError(f"duration_seconds cannot be negative, got {duration_seconds}")
+
+        if not gpu_type or gpu_type not in self.technology_config.gpu_types:
+            raise ValueError(f"gpu_type '{gpu_type}' not found in technology config")
+
+        # Get GPU hourly cost
+        gpu_info = self.technology_config.gpu_types[gpu_type]
+        hourly_cost = gpu_info.hourly_cost
+
+        # Calculate cost: (duration in hours) * hourly_cost
+        duration_hours = duration_seconds / 3600
+        total_cost = duration_hours * hourly_cost
+
+        return total_cost
+
+    def get_cost_per_million_tokens(self, gpu_type: str, tokens_per_second: int) -> float:
+        """Calculate cost per million tokens for a given GPU type and throughput.
+
+        Args:
+            gpu_type: GPU type used for inference
+            tokens_per_second: Throughput in tokens per second
+
+        Returns:
+            Cost per million tokens in dollars
+
+        Raises:
+            ValueError: If GPU type is not found or invalid parameters
+        """
+        if tokens_per_second <= 0:
+            raise ValueError(f"tokens_per_second must be positive, got {tokens_per_second}")
+
+        if not gpu_type or gpu_type not in self.technology_config.gpu_types:
+            raise ValueError(f"gpu_type '{gpu_type}' not found in technology config")
+
+        # Get GPU hourly cost
+        gpu_info = self.technology_config.gpu_types[gpu_type]
+        hourly_cost = gpu_info.hourly_cost
+
+        # Calculate time to generate 1 million tokens
+        million_tokens = 1_000_000
+        seconds_for_million_tokens = million_tokens / tokens_per_second
+        hours_for_million_tokens = seconds_for_million_tokens / 3600
+
+        # Calculate cost for 1 million tokens
+        cost_per_million = hours_for_million_tokens * hourly_cost
+
+        return cost_per_million
+
+    def calculate_efficiency_ratio(self, actual_cost: float, target_cost: float) -> float:
+        """Calculate cost efficiency ratio compared to target.
+
+        Args:
+            actual_cost: Actual cost incurred
+            target_cost: Target cost for comparison
+
+        Returns:
+            Efficiency ratio (1.0 = target, <1.0 = better than target, >1.0 = worse)
+
+        Raises:
+            ValueError: If target_cost is not positive
+        """
+        if target_cost <= 0:
+            raise ValueError(f"target_cost must be positive, got {target_cost}")
+
+        if actual_cost < 0:
+            raise ValueError(f"actual_cost cannot be negative, got {actual_cost}")
+
+        return actual_cost / target_cost
+
+    def calculate_cost_from_metrics(self, metrics: TokenMetrics) -> Optional[float]:
+        """Calculate cost from TokenMetrics instance.
+
+        Args:
+            metrics: TokenMetrics with timing and token information
+
+        Returns:
+            Cost in dollars, or None if metrics are incomplete
+
+        Raises:
+            ValueError: If GPU type is not found
+        """
+        if not metrics.is_completed():
+            return None
+
+        if not metrics.gpu_type:
+            return None
+
+        duration_seconds = metrics.completion_time - metrics.start_time
+        return self.calculate_token_cost(
+            metrics.tokens_generated, metrics.gpu_type, duration_seconds
+        )
+
+    def get_gpu_cost_comparison(self) -> Dict[str, float]:
+        """Get cost comparison across all available GPU types.
+
+        Returns:
+            Dictionary mapping GPU type to hourly cost
+        """
+        return {
+            gpu_type: gpu_info.hourly_cost
+            for gpu_type, gpu_info in self.technology_config.gpu_types.items()
+        }
+
+    def get_cheapest_gpu(self) -> Optional[str]:
+        """Get the cheapest GPU type available.
+
+        Returns:
+            GPU type name with lowest hourly cost, or None if no GPUs available
+        """
+        if not self.technology_config.gpu_types:
+            return None
+
+        return min(
+            self.technology_config.gpu_types.keys(),
+            key=lambda gpu_type: self.technology_config.gpu_types[gpu_type].hourly_cost,
+        )
+
+    def get_most_expensive_gpu(self) -> Optional[str]:
+        """Get the most expensive GPU type available.
+
+        Returns:
+            GPU type name with highest hourly cost, or None if no GPUs available
+        """
+        if not self.technology_config.gpu_types:
+            return None
+
+        return max(
+            self.technology_config.gpu_types.keys(),
+            key=lambda gpu_type: self.technology_config.gpu_types[gpu_type].hourly_cost,
+        )
+
+    def calculate_cost_savings(self, from_gpu: str, to_gpu: str, duration_seconds: float) -> float:
+        """Calculate cost savings when switching GPU types.
+
+        Args:
+            from_gpu: Current GPU type
+            to_gpu: Target GPU type
+            duration_seconds: Duration of inference in seconds
+
+        Returns:
+            Cost savings in dollars (positive = savings, negative = additional cost)
+
+        Raises:
+            ValueError: If GPU types are not found
+        """
+        if from_gpu not in self.technology_config.gpu_types:
+            raise ValueError(f"from_gpu '{from_gpu}' not found in technology config")
+
+        if to_gpu not in self.technology_config.gpu_types:
+            raise ValueError(f"to_gpu '{to_gpu}' not found in technology config")
+
+        if duration_seconds < 0:
+            raise ValueError(f"duration_seconds cannot be negative, got {duration_seconds}")
+
+        from_cost = self.technology_config.gpu_types[from_gpu].hourly_cost
+        to_cost = self.technology_config.gpu_types[to_gpu].hourly_cost
+
+        duration_hours = duration_seconds / 3600
+        cost_difference = (from_cost - to_cost) * duration_hours
+
+        return cost_difference
+
+    def get_cost_statistics(self) -> Dict[str, Any]:
+        """Get comprehensive cost statistics for all GPU types.
+
+        Returns:
+            Dictionary with cost statistics and comparisons
+        """
+        if not self.technology_config.gpu_types:
+            return {}
+
+        costs = [gpu_info.hourly_cost for gpu_info in self.technology_config.gpu_types.values()]
+        gpu_names = list(self.technology_config.gpu_types.keys())
+
+        return {
+            "total_gpu_types": len(self.technology_config.gpu_types),
+            "cheapest_gpu": self.get_cheapest_gpu(),
+            "most_expensive_gpu": self.get_most_expensive_gpu(),
+            "min_hourly_cost": min(costs),
+            "max_hourly_cost": max(costs),
+            "avg_hourly_cost": sum(costs) / len(costs),
+            "gpu_types": gpu_names,
+            "cost_comparison": self.get_gpu_cost_comparison(),
+        }
+
+
 class TokenTracker:
     """Thread-safe token metrics tracking and simulation system.
 
@@ -436,7 +655,7 @@ class TokenTracker:
 
         for i in range(batches):
             # Add some realistic delay between batches
-            batch_delay = 1.0 / target_tps * tokens_per_batch
+            # _batch_delay = 1.0 / target_tps * tokens_per_batch  # Currently unused
             metrics.tokens_generated += tokens_per_batch
             metrics.tokens_consumed += int(tokens_per_batch * 1.2)  # Input tokens
 
@@ -533,3 +752,21 @@ def create_ttft_calculator(slo_config: SLOConfig) -> TTFTCalculator:
         raise ValueError("slo_config is required for TTFTCalculator")
 
     return TTFTCalculator(slo_config=slo_config)
+
+
+def create_cost_calculator(technology_config: TechnologyConfig) -> CostCalculator:
+    """Factory function to create a configured CostCalculator.
+
+    Args:
+        technology_config: GPU types and pricing configuration
+
+    Returns:
+        Configured CostCalculator instance
+
+    Raises:
+        ValueError: If technology_config is None or invalid
+    """
+    if technology_config is None:
+        raise ValueError("technology_config is required for CostCalculator")
+
+    return CostCalculator(technology_config=technology_config)

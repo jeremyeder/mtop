@@ -3,13 +3,13 @@
 import asyncio
 from pathlib import Path
 from typing import Any, Dict
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 import pytest
 
 from mtop.async_cli import AsyncMTop, AsyncResourceMonitor
 from mtop.cache import AsyncCache, CacheManager, LRUCache
-from mtop.container import Container, get_container
+from mtop.container import Container
 from mtop.implementations import LocalFileSystem, MockKubernetesClient
 from mtop.interfaces import FileSystem, KubernetesClient, Logger
 from mtop.logging import OperationLogger, StructuredLogger
@@ -161,7 +161,7 @@ class TestAsyncOperations:
         monitor = AsyncResourceMonitor(mock_mtop, interval=0.1)
 
         # Start monitor briefly
-        monitor_task = asyncio.create_task(monitor.start())
+        asyncio.create_task(monitor.start())
         await asyncio.sleep(0.2)  # Let it run for a bit
         await monitor.stop()
 

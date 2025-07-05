@@ -10,7 +10,6 @@ from config_loader import ColorThreshold, ColumnConfig, Config
 # Try to import rich for table functionality
 try:
     from rich.table import Table
-    from rich.text import Text
 
     RICH_AVAILABLE = True
 except ImportError:

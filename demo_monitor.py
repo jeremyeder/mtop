@@ -11,7 +11,7 @@ import signal
 import sys
 import time
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
 from rich.console import Console
 from rich.layout import Layout
@@ -210,7 +210,7 @@ class DemoMonitor:
         total_models = len(self.models)
 
         summary_text = Text()
-        summary_text.append(f"📊 Cluster Overview\n", style="bold cyan")
+        summary_text.append("📊 Cluster Overview\n", style="bold cyan")
         summary_text.append(f"Total RPS: {int(total_rps):,} ", style="white")
         summary_text.append(
             f"• Models: {healthy_models}/{total_models} healthy ",
