@@ -120,36 +120,105 @@ def my_function(logger: Logger = inject(Logger)) -> None:
 └─────────────────────────────────────────────────────────────┘
 ```
 
-## Configuration
+## Configuration Architecture
 
-### Environment Variables
+### Unified Configuration System
 
-The new architecture supports comprehensive configuration via environment variables:
+mtop uses a comprehensive YAML-based configuration system with full environment variable override support. The configuration includes:
+
+- **Build Configuration**: Program identity and branding
+- **Display Configuration**: Runtime display and column definitions  
+- **Technology Configuration**: GPU types and infrastructure capabilities
+- **SLO Configuration**: Service Level Objectives for performance targets
+- **Workload Configuration**: Load testing and simulation parameters
+
+### Configuration Schema
+
+```yaml
+build:                           # Program identity (required)
+  program: { name, monitor_name, description, class_prefix }
+  branding: { emoji, tagline, github_repo }
+
+display:                         # Display behavior (required)
+  columns: [ { name, field, width, format, ... } ]
+  sorting: { default_key, available_keys }
+  summary: { show_runtime, show_sort_key, ... }
+
+technology:                      # Infrastructure (optional)
+  gpu_types:
+    nvidia-a100: { memory_gb: 80, hourly_cost: 3.00 }
+    nvidia-h100: { memory_gb: 80, hourly_cost: 5.00 }
+
+slo:                            # Performance targets (optional)
+  ttft_p95_ms: 500              # Time to first token (ms)
+  error_rate_percent: 0.1       # Error rate (%)
+  tokens_per_second: 1000       # Throughput (tokens/sec)
+
+workload:                       # Load testing (optional)
+  baseline_qps: 100             # Baseline queries per second
+  spike_multiplier: 2.0         # Spike test multiplier
+```
+
+### Type-Safe Configuration
+
+The system uses dataclasses for type safety and validation:
+
+```python
+@dataclass
+class SLOConfig:
+    ttft_p95_ms: int
+    error_rate_percent: float  
+    tokens_per_second: int
+    
+    def __post_init__(self):
+        # Comprehensive validation
+        if self.ttft_p95_ms <= 0:
+            raise ValueError("TTFT latency must be positive")
+        if not 0 <= self.error_rate_percent <= 100:
+            raise ValueError("Error rate must be 0-100%")
+```
+
+### Environment Variable Overrides
+
+All configuration values support environment variable overrides using the `MTOP_*` prefix:
 
 ```bash
-# Logging Configuration
-export LDCTL_LOG_LEVEL=DEBUG
-export LDCTL_LOG_FILE=/var/log/mtop.log
-export LDCTL_LOG_FORMAT=structured  # or 'simple'
+# SLO Configuration
+export MTOP_SLO_TTFT_P95_MS=300
+export MTOP_SLO_ERROR_RATE_PERCENT=0.05
+export MTOP_SLO_TOKENS_PER_SECOND=1500
+
+# Workload Configuration  
+export MTOP_WORKLOAD_BASELINE_QPS=500
+export MTOP_WORKLOAD_SPIKE_MULTIPLIER=3.0
+
+# Technology Configuration
+export MTOP_TECHNOLOGY_GPU_A100_COST=2.50
+export MTOP_TECHNOLOGY_GPU_H100_MEMORY=96
+
+# Display Configuration
+export MTOP_COLOR_ENABLED=true
+export MTOP_MAX_WIDTH=120
+export MTOP_SORT_KEY=gpu
 
 # Mode Configuration
 export LLD_MODE=live  # or 'mock'
-
-# Configuration File Location
-export LDCTL_CONFIG_PATH=/path/to/config.yaml
-
-# Performance Tuning
-export LDCTL_CACHE_SIZE=256
-export LDCTL_ASYNC_TIMEOUT=30
 ```
 
-### Configuration Override Hierarchy
+### Configuration Loading Process
+
+1. **Load YAML**: Parse `config.yaml` (or specified path)
+2. **Apply Overrides**: Process environment variables with type conversion
+3. **Validate**: Run comprehensive validation on all sections
+4. **Cache**: Store parsed configuration for performance
+5. **Provide Access**: Type-safe access through dataclasses
+
+### Configuration File Hierarchy
 
 1. Environment variables (highest priority)
-2. Config file specified by `LDCTL_CONFIG_PATH`
-3. User config: `~/.ldctl/config.yaml`
-4. System config: `/etc/ldctl/config.yaml`
-5. Default config: `./config.yaml`
+2. Specified config path via CLI argument
+3. Default config: `./config.yaml`
+4. Fallback to embedded defaults for optional sections
 
 ## Testing Strategy
 

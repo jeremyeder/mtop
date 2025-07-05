@@ -95,12 +95,47 @@ class TechnologyConfig:
 
 
 @dataclass
+class SLOConfig:
+    """Service Level Objective configuration"""
+
+    ttft_p95_ms: int  # Time to first token, 95th percentile (milliseconds)
+    error_rate_percent: float  # Error rate percentage (0-100)
+    tokens_per_second: int  # Target tokens per second throughput
+
+    def __post_init__(self):
+        """Validate SLO configuration"""
+        if self.ttft_p95_ms <= 0:
+            raise ValueError(f"TTFT latency must be positive, got {self.ttft_p95_ms}")
+        if not 0 <= self.error_rate_percent <= 100:
+            raise ValueError(f"Error rate must be 0-100%, got {self.error_rate_percent}")
+        if self.tokens_per_second <= 0:
+            raise ValueError(f"Tokens per second must be positive, got {self.tokens_per_second}")
+
+
+@dataclass
+class WorkloadConfig:
+    """Workload configuration for simulation and testing"""
+
+    baseline_qps: int  # Baseline queries per second
+    spike_multiplier: float  # Multiplier for spike testing (e.g., 2.0 = 2x baseline)
+
+    def __post_init__(self):
+        """Validate workload configuration"""
+        if self.baseline_qps <= 0:
+            raise ValueError(f"Baseline QPS must be positive, got {self.baseline_qps}")
+        if self.spike_multiplier < 1.0:
+            raise ValueError(f"Spike multiplier must be >= 1.0, got {self.spike_multiplier}")
+
+
+@dataclass
 class Config:
     """Complete configuration"""
 
     build: BuildConfig
     display: DisplayConfig
     technology: Optional[TechnologyConfig] = None
+    slo: Optional[SLOConfig] = None
+    workload: Optional[WorkloadConfig] = None
 
 
 class ConfigLoader:
@@ -203,6 +238,13 @@ class ConfigLoader:
                 "nvidia-h100",
                 "hourly_cost",
             ],
+            # SLO configuration overrides
+            "MTOP_SLO_TTFT_P95_MS": ["slo", "ttft_p95_ms"],
+            "MTOP_SLO_ERROR_RATE_PERCENT": ["slo", "error_rate_percent"],
+            "MTOP_SLO_TOKENS_PER_SECOND": ["slo", "tokens_per_second"],
+            # Workload configuration overrides
+            "MTOP_WORKLOAD_BASELINE_QPS": ["workload", "baseline_qps"],
+            "MTOP_WORKLOAD_SPIKE_MULTIPLIER": ["workload", "spike_multiplier"],
         }
 
         for env_var, config_path in env_mappings.items():
@@ -448,7 +490,61 @@ class ConfigLoader:
 
                 technology_config = TechnologyConfig(gpu_types=gpu_types)
 
-            return Config(build=build_config, display=display_config, technology=technology_config)
+            # Parse SLO configuration (optional)
+            slo_config = None
+            if "slo" in raw_config:
+                slo_raw = raw_config["slo"]
+                if not isinstance(slo_raw, dict):
+                    raise ValueError("'slo' section must be a dictionary")
+
+                # Parse SLO values with defaults
+                ttft_p95_ms = slo_raw.get("ttft_p95_ms", 500)
+                error_rate_percent = slo_raw.get("error_rate_percent", 0.1)
+                tokens_per_second = slo_raw.get("tokens_per_second", 1000)
+
+                # Validate types
+                if not isinstance(ttft_p95_ms, int):
+                    raise ValueError("slo.ttft_p95_ms must be an integer")
+                if not isinstance(error_rate_percent, (int, float)):
+                    raise ValueError("slo.error_rate_percent must be a number")
+                if not isinstance(tokens_per_second, int):
+                    raise ValueError("slo.tokens_per_second must be an integer")
+
+                slo_config = SLOConfig(
+                    ttft_p95_ms=ttft_p95_ms,
+                    error_rate_percent=float(error_rate_percent),
+                    tokens_per_second=tokens_per_second,
+                )
+
+            # Parse workload configuration (optional)
+            workload_config = None
+            if "workload" in raw_config:
+                workload_raw = raw_config["workload"]
+                if not isinstance(workload_raw, dict):
+                    raise ValueError("'workload' section must be a dictionary")
+
+                # Parse workload values with defaults
+                baseline_qps = workload_raw.get("baseline_qps", 100)
+                spike_multiplier = workload_raw.get("spike_multiplier", 2.0)
+
+                # Validate types
+                if not isinstance(baseline_qps, int):
+                    raise ValueError("workload.baseline_qps must be an integer")
+                if not isinstance(spike_multiplier, (int, float)):
+                    raise ValueError("workload.spike_multiplier must be a number")
+
+                workload_config = WorkloadConfig(
+                    baseline_qps=baseline_qps,
+                    spike_multiplier=float(spike_multiplier),
+                )
+
+            return Config(
+                build=build_config,
+                display=display_config,
+                technology=technology_config,
+                slo=slo_config,
+                workload=workload_config,
+            )
 
         except KeyError as e:
             raise ValueError(f"Missing required configuration key: {e}")

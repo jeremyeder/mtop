@@ -97,3 +97,14 @@ technology:
     nvidia-h100:
       memory_gb: 80
       hourly_cost: 5.00
+
+# SLO Definitions (Service Level Objectives)
+slo:
+  ttft_p95_ms: 500                                # Time to first token, 95th percentile (ms)
+  error_rate_percent: 0.1                         # Target error rate (%)
+  tokens_per_second: 1000                         # Target throughput (tokens/sec)
+
+# Workload Configuration (Load Testing & Simulation)
+workload:
+  baseline_qps: 100                               # Baseline queries per second
+  spike_multiplier: 2.0                           # Spike testing multiplier (2x = 200 QPS)
