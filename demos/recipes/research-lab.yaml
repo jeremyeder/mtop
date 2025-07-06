@@ -1,0 +1,57 @@
+# Research Lab Demo Recipe
+# Shows experimental models and research-focused configurations
+
+name: "Research Lab Demo"
+description: "Experimental models, rapid iteration, research-focused features"
+emoji: "🔬"
+
+# Environment configuration
+environment:
+  mode: "mock"
+  config: "research-config.json"
+  topology: "research"
+
+# Override specific settings for research scenario
+overrides:
+  MTOP_TECHNOLOGY_GPU_A100_MEMORY: 80   # Full memory for large experiments
+  MTOP_TECHNOLOGY_GPU_A100_COST: 2.00   # Academic pricing
+  MTOP_WORKLOAD_BASELINE_QPS: 25        # Low traffic, high compute
+  MTOP_SLO_ERROR_RATE_PERCENT: 5.0      # Tolerant of experimental errors
+  MTOP_SLO_TTFT_P95_MS: 2000           # Relaxed latency for research
+
+# Research-focused models
+models:
+  - "deepseek-r1-distill-llama-8b"     # Cutting edge research model
+  - "granite-3-2b-instruct"            # IBM research model  
+  - "stable-code-instruct-3b"          # Code generation research
+  - "phi-3-medium-instruct"            # Microsoft research
+
+# Demo script steps
+steps:
+  - action: "list"
+    description: "Show experimental model portfolio"
+  - action: "get"
+    target: "deepseek-r1-distill-llama-8b"
+    description: "Inspect cutting-edge research model"
+  - action: "experiment"
+    type: "ablation_study"
+    description: "Run model comparison experiment"
+  - action: "ldtop"
+    duration: 30
+    description: "Watch research workload patterns"
+
+# Research-specific features
+research_features:
+  - rapid_iteration: true
+  - experimental_metrics: true
+  - model_comparison: true
+  - debug_logging: true
+  - cpu_fallback: true
+
+# Expected outcomes
+outcomes:
+  - "Multiple experimental models running"
+  - "Research-friendly monitoring and logging"
+  - "Cost-effective academic pricing"
+  - "Flexible resource allocation"
+  - "Rapid iteration capabilities"

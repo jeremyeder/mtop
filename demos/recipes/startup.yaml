@@ -1,0 +1,41 @@
+# Startup Demo Recipe
+# Shows a small startup with limited resources and simple deployment
+
+name: "Startup Demo"
+description: "Small startup with 1-2 models, limited GPU resources, development environment"
+emoji: "🚀"
+
+# Environment configuration
+environment:
+  mode: "mock"
+  config: "development-config.json"
+  topology: "edge"
+
+# Override specific settings for startup scenario
+overrides:
+  MTOP_TECHNOLOGY_GPU_A100_MEMORY: 40  # Smaller GPU memory
+  MTOP_TECHNOLOGY_GPU_A100_COST: 2.50  # Reasonable startup costs
+  MTOP_WORKLOAD_BASELINE_QPS: 50       # Lower traffic
+  MTOP_SLO_ERROR_RATE_PERCENT: 2.0     # More tolerant of errors
+
+# Models to showcase
+models:
+  - "gpt2"
+  - "bert-base-uncased"
+
+# Demo script steps
+steps:
+  - action: "list"
+    description: "Show current model deployments"
+  - action: "get"
+    target: "gpt2"
+    description: "Inspect the main model"
+  - action: "ldtop"
+    duration: 30
+    description: "Watch real-time metrics"
+
+# Expected outcomes
+outcomes:
+  - "2 models running with modest resource usage"
+  - "Low cost per hour (under $5)"
+  - "Development-friendly settings enabled"

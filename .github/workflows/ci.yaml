@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master, feature/* ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest
+        pip install -r requirements.txt
+        pip install -e .
+    
+    - name: Run linting
+      run: |
+        black --check .
+        isort --check-only .
+        python -m py_compile tests/*.py
+        python -m py_compile mtop/*.py
+        python -m py_compile config_loader.py
+        python -m py_compile column_engine.py
+    
+    - name: Run tests
+      run: pytest tests/ -v
+      timeout-minutes: 2

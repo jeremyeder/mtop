@@ -1,0 +1,63 @@
+# Cost Optimization Demo Recipe
+# Shows how to optimize costs by comparing GPU types and scaling strategies
+
+name: "Cost Optimization Demo"
+description: "Compare GPU costs, auto-scaling, and resource efficiency"
+emoji: "💰"
+
+# Environment configuration
+environment:
+  mode: "mock"
+  config: "cost-optimized-config.json"
+  topology: "gradual"
+
+# Cost comparison scenarios
+scenarios:
+  - name: "baseline"
+    description: "Current state with A100 GPUs"
+    overrides:
+      MTOP_TECHNOLOGY_GPU_A100_COST: 3.00
+      MTOP_WORKLOAD_BASELINE_QPS: 200
+  
+  - name: "h100_upgrade"
+    description: "Upgraded to H100 GPUs"
+    overrides:
+      MTOP_TECHNOLOGY_GPU_H100_COST: 5.00
+      MTOP_TECHNOLOGY_GPU_A100_COST: 3.00
+      MTOP_WORKLOAD_BASELINE_QPS: 200
+  
+  - name: "optimized_scaling"
+    description: "Optimized auto-scaling policies"
+    overrides:
+      MTOP_TECHNOLOGY_GPU_A100_COST: 3.00
+      MTOP_WORKLOAD_BASELINE_QPS: 150
+      MTOP_WORKLOAD_SPIKE_MULTIPLIER: 2.5
+
+# Models to showcase
+models:
+  - "gpt2"           # Small, cheap model
+  - "granite-3-8b-instruct"  # Medium efficiency
+  - "llama-3-70b-instruct"   # Large, expensive model
+
+# Demo script steps
+steps:
+  - action: "cost_analysis"
+    description: "Show current cost breakdown"
+  - action: "list"
+    description: "Show current deployments"
+  - action: "simulate_scenario"
+    scenario: "h100_upgrade"
+    description: "Compare H100 vs A100 costs"
+  - action: "simulate_scenario"
+    scenario: "optimized_scaling"
+    description: "Show auto-scaling cost benefits"
+  - action: "cost_report"
+    description: "Generate cost optimization recommendations"
+
+# Expected outcomes
+outcomes:
+  - "Clear cost breakdown per model"
+  - "GPU type cost comparison"
+  - "Auto-scaling efficiency metrics"
+  - "Actionable cost optimization recommendations"
+  - "ROI analysis for infrastructure changes"

@@ -1,0 +1,48 @@
+# Enterprise Demo Recipe
+# Shows large-scale enterprise deployment with multiple teams and high availability
+
+name: "Enterprise Demo"
+description: "Large enterprise with multiple teams, high availability, production security"
+emoji: "🏢"
+
+# Environment configuration
+environment:
+  mode: "mock"
+  config: "enterprise-config.json"
+  topology: "enterprise"
+
+# Override specific settings for enterprise scenario
+overrides:
+  MTOP_TECHNOLOGY_GPU_H100_MEMORY: 80   # High-end GPUs
+  MTOP_TECHNOLOGY_GPU_H100_COST: 5.00   # Enterprise GPU costs
+  MTOP_WORKLOAD_BASELINE_QPS: 500       # High traffic
+  MTOP_SLO_ERROR_RATE_PERCENT: 0.1      # Strict error tolerance
+  MTOP_SLO_TTFT_P95_MS: 200            # Aggressive latency SLO
+
+# Models to showcase
+models:
+  - "gpt-4-turbo"
+  - "claude-3-haiku"
+  - "granite-3-8b-instruct"
+  - "llama-3-70b-instruct"
+
+# Demo script steps
+steps:
+  - action: "list"
+    description: "Show multi-tenant model landscape"
+  - action: "get"
+    target: "gpt-4-turbo"
+    description: "Inspect flagship model"
+  - action: "simulate"
+    type: "canary"
+    description: "Demonstrate safe deployment practices"
+  - action: "ldtop"
+    duration: 60
+    description: "Watch enterprise-scale metrics"
+
+# Expected outcomes
+outcomes:
+  - "8+ models running across multiple namespaces"
+  - "High availability and redundancy"
+  - "Enterprise security policies enforced"
+  - "Cost optimization in action"
