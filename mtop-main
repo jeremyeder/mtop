@@ -31,6 +31,7 @@ try:
     from rich.panel import Panel
     from rich.table import Table
     from rich.text import Text
+
     RICH_AVAILABLE = True
 except ImportError:
     RICH_AVAILABLE = False
@@ -38,6 +39,7 @@ except ImportError:
 
 class ModelMetrics:
     """Represents metrics for a single model - extracted from demo_monitor.py"""
+
     def __init__(self, name: str, cr_data: Dict[str, Any], base_qps: int = 100):
         self.name = name
         self.cr_data = cr_data
@@ -50,34 +52,36 @@ class ModelMetrics:
         self.latency_p95 = random.randint(80, 200)
         self.replicas = random.randint(1, 5)
         self.traffic_percent = 100
-        
+
         # Derive status from CR data
-        ready_condition = next((c for c in cr_data.get("status", {}).get("conditions", []) 
-                               if c["type"] == "Ready"), {})
+        ready_condition = next(
+            (c for c in cr_data.get("status", {}).get("conditions", []) if c["type"] == "Ready"), {}
+        )
         self.status = "Ready" if ready_condition.get("status") == "True" else "NotReady"
-        
+
     def update(self, action: str = "normal"):
         """Update metrics with some randomness"""
         # Add some realistic variation
         self.current_qps += random.uniform(-15, 15)
         self.current_qps = max(10, self.current_qps)
-        
+
         self.cpu_percent += random.randint(-5, 5)
         self.cpu_percent = max(10, min(95, self.cpu_percent))
-        
+
         self.error_rate += random.uniform(-0.2, 0.2)
         self.error_rate = max(0.1, min(10.0, self.error_rate))
-        
+
         self.latency_p95 += random.randint(-10, 10)
         self.latency_p95 = max(50, min(500, self.latency_p95))
 
 
 class LLMTopMonitor:
     """mtop monitoring functionality"""
-    def __init__(self, mtop: 'MTop', interval: float = 0.5, namespace: str = "default"):
+
+    def __init__(self, mtop: "MTop", interval: float = 0.5, namespace: str = "default"):
         if not RICH_AVAILABLE:
             raise ImportError("Rich library is required for ldtop. Install with: pip install rich")
-            
+
         self.mtop = mtop
         self.console = Console()
         self.interval = interval
@@ -86,24 +90,24 @@ class LLMTopMonitor:
         self.sort_key = "qps"  # qps, cpu, errors, name
         self.models: Dict[str, ModelMetrics] = {}
         self.start_time = time.time()
-        
+
         # Setup signal handlers
         signal.signal(signal.SIGINT, self._signal_handler)
         signal.signal(signal.SIGTERM, self._signal_handler)
-        
+
     def _signal_handler(self, signum, frame):
         """Handle signals for clean exit"""
         self.running = False
-        
+
     def _load_models(self):
         """Load models from mock data or live cluster"""
         self.models = {}
-        
+
         if self.mtop.is_live:
             self._load_live_models()
         else:
             self._load_mock_models()
-            
+
     def _load_live_models(self):
         """Load models from live Kubernetes cluster"""
         try:
@@ -123,7 +127,7 @@ class LLMTopMonitor:
             self.console.print(f"[red]Error loading live models: {e}[/red]")
             self.console.print("[yellow]Falling back to mock mode[/yellow]")
             self._load_mock_models()
-            
+
     def _load_mock_models(self):
         """Load models from mock CRs"""
         for cr_file in sorted(self.mtop.crs_dir.glob("*.json")):
@@ -135,7 +139,7 @@ class LLMTopMonitor:
                 self.models[name] = ModelMetrics(name, cr_data, base_qps)
             except Exception as e:
                 self.console.print(f"[red]Error loading {cr_file}: {e}[/red]")
-                
+
     def _create_traffic_table(self) -> Table:
         """Create the main traffic monitoring table"""
         table = Table(show_header=True, header_style="bold cyan")
@@ -146,30 +150,42 @@ class LLMTopMonitor:
         table.add_column("Errors", width=7, justify="center")
         table.add_column("Latency", width=8, justify="center")
         table.add_column("Replicas", width=8, justify="center")
-        
+
         # Sort models based on current sort key
         if self.sort_key == "qps":
-            sorted_models = sorted(self.models.items(), key=lambda x: x[1].current_qps, reverse=True)
+            sorted_models = sorted(
+                self.models.items(), key=lambda x: x[1].current_qps, reverse=True
+            )
         elif self.sort_key == "cpu":
-            sorted_models = sorted(self.models.items(), key=lambda x: x[1].cpu_percent, reverse=True)
+            sorted_models = sorted(
+                self.models.items(), key=lambda x: x[1].cpu_percent, reverse=True
+            )
         elif self.sort_key == "errors":
             sorted_models = sorted(self.models.items(), key=lambda x: x[1].error_rate, reverse=True)
         else:  # name
             sorted_models = sorted(self.models.items(), key=lambda x: x[0])
-            
+
         for name, metrics in sorted_models:
             # Status indicator
             if metrics.status == "Ready":
                 status_emoji = "🟢"
             else:
                 status_emoji = "🔴"
-                
+
             # Error rate coloring
-            error_style = "green" if metrics.error_rate < 1 else "yellow" if metrics.error_rate < 3 else "red"
-            
+            error_style = (
+                "green" if metrics.error_rate < 1 else "yellow" if metrics.error_rate < 3 else "red"
+            )
+
             # CPU coloring
-            cpu_style = "green" if metrics.cpu_percent < 50 else "yellow" if metrics.cpu_percent < 80 else "red"
-            
+            cpu_style = (
+                "green"
+                if metrics.cpu_percent < 50
+                else "yellow"
+                if metrics.cpu_percent < 80
+                else "red"
+            )
+
             table.add_row(
                 name[:23] + ("..." if len(name) > 23 else ""),
                 f"{status_emoji} {metrics.status[:6]}",
@@ -177,80 +193,87 @@ class LLMTopMonitor:
                 f"[{cpu_style}]{metrics.cpu_percent}%[/{cpu_style}]",
                 f"[{error_style}]{metrics.error_rate:.1f}%[/{error_style}]",
                 f"{metrics.latency_p95}ms",
-                str(metrics.replicas)
+                str(metrics.replicas),
             )
-            
+
         return table
-        
+
     def _create_summary_panel(self) -> Panel:
         """Create cluster summary panel"""
         if not self.models:
             return Panel("No models loaded", border_style="red")
-            
+
         total_qps = sum(m.current_qps for m in self.models.values())
         total_replicas = sum(m.replicas for m in self.models.values())
         avg_cpu = sum(m.cpu_percent for m in self.models.values()) / len(self.models)
         avg_error = sum(m.error_rate for m in self.models.values()) / len(self.models)
-        
+
         healthy_models = sum(1 for m in self.models.values() if m.status == "Ready")
         total_models = len(self.models)
-        
+
         runtime = time.time() - self.start_time
-        
+
         summary_text = Text()
         summary_text.append(f"🚀 mtop - LLM Inference Monitor\n", style="bold cyan")
-        summary_text.append(f"Mode: {self.mtop.mode} | Namespace: {self.namespace} | Runtime: {runtime:.0f}s | Sort: {self.sort_key}\n", style="dim")
+        summary_text.append(
+            f"Mode: {self.mtop.mode} | Namespace: {self.namespace} | Runtime: {runtime:.0f}s | Sort: {self.sort_key}\n",
+            style="dim",
+        )
         summary_text.append(f"Total QPS: {int(total_qps):,} ", style="white")
-        summary_text.append(f"• Models: {healthy_models}/{total_models} healthy ", style="green" if healthy_models == total_models else "yellow")
+        summary_text.append(
+            f"• Models: {healthy_models}/{total_models} healthy ",
+            style="green" if healthy_models == total_models else "yellow",
+        )
         summary_text.append(f"• Replicas: {total_replicas}\n", style="white")
         summary_text.append(f"Controls: Ctrl+C to quit | Sort by: {self.sort_key}", style="dim")
-        
+
         return Panel(summary_text, border_style="cyan")
-        
+
     def _create_layout(self) -> Layout:
         """Create the monitor layout"""
         layout = Layout()
-        layout.split_column(
-            Layout(name="summary", size=6),
-            Layout(name="main")
-        )
-        
+        layout.split_column(Layout(name="summary", size=6), Layout(name="main"))
+
         layout["summary"].update(self._create_summary_panel())
-        layout["main"].update(Panel(self._create_traffic_table(), 
-                                   title="🔥 Live LLM Inference Traffic", 
-                                   border_style="green"))
-        
+        layout["main"].update(
+            Panel(
+                self._create_traffic_table(),
+                title="🔥 Live LLM Inference Traffic",
+                border_style="green",
+            )
+        )
+
         return layout
-        
+
     def _handle_input(self):
         """Handle keyboard input (simplified - in real implementation would use proper input handling)"""
         # This is a simplified version - real implementation would need proper non-blocking input
         pass
-        
+
     def run(self):
         """Run the ldtop monitor"""
         self.console.print("[cyan]Starting mtop monitor...[/cyan]")
         self.console.print("[dim]Press Ctrl+C to exit[/dim]")
-        
+
         # Initial load
         self._load_models()
-        
+
         if not self.models:
             self.console.print("[red]No models found to monitor[/red]")
             return
-            
+
         try:
-            with Live(self._create_layout(), refresh_per_second=1/self.interval) as live:
+            with Live(self._create_layout(), refresh_per_second=1 / self.interval) as live:
                 while self.running:
                     # Update all models with some variation
                     for model in self.models.values():
                         model.update()
-                        
+
                     # Update display
                     live.update(self._create_layout())
-                    
+
                     time.sleep(self.interval)
-                    
+
         except KeyboardInterrupt:
             self.console.print("\n[yellow]Exiting mtop...[/yellow]")
         except Exception as e:
@@ -267,13 +290,15 @@ class MTop:
         self.logs_dir = self.mock_root / "pod_logs"
         self.states_dir = self.mock_root / "states" / "rollout"
 
-    def k8s_get(self, resource: str, name: Optional[str] = None, namespace: str = "default") -> Dict[str, Any]:
+    def k8s_get(
+        self, resource: str, name: Optional[str] = None, namespace: str = "default"
+    ) -> Dict[str, Any]:
         """Execute kubectl get command and return JSON"""
         cmd = ["kubectl", "get", resource]
         if name:
             cmd.append(name)
         cmd.extend(["-n", namespace, "-o", "json"])
-        
+
         result = subprocess.run(cmd, capture_output=True, text=True)
         if result.returncode != 0:
             print(colored(f"Error: {result.stderr.strip()}", "red"))
@@ -286,8 +311,14 @@ class MTop:
             data = self.k8s_get("llminferenceservice")
             for item in data.get("items", []):
                 name = item["metadata"]["name"]
-                ready = next((c for c in item.get("status", {}).get("conditions", []) 
-                            if c["type"] == "Ready"), {})
+                ready = next(
+                    (
+                        c
+                        for c in item.get("status", {}).get("conditions", [])
+                        if c["type"] == "Ready"
+                    ),
+                    {},
+                )
                 status = ready.get("status", "Unknown")
                 color = "green" if status == "True" else "red"
                 print(f"{name:35} | Ready: " + colored(status, color))
@@ -296,9 +327,15 @@ class MTop:
                 with open(cr_file) as f:
                     data = json.load(f)
                 name = data["metadata"]["name"]
-                ready = next((c for c in data.get("status", {}).get("conditions", []) 
-                            if c["type"] == "Ready"), {})
-                status = ready.get("status", "Unknown") 
+                ready = next(
+                    (
+                        c
+                        for c in data.get("status", {}).get("conditions", [])
+                        if c["type"] == "Ready"
+                    ),
+                    {},
+                )
+                status = ready.get("status", "Unknown")
                 color = "green" if status == "True" else "red"
                 print(f"{name:35} | Ready: " + colored(status, color))
 
@@ -313,7 +350,7 @@ class MTop:
                 return
             with open(cr_path) as f:
                 data = json.load(f)
-        
+
         if output_json:
             print(json.dumps(data, indent=2))
         else:
@@ -329,7 +366,7 @@ class MTop:
                 return
             with open(self.config_path) as f:
                 data = json.load(f)
-        
+
         if output_json:
             print(json.dumps(data, indent=2))
         else:
@@ -346,7 +383,7 @@ class MTop:
                 return
             with open(cr_path) as f:
                 data = json.load(f)
-        
+
         print(f"🔍 {name} status:")
         for cond in data.get("status", {}).get("conditions", []):
             print(f" - [{cond['type']}] Status: {cond['status']} - {cond.get('message', '')}")
@@ -384,7 +421,7 @@ class MTop:
         if not file_path.exists():
             print(colored(f"❌ File not found: {file_path}", "red"))
             return
-        
+
         try:
             with open(file_path) as f:
                 if file_path.suffix == ".yaml":
@@ -397,21 +434,25 @@ class MTop:
         except Exception as e:
             print(colored(f"❌ Error reading file {file_path}: {e}", "red"))
             return
-        
+
         try:
             if self.is_live:
                 cmd = ["kubectl", "apply", "-f", str(file_path)]
                 result = subprocess.run(cmd, capture_output=True, text=True)
                 print(result.stdout if result.returncode == 0 else result.stderr)
             else:
-                if not isinstance(data, dict) or "metadata" not in data or "name" not in data["metadata"]:
+                if (
+                    not isinstance(data, dict)
+                    or "metadata" not in data
+                    or "name" not in data["metadata"]
+                ):
                     print(f"❌ Invalid CR format: missing metadata.name field")
                     return
-                
+
                 name = data["metadata"]["name"]
                 cr_path = self.crs_dir / f"{name}.json"
                 self.crs_dir.mkdir(parents=True, exist_ok=True)
-                
+
                 with open(cr_path, "w") as f:
                     json.dump(data, f, indent=2)
                 print(colored(f"✅ Created {name}", "green"))
@@ -425,18 +466,18 @@ class MTop:
         if not topology_dir.exists():
             print(colored(f"❌ No rollout steps found for topology: {topology}", "red"))
             return
-        
+
         steps = sorted(topology_dir.glob("step*.json"))
         print(colored(f"📡 Simulating rollout for '{topology}' with {len(steps)} steps...", "blue"))
-        
+
         for step_path in steps:
             with open(step_path) as f:
                 step = json.load(f)
             print(f"Step {step['step']} @ {step['timestamp']}:")
-            for model, status in step['status'].items():
-                traffic = step['traffic'].get(model, 0)
+            for model, status in step["status"].items():
+                traffic = step["traffic"].get(model, 0)
                 print(f"  - {model:25s} {status['status']:12s} {traffic:>3}%")
-        
+
         print(colored("✅ Simulation complete.", "green"))
 
     def list_topologies(self) -> None:
@@ -444,18 +485,22 @@ class MTop:
         if not self.states_dir.exists():
             print("❌ No rollout topologies found.")
             return
-        
+
         print("📦 Available rollout topologies:")
         for d in sorted(self.states_dir.iterdir()):
             if d.is_dir():
                 print(f"  - {d.name}")
-                
+
     def ldtop(self, interval: float = 0.5, namespace: str = "default", **kwargs) -> None:
         """Run mtop monitoring"""
         if not RICH_AVAILABLE:
-            print(colored("❌ Rich library is required for ldtop. Install with: pip install rich", "red"))
+            print(
+                colored(
+                    "❌ Rich library is required for ldtop. Install with: pip install rich", "red"
+                )
+            )
             sys.exit(1)
-            
+
         monitor = LLMTopMonitor(self, interval=interval, namespace=namespace)
         monitor.run()
 
@@ -471,7 +516,7 @@ def main() -> None:
         else:
             # Arguments provided, insert ldtop as the command
             sys.argv.insert(1, "ldtop")
-    
+
     parser = argparse.ArgumentParser(
         prog="mtop",
         description="🚀 mtop: Mock CLI tool for debugging LLMInferenceService CRDs",
@@ -488,59 +533,77 @@ Examples:
   
 For more information: https://github.com/jeremyeder/mtop
         """,
-        formatter_class=argparse.RawDescriptionHelpFormatter
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    parser.add_argument("--mode", choices=["mock", "live"], 
-                       help="Execution mode: 'mock' uses local files, 'live' uses kubectl")
-    parser.add_argument("--json", action="store_true", 
-                       help="Output in JSON format (default: YAML)")
-    parser.add_argument("--verbose", "-v", action="store_true", 
-                       help="Enable verbose output for debugging")
-    
-    subparsers = parser.add_subparsers(dest="command", help="Available commands",
-                                     title="commands", metavar="<command>")
-    
+    parser.add_argument(
+        "--mode",
+        choices=["mock", "live"],
+        help="Execution mode: 'mock' uses local files, 'live' uses kubectl",
+    )
+    parser.add_argument("--json", action="store_true", help="Output in JSON format (default: YAML)")
+    parser.add_argument(
+        "--verbose", "-v", action="store_true", help="Enable verbose output for debugging"
+    )
+
+    subparsers = parser.add_subparsers(
+        dest="command", help="Available commands", title="commands", metavar="<command>"
+    )
+
     # Simple commands
     subparsers.add_parser("list", help="List all LLMInferenceServices with their status")
     subparsers.add_parser("config", help="Display the global LLM configuration")
     subparsers.add_parser("list-topologies", help="List available rollout topology types")
     subparsers.add_parser("help", help="Show detailed help information")
-    
+
     # ldtop command
-    ldtop_parser = subparsers.add_parser("ldtop", help="Real-time LLM inference monitoring (like htop for LLMs)")
-    ldtop_parser.add_argument("--interval", type=float, default=0.5, help="Refresh interval in seconds (default: 0.5)")
-    ldtop_parser.add_argument("--namespace", default="default", help="Kubernetes namespace to monitor")
-    
+    ldtop_parser = subparsers.add_parser(
+        "ldtop", help="Real-time LLM inference monitoring (like htop for LLMs)"
+    )
+    ldtop_parser.add_argument(
+        "--interval", type=float, default=0.5, help="Refresh interval in seconds (default: 0.5)"
+    )
+    ldtop_parser.add_argument(
+        "--namespace", default="default", help="Kubernetes namespace to monitor"
+    )
+
     # Commands with arguments
-    get_parser = subparsers.add_parser("get", help="Retrieve and display a specific LLMInferenceService")
+    get_parser = subparsers.add_parser(
+        "get", help="Retrieve and display a specific LLMInferenceService"
+    )
     get_parser.add_argument("name", help="CR name")
-    
-    check_parser = subparsers.add_parser("check", help="Check the detailed status of a specific service")
+
+    check_parser = subparsers.add_parser(
+        "check", help="Check the detailed status of a specific service"
+    )
     check_parser.add_argument("name", help="CR name")
-    
+
     logs_parser = subparsers.add_parser("logs", help="Display logs for a specific service")
     logs_parser.add_argument("name", help="Service name")
-    
+
     delete_parser = subparsers.add_parser("delete", help="Delete a specific LLMInferenceService")
     delete_parser.add_argument("name", help="CR name")
-    
-    create_parser = subparsers.add_parser("create", help="Create a new LLMInferenceService from file")
+
+    create_parser = subparsers.add_parser(
+        "create", help="Create a new LLMInferenceService from file"
+    )
     create_parser.add_argument("file", help="JSON/YAML file path")
-    
-    simulate_parser = subparsers.add_parser("simulate", help="Simulate a deployment rollout with specified topology")
+
+    simulate_parser = subparsers.add_parser(
+        "simulate", help="Simulate a deployment rollout with specified topology"
+    )
     simulate_parser.add_argument("topology", help="Topology name")
-    
+
     args = parser.parse_args()
-    
+
     # Determine mode
     mode = args.mode or os.environ.get("LLD_MODE", "mock")
     # Don't show mode output when using --json flag for get/config commands
-    show_mode = mode == "mock" and not (hasattr(args, 'json') and args.json)
+    show_mode = mode == "mock" and not (hasattr(args, "json") and args.json)
     if show_mode:
         print(colored(f"🔧 Mode: {mode}", "cyan"))
-    
+
     cli = MTop(mode=mode)
-    
+
     # Command dispatch
     commands = {
         "list": cli.list_crs,
@@ -554,9 +617,9 @@ For more information: https://github.com/jeremyeder/mtop
         "list-topologies": cli.list_topologies,
         "ldtop": lambda: cli.ldtop(interval=args.interval, namespace=args.namespace),
         "help": parser.print_help,
-        None: parser.print_help
+        None: parser.print_help,
     }
-    
+
     command_func = commands.get(args.command, parser.print_help)
     command_func()
 

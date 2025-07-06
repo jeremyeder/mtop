@@ -1,0 +1,53 @@
+# Canary Failure Demo Recipe
+# Shows a canary deployment that starts failing and how to handle it
+
+name: "Canary Deployment Failure"
+description: "Demonstrates canary deployment failure detection and rollback"
+emoji: "🚨"
+
+# Environment configuration
+environment:
+  mode: "mock"
+  config: "production-config.json"
+  topology: "enterprise"
+  rollout: "canary"
+
+# Override specific settings for failure scenario
+overrides:
+  MTOP_WORKLOAD_BASELINE_QPS: 300
+  MTOP_SLO_ERROR_RATE_PERCENT: 1.0     # Normal error tolerance
+  MTOP_WORKLOAD_SPIKE_MULTIPLIER: 3.0  # Simulate traffic spikes
+
+# Models to showcase (old vs new version)
+models:
+  primary: "gpt-4-turbo"      # Stable version
+  canary: "llama-3-70b-instruct"  # New version being tested
+
+# Demo script steps
+steps:
+  - action: "list"
+    description: "Show stable production environment"
+  - action: "simulate"
+    type: "canary"
+    target: "llama-3-70b-instruct"
+    description: "Start canary deployment"
+    inject_failure: true
+    failure_type: "increasing_errors"
+  - action: "ldtop"
+    duration: 45
+    description: "Watch failure detection and metrics"
+  - action: "rollback"
+    description: "Demonstrate automatic rollback"
+
+# Failure injection parameters
+failure_simulation:
+  start_step: 2
+  error_rate_progression: [0.1, 2.0, 5.0, 8.0]  # Increasing error rate
+  latency_degradation: true
+  
+# Expected outcomes
+outcomes:
+  - "Canary deployment starts successfully"
+  - "Error rates increase beyond SLO thresholds"
+  - "Automatic rollback triggers"
+  - "Production traffic protected from bad deployment"

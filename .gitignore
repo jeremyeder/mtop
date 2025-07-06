@@ -11,6 +11,9 @@ __pycache__/
 build/
 develop-eggs/
 dist/
+# Prevent source files in dist/
+dist/*.py
+dist/mtop/
 downloads/
 eggs/
 .eggs/

@@ -27,8 +27,12 @@ mtop is a mock CLI tool for debugging and simulating `LLMInferenceService` CRDs 
 
 ### Setup and Development
 ```bash
-# Python version check (3.11+ required)
+# Python version check (3.12 preferred, 3.11+ required)
 python3 --version
+
+# Use virtual environment (recommended)
+python3 -m venv .venv
+source .venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
@@ -42,7 +46,7 @@ chmod +x mtop
 
 ### Testing
 ```bash
-# Run all 53 tests
+# Run all tests
 python3 -m pytest tests/ -v
 
 # Run with coverage
@@ -52,10 +56,15 @@ python3 -m pytest tests/ --cov=. --cov-report=term
 python3 -m pytest tests/test_cli.py -v          # CLI integration tests
 python3 -m pytest tests/test_new_architecture.py -v  # Architecture tests
 python3 -m pytest tests/test_kubectl_ld_unit.py -v  # Unit tests
+
+# Run single test
+python3 -m pytest tests/test_cli.py::test_specific_function -v
 ```
 
 ### Code Quality
 ```bash
+# MUST run all linters before pushing code to GitHub
+
 # Format code (line length: 100)
 black .
 
@@ -74,6 +83,9 @@ bandit -r . -f json
 
 # Code complexity
 radon cc . --min B
+
+# Run all quality checks at once
+black . && isort . && mypy . && pylint mtop/ config_loader.py column_engine.py
 ```
 
 ### Application Usage
@@ -160,9 +172,11 @@ export LLD_MODE=mock    # Use local mock files (default)
 
 ## Important Notes
 
-- **Python 3.11+**: Required, version checked at startup
+- **Python 3.12**: Preferred version for development and testing (3.11+ minimum)
 - **Mock vs Live**: Default is mock mode, live mode requires kubectl
 - **Type Safety**: Strict mypy configuration enabled
 - **Performance**: Async operations with caching for large datasets
 - **Security**: Bandit scanning enabled, safety checks for vulnerabilities
 - **Collaboration**: Uses GitHub issues for feature tracking and collaboration workflow
+- **Git Workflow**: Always squash commits, sign releases with git signature, frequent commits with succinct messages
+- **Virtual Environments**: Always use Python virtual environments to avoid affecting system packages

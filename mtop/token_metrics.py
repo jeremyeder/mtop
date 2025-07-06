@@ -689,7 +689,7 @@ class TokenTracker:
             # Add realistic queue depth simulation
             queue_depth = max(0, random.randint(0, 5) - i // 2)
             metrics.queue_depth = queue_depth
-            
+
             # Update queue metrics with realistic depth progression
             if model_name in self._queue_metrics:
                 self._queue_metrics[model_name].update_queue_depth(queue_depth)
@@ -750,17 +750,18 @@ class TokenTracker:
             if self._queue_metrics:
                 all_queue_depths = []
                 total_queue_utilization = 0.0
-                
+
                 for queue_metric in self._queue_metrics.values():
                     queue_stats_data = queue_metric.get_depth_statistics()
                     if queue_stats_data.get("history_count", 0) > 0:
                         all_queue_depths.append(queue_stats_data["average_depth"])
                         total_queue_utilization += queue_metric.get_queue_utilization()
-                
+
                 if all_queue_depths:
                     queue_stats = {
                         "avg_queue_depth": sum(all_queue_depths) / len(all_queue_depths),
-                        "avg_queue_utilization_percent": total_queue_utilization / len(self._queue_metrics),
+                        "avg_queue_utilization_percent": total_queue_utilization
+                        / len(self._queue_metrics),
                     }
 
             result = {
@@ -772,10 +773,10 @@ class TokenTracker:
                 "avg_tokens_per_second": avg_tps,
                 "avg_ttft_ms": avg_ttft,
             }
-            
+
             # Add queue statistics if available
             result.update(queue_stats)
-            
+
             return result
 
 
@@ -851,122 +852,122 @@ def create_queue_metrics(max_queue_depth: int = 100) -> "QueueMetrics":
 @dataclass
 class QueueMetrics:
     """Queue depth tracking and performance impact analysis for LLM inference.
-    
+
     Tracks queue depth over time and analyzes its impact on time-to-first-token (TTFT)
     and overall throughput. Thread-safe for concurrent access.
     """
-    
+
     max_queue_depth: int = 100
     current_depth: int = 0
     depth_history: deque = field(default_factory=lambda: deque(maxlen=1000))  # Rolling window
     _lock: Lock = field(default_factory=Lock)
-    
+
     def __post_init__(self):
         """Validate queue metrics configuration."""
         if self.max_queue_depth <= 0:
             raise ValueError(f"max_queue_depth must be positive, got {self.max_queue_depth}")
-        
+
         if self.current_depth < 0:
             raise ValueError(f"current_depth cannot be negative, got {self.current_depth}")
-    
+
     def update_queue_depth(self, depth: int) -> None:
         """Update current queue depth and add to history.
-        
+
         Args:
             depth: Current queue depth
-            
+
         Raises:
             ValueError: If depth is negative
         """
         if depth < 0:
             raise ValueError(f"depth cannot be negative, got {depth}")
-        
+
         with self._lock:
             self.current_depth = depth
             self.depth_history.append(depth)
-    
+
     def get_current_depth(self) -> int:
         """Get current queue depth.
-        
+
         Returns:
             Current queue depth
         """
         with self._lock:
             return self.current_depth
-    
+
     def get_average_depth(self) -> float:
         """Calculate average queue depth from history.
-        
+
         Returns:
             Average queue depth, or 0.0 if no history
         """
         with self._lock:
             if not self.depth_history:
                 return 0.0
-            
+
             return sum(self.depth_history) / len(self.depth_history)
-    
+
     def get_max_depth(self) -> int:
         """Get maximum queue depth from history.
-        
+
         Returns:
             Maximum queue depth, or 0 if no history
         """
         with self._lock:
             if not self.depth_history:
                 return 0
-            
+
             return max(self.depth_history)
-    
+
     def get_min_depth(self) -> int:
         """Get minimum queue depth from history.
-        
+
         Returns:
             Minimum queue depth, or 0 if no history
         """
         with self._lock:
             if not self.depth_history:
                 return 0
-            
+
             return min(self.depth_history)
-    
+
     def get_depth_impact_on_ttft(self) -> float:
         """Calculate estimated impact of queue depth on TTFT.
-        
+
         Uses a simplified model where deeper queues increase TTFT linearly.
         Real-world impact depends on model size, hardware, and batching strategies.
-        
+
         Returns:
             Estimated TTFT impact in milliseconds based on current depth
         """
         with self._lock:
             if self.current_depth == 0:
                 return 0.0
-            
+
             # Simplified impact model: each request in queue adds ~10ms TTFT
             # This is a rough approximation for demo purposes
             base_impact_per_request = 10.0  # ms
             return self.current_depth * base_impact_per_request
-    
+
     def get_depth_percentile(self, percentile: int) -> Optional[float]:
         """Calculate queue depth percentile from history.
-        
+
         Args:
             percentile: Percentile to calculate (0-100)
-            
+
         Returns:
             Queue depth at specified percentile, or None if insufficient data
-            
+
         Raises:
             ValueError: If percentile is not between 0 and 100
         """
         if not 0 <= percentile <= 100:
             raise ValueError(f"percentile must be between 0 and 100, got {percentile}")
-        
+
         with self._lock:
             if len(self.depth_history) < 10:  # Need sufficient data
                 return None
-            
+
             depths = sorted(self.depth_history)
             if percentile == 0:
                 return float(depths[0])
@@ -977,17 +978,17 @@ class QueueMetrics:
                 index = (percentile / 100.0) * (len(depths) - 1)
                 lower_index = int(index)
                 upper_index = min(lower_index + 1, len(depths) - 1)
-                
+
                 if lower_index == upper_index:
                     return float(depths[lower_index])
                 else:
                     # Linear interpolation
                     weight = index - lower_index
                     return depths[lower_index] * (1 - weight) + depths[upper_index] * weight
-    
+
     def get_depth_statistics(self) -> Dict[str, Any]:
         """Get comprehensive queue depth statistics.
-        
+
         Returns:
             Dictionary with queue depth statistics
         """
@@ -999,9 +1000,9 @@ class QueueMetrics:
                     "history_count": 0,
                     "estimated_ttft_impact_ms": self.get_depth_impact_on_ttft(),
                 }
-            
+
             depths = list(self.depth_history)
-            
+
             result = {
                 "current_depth": self.current_depth,
                 "max_queue_depth": self.max_queue_depth,
@@ -1011,41 +1012,41 @@ class QueueMetrics:
                 "max_depth": max(depths),
                 "estimated_ttft_impact_ms": self.get_depth_impact_on_ttft(),
             }
-            
+
             # Add percentiles if we have enough data
             if len(depths) >= 10:
                 result["p50_depth"] = self.get_depth_percentile(50)
                 result["p95_depth"] = self.get_depth_percentile(95)
                 result["p99_depth"] = self.get_depth_percentile(99)
-            
+
             return result
-    
+
     def reset_history(self) -> None:
         """Reset queue depth history while preserving current depth.
-        
+
         Clears the rolling window of depth measurements while keeping
         current state and configuration.
         """
         with self._lock:
             self.depth_history.clear()
-    
+
     def is_queue_full(self) -> bool:
         """Check if queue is at maximum capacity.
-        
+
         Returns:
             True if current depth equals max depth
         """
         with self._lock:
             return self.current_depth >= self.max_queue_depth
-    
+
     def get_queue_utilization(self) -> float:
         """Calculate queue utilization as percentage.
-        
+
         Returns:
             Queue utilization percentage (0.0 to 100.0)
         """
         with self._lock:
             if self.max_queue_depth == 0:
                 return 0.0
-            
+
             return (self.current_depth / self.max_queue_depth) * 100.0
