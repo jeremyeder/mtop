@@ -460,9 +460,13 @@ class GPUHeartbeat:
         start_time = time.time()
         update_interval = 2.0  # Update every 2 seconds
 
-        while time.time() - start_time < duration_seconds:
+        max_iterations = int(duration_seconds / 0.1) + 100  # Safety valve
+        iteration = 0
+
+        while time.time() - start_time < duration_seconds and iteration < max_iterations:
             current_time = time.time()
             elapsed = current_time - start_time
+            iteration += 1
 
             # Create realistic utilization wave pattern
             base_utilization = target_utilization

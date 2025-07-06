@@ -645,8 +645,12 @@ class QueueManager:
 
         depths = []
 
-        while time.time() - start_time < duration:
+        max_iterations = int(duration / 0.1) + 100  # Safety valve
+        iteration = 0
+
+        while time.time() - start_time < duration and iteration < max_iterations:
             current_time = time.time()
+            iteration += 1
 
             # Generate random requests
             if random.random() < 0.3:  # 30% chance each iteration

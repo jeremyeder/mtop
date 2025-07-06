@@ -377,7 +377,6 @@ class AllocationManager:
                 available_fraction >= request.requested_size
                 and available_memory >= request.memory_requirements_mb
             ):
-
                 # Create fraction
                 fraction_id = str(uuid.uuid4())
                 fraction = GPUFraction(
@@ -809,8 +808,12 @@ class DRASimulator:
         workload_counter = 0
         active_workloads = set()
 
-        while time.time() - start_time < duration_seconds:
+        max_iterations = int(duration_seconds / 0.1) + 100  # Safety valve
+        iteration = 0
+
+        while time.time() - start_time < duration_seconds and iteration < max_iterations:
             current_time = time.time()
+            iteration += 1
 
             # Submit new requests periodically
             if current_time - last_request_time >= request_interval:
