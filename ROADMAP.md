@@ -34,21 +34,21 @@
 
 ### 🔍 Cluster Awareness
 - Detect if CRDs exist (fail with clear guidance if not)
-- Load CRs from `kubectl get ... -o json` when `LLD_MODE=live`
+- Load CRs from kubernetes API when `LLD_MODE=live`
 - Graceful fallbacks if user lacks RBAC
 
 ### 📝 Live Listing & Inspection
-- `kubectl ld list --live`: show live CRs
+- `mtop list --live`: show live CRs
 - Show status, age, readiness, errors inline
 - Add `--namespace` and `--all-namespaces` flags
 
 ### 📜 Logs
-- `kubectl ld logs <model>`:
-    - Wrap `kubectl logs` with label selector based on CR
+- `mtop logs <model>`:
+    - Wrap kubernetes logs API with label selector based on CR
     - Include `--tail`, `--previous`, `--since`
 
 ### 🧾 Diffing
-- `kubectl ld diff <snapshot>`:
+- `mtop diff <snapshot>`:
     - Compare live CRs with previously saved mock or snapshot
     - Color-coded output (added, removed, changed keys)
     - Support CR+Config objects in diff
@@ -58,12 +58,12 @@
 ## 🥉 Milestone 3: SRE Observability Tools
 
 ### 🩺 Health Summary
-- `kubectl ld health`:
+- `mtop health`:
     - Show high-level readiness of all LLM services
     - Detect Pod OOMs, CrashLoops, long Pending states
 
 ### 🔎 Deep Describe
-- Extended describe from `kubectl describe`
+- Extended describe from kubernetes API
     - Include Events, container states, last probes
     - Highlight failure reasons (red)
 
@@ -84,7 +84,7 @@
 ## 🏅 Milestone 4: Traffic Control & Cost Awareness
 
 ### 🔄 Traffic Shift (Mock + API Support)
-- `kubectl ld traffic shift gpt2 bert-base 20`
+- `mtop traffic shift gpt2 bert-base 20`
     - Update traffic split in CR or Envoy
     - Print new weights and show transition animation
 
@@ -96,7 +96,7 @@
 - Show $/req or $/hour estimates per rollout
 
 ### 🧪 Load Testing
-- `kubectl ld bench gpt2`:
+- `mtop bench gpt2`:
     - Send mock or real prompts
     - Track P50/P95 latency
     - Print QPS/tokens/s breakdown
@@ -119,7 +119,7 @@
 - Use keyboard nav to step through model deployments
 
 ### 🧠 Doctor Command
-- `kubectl ld doctor <model>`:
+- `mtop doctor <model>`:
     - Diagnose common misconfigs:
         - Missing image
         - Wrong volume mount
@@ -134,7 +134,7 @@
     - Prometheus alert
 
 ### 🔍 GitOps Diff Mode
-- `kubectl ld diff prod cluster-snap.yaml`:
+- `mtop diff prod cluster-snap.yaml`:
     - Compare live state to Git-tracked baseline
     - Show YAML side-by-side changes
 

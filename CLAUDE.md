@@ -55,7 +55,7 @@ python3 -m pytest tests/ --cov=. --cov-report=term
 # Run specific test categories
 python3 -m pytest tests/test_cli.py -v          # CLI integration tests
 python3 -m pytest tests/test_new_architecture.py -v  # Architecture tests
-python3 -m pytest tests/test_kubectl_ld_unit.py -v  # Unit tests
+python3 -m pytest tests/test_basics.py -v  # Unit tests
 
 # Run single test
 python3 -m pytest tests/test_cli.py::test_specific_function -v
@@ -206,7 +206,7 @@ export LLD_MODE=mock    # Use local mock files (default)
 
 ### Testing Strategy
 - Use pytest fixtures for setup (`mtop_mock`, `mock_env`)
-- Mock external dependencies (kubectl, file system)
+- Mock external dependencies (kubernetes client, file system)
 - Test both success and failure scenarios
 - Maintain comprehensive coverage (excludes test files)
 
@@ -241,7 +241,7 @@ export LLD_MODE=mock    # Use local mock files (default)
 ## Important Notes
 
 - **Python 3.12**: Preferred version for development and testing (3.11+ minimum)
-- **Mock vs Live**: Default is mock mode, live mode requires kubectl
+- **Mock vs Live**: Default is mock mode, live mode requires kubernetes cluster access
 - **Type Safety**: Strict mypy configuration enabled
 - **Performance**: Async operations with caching for large datasets
 - **Security**: Bandit scanning enabled, safety checks for vulnerabilities

@@ -330,8 +330,8 @@ export LLD_MODE=live  # or 'mock'
 **Old Pattern**:
 ```python
 # Hard-coded dependencies
-kubectl_ld = KubectlLD(mode="live")
-kubectl_ld.list_crs()
+mtop_client = MTOPClient(mode="live")
+mtop_client.list_crs()
 ```
 
 **New Pattern**:
