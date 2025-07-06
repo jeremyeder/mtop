@@ -14,7 +14,6 @@ from mtop.dra_fractioning import (
     AllocationRequest,
     AllocationStatus,
     DRASimulator,
-    FractionSize,
     GPUFraction,
     MemoryIsolation,
     create_dra_simulator,
@@ -114,14 +113,14 @@ class TestGPUFraction:
         # No allocation time set
         assert fraction.get_allocation_duration() is None
 
-        # Set allocation time
+        # Set allocation time and mock time passage
         start_time = time.time()
         fraction.allocated_at = start_time
-        time.sleep(0.1)  # Small delay
 
-        duration = fraction.get_allocation_duration()
-        assert duration is not None
-        assert duration > 0.05  # Should be at least 50ms
+        with patch("time.time", return_value=start_time + 0.1):
+            duration = fraction.get_allocation_duration()
+            assert duration is not None
+            assert duration > 0.05  # Should be at least 50ms
 
         # Set release time
         fraction.released_at = start_time + 1.0
@@ -216,8 +215,10 @@ class TestAllocationRequest:
         )
 
         assert not request.is_expired()
-        time.sleep(0.15)
-        assert request.is_expired()
+
+        # Mock time passage to test expiration
+        with patch("time.time", return_value=time.time() + 0.2):
+            assert request.is_expired()
 
 
 class TestMemoryIsolation:
@@ -485,8 +486,7 @@ class TestAllocationManager:
         )
         manager.submit_request(request)
 
-        time.sleep(0.02)  # Wait for expiration
-
+        # Mock time passage to expire the request
         available_gpus = {
             "gpu-01": {
                 "available_fraction": 1.0,
@@ -495,7 +495,8 @@ class TestAllocationManager:
             }
         }
 
-        allocated = manager.process_requests(available_gpus)
+        with patch("time.time", return_value=time.time() + 0.05):
+            allocated = manager.process_requests(available_gpus)
         assert len(allocated) == 0  # Expired request should be ignored
         assert len(manager.get_pending_requests()) == 0  # Should be removed
 
@@ -676,7 +677,7 @@ class TestDRASimulator:
         simulator.request_allocation(
             workload_id="test", fraction_size=0.25, memory_mb=20480, compute_units=1728
         )
-        allocated = simulator.process_allocations()
+        simulator.process_allocations()
 
         # Check memory isolation
         utilization = simulator.get_gpu_utilization("gpu-01")
@@ -796,7 +797,6 @@ class TestIntegrationScenarios:
         simulator.add_gpu("gpu-01", "nvidia-h100")
 
         # Create fragmentation with multiple small allocations
-        small_workloads = []
         for i in range(8):  # 8 x 1/8 = full GPU
             simulator.request_allocation(
                 workload_id=f"small-{i}", fraction_size=0.125, memory_mb=10240, compute_units=800
