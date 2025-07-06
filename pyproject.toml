@@ -74,7 +74,7 @@ where = ["."]
 include = ["mtop*"]
 exclude = ["tests*", "mock*", "mocks*", "tapes*", "demos*", "config*", "reports*", "templates*", "recordings*"]
 
-[tool.setuptools.py-modules]
+[tool.setuptools]
 py-modules = ["config_loader", "column_engine", "watch_rollout"]
 
 [tool.setuptools_scm]
