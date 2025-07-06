@@ -52,6 +52,7 @@ def test_no_kubectl_legacy_references():
         r"kubectl.*context",
         r"kubectl.*namespace",
         r"kubectl.*timeout",
+        r"# kubectl settings for live mode",
         # Live implementation that actually uses kubectl command
         r'return "kubectl"',
         r"using kubectl commands",

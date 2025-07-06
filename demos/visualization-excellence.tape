@@ -5,7 +5,7 @@
 Output demos/visualization-excellence.gif
 Output demos/visualization-excellence.mp4
 
-Set Shell python3
+Set Shell "bash"
 Set Theme "Monokai Pro"
 Set FontSize 16
 Set Width 1400
