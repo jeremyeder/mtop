@@ -26,6 +26,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install flake8 black isort mypy pylint
         pip install -r requirements.txt
+        pip install -e .
     
     - name: Lint with flake8
       run: |
@@ -69,6 +70,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install pytest pytest-cov
         pip install -r requirements.txt
+        pip install -e .
     
     - name: Run tests with pytest
       run: |
