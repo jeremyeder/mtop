@@ -69,6 +69,14 @@ Changelog = "https://github.com/jeremyeder/mtop/releases"
 mtop = "mtop:main"
 watch-rollout = "watch_rollout:main"
 
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["mtop*"]
+exclude = ["tests*", "mock*", "mocks*", "tapes*", "demos*", "config*", "reports*", "templates*", "recordings*"]
+
+[tool.setuptools.py-modules]
+py-modules = ["config_loader", "column_engine", "watch_rollout"]
+
 [tool.setuptools_scm]
 write_to = "mtop/_version.py"
 
