@@ -95,7 +95,7 @@ extend-exclude = '''
   | \.venv
   | build
   | dist
-)/
+) | mtop/_version\.py
 '''
 
 [tool.isort]
@@ -106,6 +106,7 @@ include_trailing_comma = true
 force_grid_wrap = 0
 use_parentheses = true
 ensure_newline_before_comments = true
+skip = ["mtop/_version.py"]
 
 [tool.mypy]
 python_version = "3.11"
