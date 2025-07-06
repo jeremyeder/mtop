@@ -2,7 +2,7 @@
 """
 Interactive Configuration Mixer for mtop Demos
 
-Like a recipe builder but for demo configurations! 
+Like a recipe builder but for demo configurations!
 Choose your adventure style interface to create custom demo scenarios.
 
 Usage:
@@ -118,7 +118,11 @@ class ConfigMixer:
                 "emoji": "🔄",
                 "safety": "medium",
             },
-            "rolling": {"description": "Rolling update one by one", "emoji": "🌊", "safety": "high"},
+            "rolling": {
+                "description": "Rolling update one by one",
+                "emoji": "🌊",
+                "safety": "high",
+            },
             "shadow": {
                 "description": "Shadow testing in parallel",
                 "emoji": "👥",
