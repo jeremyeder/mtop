@@ -167,3 +167,6 @@ kubectl-ld-demo.castclaude-slash-repo/
 
 # Claude Code progress tracking (local only)
 CLAUDE_PROGRESS.md
+
+# Auto-generated version files
+mtop/_version.py
