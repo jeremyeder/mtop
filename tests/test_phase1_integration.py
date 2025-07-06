@@ -135,7 +135,7 @@ class TestGPUHeartbeatIntegration:
             for j in range(3):
                 model_name = f"model-{gpu_type}-{j}"
                 metrics = tracker.simulate_token_generation(model_name, target_tokens=100)
-                
+
                 # GPU utilization should correlate with token generation
                 utilization = 70 + (metrics.tokens_generated / 100) * 25  # 70-95% range
                 gpu_metrics = heartbeat.tracker.get_gpu_metrics(f"gpu-0{i+1}")
@@ -159,7 +159,7 @@ class TestGPUHeartbeatIntegration:
 
         # Add GPU and simulate high load
         heartbeat.add_gpu("gpu-01", "nvidia-h100")
-        
+
         # Simulate overload scenario
         high_load_metrics = type(heartbeat.tracker._metrics.get("gpu-01") or object)(
             gpu_id="gpu-01",
@@ -167,7 +167,7 @@ class TestGPUHeartbeatIntegration:
             vram_used_gb=75.0,
             vram_total_gb=80.0,
             temperature_c=85.0,
-            power_watts=450.0
+            power_watts=450.0,
         )
         heartbeat.tracker.update_gpu_metrics(high_load_metrics)
 
@@ -233,13 +233,13 @@ class TestDRAFractioningIntegration:
             workload_id="test-workload",
             fraction_size=0.75,  # 75% of GPU
             memory_mb=60000,
-            compute_units=4000
+            compute_units=4000,
         )
         allocated = dra.process_allocations()
 
         if allocated:
             fraction = allocated[0]
-            
+
             # Update heartbeat to reflect DRA allocation
             gpu_utilization = fraction.size * 100  # 75%
             gpu_metrics = heartbeat.tracker.get_gpu_metrics(fraction.gpu_id)
@@ -267,8 +267,8 @@ class TestDRAFractioningIntegration:
 
         # Simulate token generation workloads
         workloads = [
-            ("small-model", 0.25, 20000),   # 1/4 GPU, 20GB
-            ("medium-model", 0.5, 40000),   # 1/2 GPU, 40GB
+            ("small-model", 0.25, 20000),  # 1/4 GPU, 20GB
+            ("medium-model", 0.5, 40000),  # 1/2 GPU, 40GB
         ]
 
         allocated_fractions = []
@@ -278,13 +278,13 @@ class TestDRAFractioningIntegration:
                 workload_id=workload_id,
                 fraction_size=fraction_size,
                 memory_mb=memory_mb,
-                compute_units=int(fraction_size * 6000)
+                compute_units=int(fraction_size * 6000),
             )
-            
+
             # Simulate corresponding token generation
             tokens_target = int(fraction_size * 200)  # Proportional to GPU fraction
             metrics = tracker.simulate_token_generation(workload_id, target_tokens=tokens_target)
-            
+
             allocated = dra.process_allocations()
             allocated_fractions.extend(allocated)
 
@@ -315,9 +315,9 @@ class TestDRAFractioningIntegration:
 
         # Simulate realistic workload mix
         workload_scenarios = [
-            ("inference-api", 0.375, 30000, 150),      # 3/8 GPU for API
-            ("batch-processing", 0.25, 20000, 100),    # 1/4 GPU for batch
-            ("model-training", 0.25, 20000, 50),       # 1/4 GPU for training
+            ("inference-api", 0.375, 30000, 150),  # 3/8 GPU for API
+            ("batch-processing", 0.25, 20000, 100),  # 1/4 GPU for batch
+            ("model-training", 0.25, 20000, 50),  # 1/4 GPU for training
         ]
 
         total_allocated = 0
@@ -327,7 +327,7 @@ class TestDRAFractioningIntegration:
                 workload_id=workload_id,
                 fraction_size=fraction,
                 memory_mb=memory_mb,
-                compute_units=int(fraction * 6000)
+                compute_units=int(fraction * 6000),
             )
             total_allocated += fraction
 
@@ -336,7 +336,7 @@ class TestDRAFractioningIntegration:
 
         # Process all allocations
         allocated_fractions = dra.process_allocations()
-        
+
         # Should allocate all workloads (total = 0.875 < 1.0)
         assert len(allocated_fractions) == 3
 
@@ -382,23 +382,21 @@ class TestDemoSystemIntegration:
         # Run demo status check (should work without full setup)
         try:
             result = subprocess.run(
-                ["./demo-status.sh", "--json"],
-                capture_output=True,
-                text=True,
-                timeout=30
+                ["./demo-status.sh", "--json"], capture_output=True, text=True, timeout=30
             )
-            
+
             # Should produce valid output (even if some checks fail)
             assert result.returncode in [0, 1]  # 0 = healthy, 1 = warnings/errors
-            
+
             # Output should be parseable JSON when --json flag used
             if result.stdout.strip():
                 import json
+
                 status_data = json.loads(result.stdout)
                 assert "timestamp" in status_data
                 assert "overall_status" in status_data
                 assert "components" in status_data
-                
+
         except subprocess.TimeoutExpired:
             pytest.skip("Demo status check timed out (system may be slow)")
         except FileNotFoundError:
@@ -408,15 +406,15 @@ class TestDemoSystemIntegration:
         """Test that required mock data is available for demos."""
         required_mock_dirs = [
             "mocks/crs",
-            "mocks/config", 
+            "mocks/config",
             "mocks/pod_logs",
             "mocks/states",
-            "mocks/topologies"
+            "mocks/topologies",
         ]
 
         for mock_dir in required_mock_dirs:
             assert os.path.exists(mock_dir), f"Required mock directory {mock_dir} not found"
-            
+
             # Should have some files in each directory
             files = os.listdir(mock_dir)
             assert len(files) > 0, f"Mock directory {mock_dir} is empty"
@@ -429,15 +427,15 @@ class TestDemoSystemIntegration:
         """Test that configuration loading works for demo scenarios."""
         # Should be able to load configuration without errors
         config = load_config()
-        
+
         assert config is not None
-        assert hasattr(config, 'technology')
-        assert hasattr(config, 'slo')
-        assert hasattr(config, 'workload')
+        assert hasattr(config, "technology")
+        assert hasattr(config, "slo")
+        assert hasattr(config, "workload")
 
         # Technology config should have GPU types
         assert len(config.technology.gpu_types) > 0
-        
+
         # Should have common GPU types for demos
         gpu_types = config.technology.gpu_types.keys()
         common_types = ["nvidia-h100", "nvidia-a100", "nvidia-v100"]
@@ -460,7 +458,7 @@ class TestPerformanceValidation:
 
         # Measure performance of token simulation
         start_time = time.time()
-        
+
         # Simulate multiple models concurrently
         models = [f"perf-test-model-{i}" for i in range(10)]
         for model in models:
@@ -496,7 +494,7 @@ class TestPerformanceValidation:
 
         # Measure heartbeat calculation performance
         start_time = time.time()
-        
+
         for _ in range(100):  # 100 heartbeat calculations
             pulse = heartbeat.get_current_heartbeat()
             assert pulse is not None
@@ -532,7 +530,7 @@ class TestPerformanceValidation:
                 workload_id=f"workload-{i}",
                 fraction_size=0.125,  # Small fractions
                 memory_mb=10000,
-                compute_units=800
+                compute_units=800,
             )
 
         # Process all requests
@@ -554,11 +552,12 @@ class TestPerformanceValidation:
 
     def test_memory_usage_under_stress(self):
         """Test memory usage doesn't grow excessively under stress."""
-        import psutil
         import gc
 
+        import psutil
+
         config = load_config()
-        
+
         # Get baseline memory usage
         gc.collect()
         process = psutil.Process()
@@ -574,7 +573,7 @@ class TestPerformanceValidation:
             # Token metrics
             model_name = f"stress-model-{i % 10}"  # Reuse model names
             tracker.simulate_token_generation(model_name, target_tokens=50)
-            
+
             # Heartbeat (add/remove GPUs)
             if i % 10 == 0:
                 gpu_id = f"stress-gpu-{i // 10}"
@@ -582,14 +581,14 @@ class TestPerformanceValidation:
                 heartbeat.get_current_heartbeat()
                 if i > 0:
                     heartbeat.remove_gpu(f"stress-gpu-{(i // 10) - 1}")
-            
+
             # DRA allocations
             if i % 5 == 0:
                 dra.request_allocation(
                     workload_id=f"stress-workload-{i}",
                     fraction_size=0.125,
                     memory_mb=5000,
-                    compute_units=400
+                    compute_units=400,
                 )
                 allocated = dra.process_allocations()
                 # Release some allocations to prevent buildup
@@ -611,7 +610,7 @@ class TestCrossComponentIntegration:
     def test_full_system_simulation(self):
         """Test full system with all components working together."""
         config = load_config()
-        
+
         # Initialize all major components
         tracker = create_token_tracker(config.technology, config.slo)
         heartbeat = create_gpu_heartbeat(config.technology)
@@ -623,7 +622,7 @@ class TestCrossComponentIntegration:
         gpu_types = ["nvidia-h100", "nvidia-a100", "nvidia-v100"]
         for i, gpu_type in enumerate(gpu_types):
             gpu_id = f"gpu-{i:02d}"
-            
+
             # Add to all systems
             heartbeat.add_gpu(gpu_id, gpu_type)
             dra.add_gpu(gpu_id, gpu_type)
@@ -648,7 +647,7 @@ class TestCrossComponentIntegration:
                 fraction_size=fraction,
                 memory_mb=int(fraction * 80000),  # Proportional memory
                 compute_units=int(fraction * 6000),
-                priority=priority
+                priority=priority,
             )
 
             # 2. Simulate token generation
@@ -662,7 +661,7 @@ class TestCrossComponentIntegration:
 
         # Process DRA allocations
         allocated_fractions = dra.process_allocations()
-        
+
         # Update heartbeat with allocation results
         for fraction in allocated_fractions:
             gpu_metrics = heartbeat.tracker.get_gpu_metrics(fraction.gpu_id)
@@ -673,10 +672,10 @@ class TestCrossComponentIntegration:
                 heartbeat.tracker.update_gpu_metrics(gpu_metrics)
 
         # Validate system coherence
-        
+
         # 1. DRA should have allocated multiple fractions
         assert len(allocated_fractions) >= 3, "Should allocate multiple workloads"
-        
+
         # 2. Token metrics should show realistic patterns
         token_summary = tracker.get_summary_stats()
         assert token_summary["total_models"] >= 3
@@ -685,7 +684,7 @@ class TestCrossComponentIntegration:
         # 3. Heartbeat should reflect aggregate load
         heartbeat_status = heartbeat.get_system_status()
         assert heartbeat_status["aggregate_utilization"] > 30  # Should have some load
-        
+
         current_pulse = heartbeat.get_current_heartbeat()
         assert current_pulse.frequency_bpm > 60  # Should be elevated
 
@@ -708,7 +707,7 @@ class TestCrossComponentIntegration:
         dra_status = dra.get_system_status()
         heartbeat_gpu_count = heartbeat_status["gpu_count"]
         dra_gpu_count = dra_status["total_gpus"]
-        
+
         assert heartbeat_gpu_count == dra_gpu_count == 3, "GPU count should match across systems"
 
     def test_error_recovery_scenarios(self):
@@ -735,7 +734,7 @@ class TestCrossComponentIntegration:
                 workload_id="test",
                 fraction_size=2.0,  # Invalid size > 1.0
                 memory_mb=1000,
-                compute_units=100
+                compute_units=100,
             )
             assert False, "Should have raised error for invalid fraction size"
         except ValueError:
@@ -744,7 +743,7 @@ class TestCrossComponentIntegration:
         # Scenario 3: Remove GPU while allocations exist
         dra.request_allocation("test-workload", 0.5, 40000, 3000)
         allocated = dra.process_allocations()
-        
+
         if allocated:
             # Remove GPU (should handle gracefully)
             dra.remove_gpu("gpu-01")
@@ -762,13 +761,9 @@ class TestCrossComponentIntegration:
         """Test different configuration scenarios."""
         # Test with minimal configuration
         minimal_tech = TechnologyConfig(
-            gpu_types={
-                "test-gpu": GPUType(name="test-gpu", memory_gb=16, hourly_cost=1.0)
-            }
+            gpu_types={"test-gpu": GPUType(name="test-gpu", memory_gb=16, hourly_cost=1.0)}
         )
-        minimal_slo = SLOConfig(
-            ttft_p95_ms=1000, error_rate_percent=1.0, tokens_per_second=100
-        )
+        minimal_slo = SLOConfig(ttft_p95_ms=1000, error_rate_percent=1.0, tokens_per_second=100)
 
         tracker = create_token_tracker(minimal_tech, minimal_slo)
         heartbeat = create_gpu_heartbeat(minimal_tech)
@@ -777,16 +772,16 @@ class TestCrossComponentIntegration:
         # Should work with minimal config
         heartbeat.add_gpu("test-gpu-01", "test-gpu")
         dra.add_gpu("test-gpu-01", "test-gpu")
-        
+
         metrics = tracker.simulate_token_generation("test-model", target_tokens=10)
         assert metrics.is_completed()
 
         dra.request_allocation("test-workload", 0.5, 8000, 1000)
         allocated = dra.process_allocations()
-        
+
         # Systems should function with minimal config
         heartbeat_status = heartbeat.get_system_status()
         dra_status = dra.get_system_status()
-        
+
         assert heartbeat_status["gpu_count"] == 1
         assert dra_status["total_gpus"] == 1

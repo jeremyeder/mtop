@@ -33,7 +33,7 @@ class TestGPUFraction:
             size=0.25,
             memory_mb=20480,  # 20GB
             compute_units=1728,
-            workload_id="workload-test"
+            workload_id="workload-test",
         )
 
         assert fraction.fraction_id == "frac-001"
@@ -48,7 +48,9 @@ class TestGPUFraction:
         """Test GPUFraction validation in __post_init__."""
         # Test empty fraction_id
         with pytest.raises(ValueError, match="fraction_id cannot be empty"):
-            GPUFraction(fraction_id="", gpu_id="gpu-01", size=0.5, memory_mb=1000, compute_units=100)
+            GPUFraction(
+                fraction_id="", gpu_id="gpu-01", size=0.5, memory_mb=1000, compute_units=100
+            )
 
         # Test empty gpu_id
         with pytest.raises(ValueError, match="gpu_id cannot be empty"):
@@ -56,27 +58,31 @@ class TestGPUFraction:
 
         # Test invalid size
         with pytest.raises(ValueError, match="size must be between 0 and 1"):
-            GPUFraction(fraction_id="test", gpu_id="gpu-01", size=0.0, memory_mb=1000, compute_units=100)
+            GPUFraction(
+                fraction_id="test", gpu_id="gpu-01", size=0.0, memory_mb=1000, compute_units=100
+            )
 
         with pytest.raises(ValueError, match="size must be between 0 and 1"):
-            GPUFraction(fraction_id="test", gpu_id="gpu-01", size=1.5, memory_mb=1000, compute_units=100)
+            GPUFraction(
+                fraction_id="test", gpu_id="gpu-01", size=1.5, memory_mb=1000, compute_units=100
+            )
 
         # Test invalid memory
         with pytest.raises(ValueError, match="memory_mb must be positive"):
-            GPUFraction(fraction_id="test", gpu_id="gpu-01", size=0.5, memory_mb=0, compute_units=100)
+            GPUFraction(
+                fraction_id="test", gpu_id="gpu-01", size=0.5, memory_mb=0, compute_units=100
+            )
 
         # Test invalid compute units
         with pytest.raises(ValueError, match="compute_units must be positive"):
-            GPUFraction(fraction_id="test", gpu_id="gpu-01", size=0.5, memory_mb=1000, compute_units=0)
+            GPUFraction(
+                fraction_id="test", gpu_id="gpu-01", size=0.5, memory_mb=1000, compute_units=0
+            )
 
     def test_memory_range_calculation(self):
         """Test memory range calculation for isolation."""
         fraction = GPUFraction(
-            fraction_id="test-frac",
-            gpu_id="gpu-01",
-            size=0.25,
-            memory_mb=20480,
-            compute_units=1000
+            fraction_id="test-frac", gpu_id="gpu-01", size=0.25, memory_mb=20480, compute_units=1000
         )
 
         start_mb, end_mb = fraction.get_memory_range(81920)  # 80GB total
@@ -134,7 +140,7 @@ class TestAllocationRequest:
             requested_size=0.5,
             memory_requirements_mb=40960,
             compute_requirements=3456,
-            priority=8
+            priority=8,
         )
 
         assert request.request_id == "req-001"
@@ -150,44 +156,63 @@ class TestAllocationRequest:
         # Test empty request_id
         with pytest.raises(ValueError, match="request_id cannot be empty"):
             AllocationRequest(
-                request_id="", workload_id="test", requested_size=0.5,
-                memory_requirements_mb=1000, compute_requirements=100
+                request_id="",
+                workload_id="test",
+                requested_size=0.5,
+                memory_requirements_mb=1000,
+                compute_requirements=100,
             )
 
         # Test empty workload_id
         with pytest.raises(ValueError, match="workload_id cannot be empty"):
             AllocationRequest(
-                request_id="test", workload_id="", requested_size=0.5,
-                memory_requirements_mb=1000, compute_requirements=100
+                request_id="test",
+                workload_id="",
+                requested_size=0.5,
+                memory_requirements_mb=1000,
+                compute_requirements=100,
             )
 
         # Test invalid size
         with pytest.raises(ValueError, match="requested_size must be between 0 and 1"):
             AllocationRequest(
-                request_id="test", workload_id="test", requested_size=0.0,
-                memory_requirements_mb=1000, compute_requirements=100
+                request_id="test",
+                workload_id="test",
+                requested_size=0.0,
+                memory_requirements_mb=1000,
+                compute_requirements=100,
             )
 
         # Test negative memory
         with pytest.raises(ValueError, match="memory_requirements_mb must be positive"):
             AllocationRequest(
-                request_id="test", workload_id="test", requested_size=0.5,
-                memory_requirements_mb=-1, compute_requirements=100
+                request_id="test",
+                workload_id="test",
+                requested_size=0.5,
+                memory_requirements_mb=-1,
+                compute_requirements=100,
             )
 
         # Test invalid priority
         with pytest.raises(ValueError, match="priority must be 1-10"):
             AllocationRequest(
-                request_id="test", workload_id="test", requested_size=0.5,
-                memory_requirements_mb=1000, compute_requirements=100, priority=0
+                request_id="test",
+                workload_id="test",
+                requested_size=0.5,
+                memory_requirements_mb=1000,
+                compute_requirements=100,
+                priority=0,
             )
 
     def test_expiration_check(self):
         """Test request expiration logic."""
         request = AllocationRequest(
-            request_id="test", workload_id="test", requested_size=0.5,
-            memory_requirements_mb=1000, compute_requirements=100,
-            max_wait_seconds=0.1  # Very short for testing
+            request_id="test",
+            workload_id="test",
+            requested_size=0.5,
+            memory_requirements_mb=1000,
+            compute_requirements=100,
+            max_wait_seconds=0.1,  # Very short for testing
         )
 
         assert not request.is_expired()
@@ -207,10 +232,9 @@ class TestMemoryIsolation:
     def test_memory_allocation(self):
         """Test memory allocation for fractions."""
         isolation = MemoryIsolation(total_memory_mb=8192)  # 8GB for testing
-        
+
         fraction = GPUFraction(
-            fraction_id="test", gpu_id="gpu-01", size=0.25,
-            memory_mb=2048, compute_units=100  # 2GB
+            fraction_id="test", gpu_id="gpu-01", size=0.25, memory_mb=2048, compute_units=100  # 2GB
         )
 
         success = isolation.allocate_memory(fraction)
@@ -220,10 +244,9 @@ class TestMemoryIsolation:
     def test_memory_deallocation(self):
         """Test memory deallocation."""
         isolation = MemoryIsolation(total_memory_mb=8192)
-        
+
         fraction = GPUFraction(
-            fraction_id="test", gpu_id="gpu-01", size=0.25,
-            memory_mb=2048, compute_units=100
+            fraction_id="test", gpu_id="gpu-01", size=0.25, memory_mb=2048, compute_units=100
         )
 
         # Allocate and then deallocate
@@ -239,8 +262,11 @@ class TestMemoryIsolation:
         isolation = MemoryIsolation(total_memory_mb=1024)  # 1GB
 
         fraction = GPUFraction(
-            fraction_id="test", gpu_id="gpu-01", size=1.0,
-            memory_mb=2048, compute_units=100  # Request 2GB > 1GB available
+            fraction_id="test",
+            gpu_id="gpu-01",
+            size=1.0,
+            memory_mb=2048,
+            compute_units=100,  # Request 2GB > 1GB available
         )
 
         success = isolation.allocate_memory(fraction)
@@ -253,8 +279,11 @@ class TestMemoryIsolation:
         # Allocate multiple fractions
         for i in range(4):
             fraction = GPUFraction(
-                fraction_id=f"frac-{i}", gpu_id="gpu-01", size=0.125,
-                memory_mb=1024, compute_units=100  # 1GB each
+                fraction_id=f"frac-{i}",
+                gpu_id="gpu-01",
+                size=0.125,
+                memory_mb=1024,
+                compute_units=100,  # 1GB each
             )
             success = isolation.allocate_memory(fraction)
             assert success
@@ -273,7 +302,7 @@ class TestMemoryIsolation:
         # Allocate some memory to create fragmentation
         fraction1 = GPUFraction("frac-1", "gpu-01", 0.25, 2048, 100)
         fraction2 = GPUFraction("frac-2", "gpu-01", 0.25, 2048, 100)
-        
+
         isolation.allocate_memory(fraction1)
         isolation.allocate_memory(fraction2)
 
@@ -284,7 +313,7 @@ class TestMemoryIsolation:
     def test_memory_map(self):
         """Test memory allocation map."""
         isolation = MemoryIsolation(total_memory_mb=8192)
-        
+
         fraction = GPUFraction("test", "gpu-01", 0.25, 2048, 100)
         isolation.allocate_memory(fraction)
 
@@ -305,10 +334,13 @@ class TestAllocationManager:
     def test_submit_request(self):
         """Test submitting allocation request."""
         manager = AllocationManager()
-        
+
         request = AllocationRequest(
-            request_id="test", workload_id="workload-1", requested_size=0.5,
-            memory_requirements_mb=1000, compute_requirements=100
+            request_id="test",
+            workload_id="workload-1",
+            requested_size=0.5,
+            memory_requirements_mb=1000,
+            compute_requirements=100,
         )
 
         request_id = manager.submit_request(request)
@@ -321,12 +353,20 @@ class TestAllocationManager:
 
         # Submit requests with different priorities
         req_low = AllocationRequest(
-            request_id="low", workload_id="w1", requested_size=0.5,
-            memory_requirements_mb=1000, compute_requirements=100, priority=3
+            request_id="low",
+            workload_id="w1",
+            requested_size=0.5,
+            memory_requirements_mb=1000,
+            compute_requirements=100,
+            priority=3,
         )
         req_high = AllocationRequest(
-            request_id="high", workload_id="w2", requested_size=0.5,
-            memory_requirements_mb=1000, compute_requirements=100, priority=8
+            request_id="high",
+            workload_id="w2",
+            requested_size=0.5,
+            memory_requirements_mb=1000,
+            compute_requirements=100,
+            priority=8,
         )
 
         manager.submit_request(req_low)
@@ -339,10 +379,13 @@ class TestAllocationManager:
     def test_process_requests_success(self):
         """Test successful request processing."""
         manager = AllocationManager(provisioning_time_seconds=0.01)  # Fast for testing
-        
+
         request = AllocationRequest(
-            request_id="test", workload_id="workload-1", requested_size=0.5,
-            memory_requirements_mb=1000, compute_requirements=100
+            request_id="test",
+            workload_id="workload-1",
+            requested_size=0.5,
+            memory_requirements_mb=1000,
+            compute_requirements=100,
         )
         manager.submit_request(request)
 
@@ -351,7 +394,7 @@ class TestAllocationManager:
             "gpu-01": {
                 "available_fraction": 1.0,
                 "available_memory_mb": 2000,
-                "available_compute_units": 1000
+                "available_compute_units": 1000,
             }
         }
 
@@ -363,10 +406,13 @@ class TestAllocationManager:
     def test_process_requests_insufficient_capacity(self):
         """Test request processing with insufficient capacity."""
         manager = AllocationManager()
-        
+
         request = AllocationRequest(
-            request_id="test", workload_id="workload-1", requested_size=0.8,
-            memory_requirements_mb=1000, compute_requirements=100
+            request_id="test",
+            workload_id="workload-1",
+            requested_size=0.8,
+            memory_requirements_mb=1000,
+            compute_requirements=100,
         )
         manager.submit_request(request)
 
@@ -375,7 +421,7 @@ class TestAllocationManager:
             "gpu-01": {
                 "available_fraction": 0.5,  # Not enough
                 "available_memory_mb": 2000,
-                "available_compute_units": 1000
+                "available_compute_units": 1000,
             }
         }
 
@@ -385,12 +431,17 @@ class TestAllocationManager:
 
     def test_release_allocation(self):
         """Test releasing allocation."""
-        manager = AllocationManager(provisioning_time_seconds=0.01, deprovisioning_time_seconds=0.01)
-        
+        manager = AllocationManager(
+            provisioning_time_seconds=0.01, deprovisioning_time_seconds=0.01
+        )
+
         # First allocate something
         request = AllocationRequest(
-            request_id="test", workload_id="workload-1", requested_size=0.5,
-            memory_requirements_mb=1000, compute_requirements=100
+            request_id="test",
+            workload_id="workload-1",
+            requested_size=0.5,
+            memory_requirements_mb=1000,
+            compute_requirements=100,
         )
         manager.submit_request(request)
 
@@ -398,7 +449,7 @@ class TestAllocationManager:
             "gpu-01": {
                 "available_fraction": 1.0,
                 "available_memory_mb": 2000,
-                "available_compute_units": 1000
+                "available_compute_units": 1000,
             }
         }
 
@@ -413,7 +464,7 @@ class TestAllocationManager:
     def test_allocation_statistics(self):
         """Test allocation statistics."""
         manager = AllocationManager()
-        
+
         stats = manager.get_allocation_stats()
         assert stats["active_allocations"] == 0
         assert stats["pending_requests"] == 0
@@ -422,22 +473,25 @@ class TestAllocationManager:
     def test_expired_request_handling(self):
         """Test handling of expired requests."""
         manager = AllocationManager()
-        
+
         # Create expired request
         request = AllocationRequest(
-            request_id="expired", workload_id="workload-1", requested_size=0.5,
-            memory_requirements_mb=1000, compute_requirements=100,
-            max_wait_seconds=0.01  # Very short
+            request_id="expired",
+            workload_id="workload-1",
+            requested_size=0.5,
+            memory_requirements_mb=1000,
+            compute_requirements=100,
+            max_wait_seconds=0.01,  # Very short
         )
         manager.submit_request(request)
-        
+
         time.sleep(0.02)  # Wait for expiration
 
         available_gpus = {
             "gpu-01": {
                 "available_fraction": 1.0,
                 "available_memory_mb": 2000,
-                "available_compute_units": 1000
+                "available_compute_units": 1000,
             }
         }
 
@@ -462,7 +516,7 @@ class TestDRASimulator:
                 "nvidia-h100": GPUType(name="nvidia-h100", memory_gb=80, hourly_cost=4.10),
             }
         )
-        
+
         simulator = DRASimulator(tech_config)
         assert simulator.technology_config == tech_config
 
@@ -473,7 +527,7 @@ class TestDRASimulator:
 
         assert "gpu-01" in simulator._gpu_capacity
         assert "gpu-01" in simulator._gpu_isolation
-        
+
         capacity = simulator._gpu_capacity["gpu-01"]
         assert capacity["gpu_type"] == "nvidia-h100"
         assert capacity["available_fraction"] == 1.0
@@ -485,7 +539,7 @@ class TestDRASimulator:
                 "nvidia-a100": GPUType(name="nvidia-a100", memory_gb=40, hourly_cost=3.20),
             }
         )
-        
+
         simulator = DRASimulator(tech_config)
         simulator.add_gpu("gpu-01", "nvidia-a100")
 
@@ -496,9 +550,9 @@ class TestDRASimulator:
         """Test removing GPU from simulator."""
         simulator = DRASimulator()
         simulator.add_gpu("gpu-01", "nvidia-h100")
-        
+
         assert "gpu-01" in simulator._gpu_capacity
-        
+
         simulator.remove_gpu("gpu-01")
         assert "gpu-01" not in simulator._gpu_capacity
         assert "gpu-01" not in simulator._gpu_isolation
@@ -509,10 +563,7 @@ class TestDRASimulator:
         simulator.add_gpu("gpu-01", "nvidia-h100")
 
         request_id = simulator.request_allocation(
-            workload_id="test-workload",
-            fraction_size=0.5,
-            memory_mb=40960,
-            compute_units=3456
+            workload_id="test-workload", fraction_size=0.5, memory_mb=40960, compute_units=3456
         )
 
         assert isinstance(request_id, str)
@@ -526,10 +577,7 @@ class TestDRASimulator:
 
         # Request allocation
         simulator.request_allocation(
-            workload_id="test-workload",
-            fraction_size=0.25,
-            memory_mb=20480,
-            compute_units=1728
+            workload_id="test-workload", fraction_size=0.25, memory_mb=20480, compute_units=1728
         )
 
         # Process allocations
@@ -548,10 +596,7 @@ class TestDRASimulator:
 
         # Allocate first
         simulator.request_allocation(
-            workload_id="test-workload",
-            fraction_size=0.5,
-            memory_mb=40960,
-            compute_units=3456
+            workload_id="test-workload", fraction_size=0.5, memory_mb=40960, compute_units=3456
         )
         allocated = simulator.process_allocations()
         fraction_id = allocated[0].fraction_id
@@ -594,7 +639,7 @@ class TestDRASimulator:
         simulator.add_gpu("gpu-01", "nvidia-h100")
 
         # Run short simulation
-        with patch('time.sleep'):  # Mock sleep to speed up test
+        with patch("time.sleep"):  # Mock sleep to speed up test
             simulator.simulate_workload_pattern(duration_seconds=1.0)
 
         # Should have processed some requests
@@ -613,11 +658,11 @@ class TestDRASimulator:
                 workload_id=f"workload-{i}",
                 fraction_size=0.8,  # Large fraction
                 memory_mb=60000,
-                compute_units=5000
+                compute_units=5000,
             )
 
         allocated = simulator.process_allocations()
-        
+
         # Should allocate across multiple GPUs
         gpu_ids = {frac.gpu_id for frac in allocated}
         assert len(gpu_ids) >= 1  # At least one GPU used
@@ -629,10 +674,7 @@ class TestDRASimulator:
 
         # Allocate fraction
         simulator.request_allocation(
-            workload_id="test",
-            fraction_size=0.25,
-            memory_mb=20480,
-            compute_units=1728
+            workload_id="test", fraction_size=0.25, memory_mb=20480, compute_units=1728
         )
         allocated = simulator.process_allocations()
 
@@ -640,7 +682,7 @@ class TestDRASimulator:
         utilization = simulator.get_gpu_utilization("gpu-01")
         memory_map = utilization["memory_map"]
         assert len(memory_map) == 1  # One allocation
-        
+
         fragmentation = utilization["memory_fragmentation"]
         assert fragmentation["utilization_percent"] > 0
 
@@ -661,17 +703,14 @@ class TestFactoryFunctions:
                 "nvidia-h100": GPUType(name="nvidia-h100", memory_gb=80, hourly_cost=4.10),
             }
         )
-        
+
         simulator = create_dra_simulator(tech_config)
         assert simulator.technology_config == tech_config
 
     def test_simulate_fractioning_demo(self):
         """Test fractioning demo simulation."""
-        with patch('time.sleep'):  # Mock sleep to speed up test
-            simulator = simulate_fractioning_demo(
-                gpu_count=2,
-                duration_seconds=1.0
-            )
+        with patch("time.sleep"):  # Mock sleep to speed up test
+            simulator = simulate_fractioning_demo(gpu_count=2, duration_seconds=1.0)
 
         assert isinstance(simulator, DRASimulator)
         status = simulator.get_system_status()
@@ -688,9 +727,9 @@ class TestIntegrationScenarios:
 
         # Simulate multiple workloads with different sizes
         workloads = [
-            ("workload-small", 0.125, 10240, 800),    # 1/8 GPU, 10GB
-            ("workload-medium", 0.25, 20480, 1600),   # 1/4 GPU, 20GB  
-            ("workload-large", 0.5, 40960, 3200),     # 1/2 GPU, 40GB
+            ("workload-small", 0.125, 10240, 800),  # 1/8 GPU, 10GB
+            ("workload-medium", 0.25, 20480, 1600),  # 1/4 GPU, 20GB
+            ("workload-large", 0.5, 40960, 3200),  # 1/2 GPU, 40GB
         ]
 
         allocated_fractions = []
@@ -717,11 +756,11 @@ class TestIntegrationScenarios:
                 workload_id=f"workload-{i}",
                 fraction_size=0.5,  # Each wants half GPU
                 memory_mb=40960,
-                compute_units=3456
+                compute_units=3456,
             )
 
         allocated = simulator.process_allocations()
-        
+
         # Should only allocate 2 (2 * 0.5 = 1.0)
         assert len(allocated) <= 2
 
@@ -759,10 +798,7 @@ class TestIntegrationScenarios:
         small_workloads = []
         for i in range(8):  # 8 x 1/8 = full GPU
             simulator.request_allocation(
-                workload_id=f"small-{i}",
-                fraction_size=0.125,
-                memory_mb=10240,
-                compute_units=800
+                workload_id=f"small-{i}", fraction_size=0.125, memory_mb=10240, compute_units=800
             )
 
         allocated = simulator.process_allocations()
@@ -771,7 +807,7 @@ class TestIntegrationScenarios:
         # Check fragmentation
         utilization = simulator.get_gpu_utilization("gpu-01")
         fragmentation = utilization["memory_fragmentation"]
-        
+
         # With 8 allocations, should have some fragmentation
         assert fragmentation["total_fragments"] >= 0
         assert fragmentation["utilization_percent"] == 100.0
@@ -786,7 +822,7 @@ class TestIntegrationScenarios:
         simulator.request_allocation("high-priority", 0.5, 40960, 3456, priority=9)
 
         allocated = simulator.process_allocations()
-        
+
         # High priority should be allocated first
         assert allocated[0].workload_id == "high-priority"
 
@@ -798,7 +834,7 @@ class TestIntegrationScenarios:
                 "nvidia-a100": GPUType(name="nvidia-a100", memory_gb=40, hourly_cost=3.20),
             }
         )
-        
+
         simulator = DRASimulator(tech_config)
         simulator.add_gpu("gpu-h100", "nvidia-h100")
         simulator.add_gpu("gpu-a100", "nvidia-a100")
@@ -813,6 +849,6 @@ class TestIntegrationScenarios:
         # Check utilizations are different
         util_h100 = simulator.get_gpu_utilization("gpu-h100")
         util_a100 = simulator.get_gpu_utilization("gpu-a100")
-        
+
         assert util_h100["fraction_utilization"] == 75.0
         assert util_a100["fraction_utilization"] == 0.0

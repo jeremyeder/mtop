@@ -15,10 +15,10 @@ from threading import Lock
 from typing import Any, Dict, List, Optional
 
 from config_loader import SLOConfig, TechnologyConfig, WorkloadConfig
-from mtop.token_metrics import CostCalculator, TTFTCalculator, TokenMetrics
-from mtop.gpu_heartbeat import CapacityScaler, UtilizationTracker, ScalingDecision
-from mtop.workload_generator import WorkloadGenerator
 from mtop.cost_optimizer import CostOptimizer
+from mtop.gpu_heartbeat import CapacityScaler, ScalingDecision, UtilizationTracker
+from mtop.token_metrics import CostCalculator, TokenMetrics, TTFTCalculator
+from mtop.workload_generator import WorkloadGenerator
 
 
 class ConvergenceState(Enum):

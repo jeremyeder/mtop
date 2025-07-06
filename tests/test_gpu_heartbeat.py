@@ -34,7 +34,7 @@ class TestGPUMetrics:
             vram_used_gb=45.2,
             vram_total_gb=80.0,
             temperature_c=72.0,
-            power_watts=350.0
+            power_watts=350.0,
         )
 
         assert metrics.gpu_id == "gpu-01"
@@ -103,10 +103,7 @@ class TestHeartbeatPulse:
     def test_valid_heartbeat_pulse_creation(self):
         """Test creating valid HeartbeatPulse instance."""
         pulse = HeartbeatPulse(
-            strength=HeartbeatStrength.STRONG,
-            frequency_bpm=85.5,
-            color="#FF6600",
-            intensity=0.7
+            strength=HeartbeatStrength.STRONG, frequency_bpm=85.5, color="#FF6600", intensity=0.7
         )
 
         assert pulse.strength == HeartbeatStrength.STRONG
@@ -120,27 +117,18 @@ class TestHeartbeatPulse:
         # Test invalid intensity
         with pytest.raises(ValueError, match="intensity must be 0-1"):
             HeartbeatPulse(
-                strength=HeartbeatStrength.STEADY,
-                frequency_bpm=80,
-                color="#00FF00",
-                intensity=-0.1
+                strength=HeartbeatStrength.STEADY, frequency_bpm=80, color="#00FF00", intensity=-0.1
             )
 
         with pytest.raises(ValueError, match="intensity must be 0-1"):
             HeartbeatPulse(
-                strength=HeartbeatStrength.STEADY,
-                frequency_bpm=80,
-                color="#00FF00",
-                intensity=1.1
+                strength=HeartbeatStrength.STEADY, frequency_bpm=80, color="#00FF00", intensity=1.1
             )
 
         # Test invalid frequency
         with pytest.raises(ValueError, match="frequency_bpm must be positive"):
             HeartbeatPulse(
-                strength=HeartbeatStrength.STEADY,
-                frequency_bpm=0,
-                color="#00FF00",
-                intensity=0.5
+                strength=HeartbeatStrength.STEADY, frequency_bpm=0, color="#00FF00", intensity=0.5
             )
 
 
@@ -156,7 +144,7 @@ class TestUtilizationTracker:
     def test_update_gpu_metrics(self):
         """Test updating GPU metrics."""
         tracker = UtilizationTracker()
-        
+
         metrics = GPUMetrics(gpu_id="gpu-01", utilization_percent=75.0)
         tracker.update_gpu_metrics(metrics)
 
@@ -236,9 +224,9 @@ class TestUtilizationTracker:
     def test_thread_safety(self):
         """Test thread safety of UtilizationTracker."""
         import threading
-        
+
         tracker = UtilizationTracker()
-        
+
         def update_metrics():
             for i in range(50):
                 metrics = GPUMetrics(gpu_id=f"gpu-{i%4:02d}", utilization_percent=50 + i % 40)
@@ -401,7 +389,7 @@ class TestHeartbeatVisualizer:
     def test_gpu_count_scaling(self):
         """Test frequency scaling based on GPU count."""
         visualizer = HeartbeatVisualizer()
-        
+
         pulse_1gpu = visualizer.generate_pulse(aggregate_utilization=70.0, gpu_count=1)
         pulse_4gpu = visualizer.generate_pulse(aggregate_utilization=70.0, gpu_count=4)
 
@@ -455,7 +443,7 @@ class TestGPUHeartbeat:
                 "nvidia-a100": GPUType(name="nvidia-a100", memory_gb=40, hourly_cost=3.20),
             }
         )
-        
+
         heartbeat = GPUHeartbeat(tech_config)
         assert heartbeat.technology_config == tech_config
 
@@ -466,7 +454,7 @@ class TestGPUHeartbeat:
 
         assert "gpu-01" in heartbeat._active_gpus
         assert heartbeat._active_gpus["gpu-01"] == "nvidia-h100"
-        
+
         # Should have initial metrics
         metrics = heartbeat.tracker.get_gpu_metrics("gpu-01")
         assert metrics is not None
@@ -479,7 +467,7 @@ class TestGPUHeartbeat:
                 "nvidia-a100": GPUType(name="nvidia-a100", memory_gb=40, hourly_cost=3.20),
             }
         )
-        
+
         heartbeat = GPUHeartbeat(tech_config)
         heartbeat.add_gpu("gpu-01", "nvidia-a100")
 
@@ -490,9 +478,9 @@ class TestGPUHeartbeat:
         """Test removing GPU from system."""
         heartbeat = GPUHeartbeat()
         heartbeat.add_gpu("gpu-01", "nvidia-h100")
-        
+
         assert "gpu-01" in heartbeat._active_gpus
-        
+
         heartbeat.remove_gpu("gpu-01")
         assert "gpu-01" not in heartbeat._active_gpus
 
@@ -540,7 +528,7 @@ class TestGPUHeartbeat:
         heartbeat.add_gpu("gpu-01", "nvidia-h100")
 
         # Short simulation
-        with patch('time.sleep'):  # Mock sleep to speed up test
+        with patch("time.sleep"):  # Mock sleep to speed up test
             heartbeat.simulate_workload(target_utilization=75.0, duration_seconds=1.0)
 
         # Should have updated metrics
@@ -553,7 +541,7 @@ class TestGPUHeartbeat:
         import threading
 
         heartbeat = GPUHeartbeat()
-        
+
         def add_gpus():
             for i in range(10):
                 heartbeat.add_gpu(f"gpu-{i:02d}", "nvidia-h100")
@@ -565,11 +553,8 @@ class TestGPUHeartbeat:
                 time.sleep(0.001)
 
         # Start multiple threads
-        threads = [
-            threading.Thread(target=add_gpus),
-            threading.Thread(target=get_status)
-        ]
-        
+        threads = [threading.Thread(target=add_gpus), threading.Thread(target=get_status)]
+
         for thread in threads:
             thread.start()
 
@@ -596,22 +581,20 @@ class TestFactoryFunctions:
                 "nvidia-h100": GPUType(name="nvidia-h100", memory_gb=80, hourly_cost=4.10),
             }
         )
-        
+
         heartbeat = create_gpu_heartbeat(tech_config)
         assert heartbeat.technology_config == tech_config
 
     def test_simulate_multi_gpu_cluster(self):
         """Test multi-GPU cluster simulation."""
-        with patch('time.sleep'):  # Mock sleep to speed up test
+        with patch("time.sleep"):  # Mock sleep to speed up test
             heartbeat = simulate_multi_gpu_cluster(
-                gpu_count=3,
-                target_utilization=70.0,
-                duration_seconds=1.0
+                gpu_count=3, target_utilization=70.0, duration_seconds=1.0
             )
 
         assert isinstance(heartbeat, GPUHeartbeat)
         assert len(heartbeat._active_gpus) == 3
-        
+
         # Check that different GPU types were assigned
         gpu_types = set(heartbeat._active_gpus.values())
         assert len(gpu_types) >= 2  # Should have at least 2 different types
@@ -623,7 +606,7 @@ class TestIntegrationScenarios:
     def test_realistic_scaling_scenario(self):
         """Test realistic scaling scenario."""
         heartbeat = GPUHeartbeat()
-        
+
         # Add multiple GPUs
         for i in range(4):
             heartbeat.add_gpu(f"gpu-{i:02d}", "nvidia-h100")
@@ -634,14 +617,14 @@ class TestIntegrationScenarios:
                 gpu_id=gpu_id,
                 utilization_percent=95.0,  # Very high utilization
                 vram_used_gb=75.0,
-                vram_total_gb=80.0
+                vram_total_gb=80.0,
             )
             heartbeat.tracker.update_gpu_metrics(high_load_metrics)
 
         # Should recommend urgent scaling
         decision, reason = heartbeat.get_scaling_recommendation()
         assert decision == ScalingDecision.URGENT_SCALE
-        
+
         # Heartbeat should be critical
         pulse = heartbeat.get_current_heartbeat()
         assert pulse.strength == HeartbeatStrength.CRITICAL
@@ -649,7 +632,7 @@ class TestIntegrationScenarios:
     def test_cost_optimization_scenario(self):
         """Test cost optimization scenario with underutilized GPUs."""
         heartbeat = GPUHeartbeat()
-        
+
         # Add GPUs with low utilization
         for i in range(4):
             heartbeat.add_gpu(f"gpu-{i:02d}", "nvidia-h100")
@@ -657,14 +640,14 @@ class TestIntegrationScenarios:
                 gpu_id=f"gpu-{i:02d}",
                 utilization_percent=20.0,  # Very low utilization
                 vram_used_gb=10.0,
-                vram_total_gb=80.0
+                vram_total_gb=80.0,
             )
             heartbeat.tracker.update_gpu_metrics(low_load_metrics)
 
         # Should recommend scale down
         decision, reason = heartbeat.get_scaling_recommendation()
         assert decision == ScalingDecision.SCALE_DOWN
-        
+
         # Heartbeat should be minimal
         pulse = heartbeat.get_current_heartbeat()
         assert pulse.strength == HeartbeatStrength.MINIMAL
@@ -677,25 +660,25 @@ class TestIntegrationScenarios:
                 "nvidia-a100": GPUType(name="nvidia-a100", memory_gb=40, hourly_cost=3.20),
             }
         )
-        
+
         heartbeat = GPUHeartbeat(tech_config)
-        
+
         # Add mixed GPU types
         heartbeat.add_gpu("gpu-h100-01", "nvidia-h100")
         heartbeat.add_gpu("gpu-a100-01", "nvidia-a100")
 
         # Get comprehensive status
         status = heartbeat.get_system_status()
-        
+
         # Verify all expected data is present
         assert status["gpu_count"] == 2
         assert "gpu-h100-01" in status["gpu_details"]
         assert "gpu-a100-01" in status["gpu_details"]
-        
+
         # Check H100 specific details
         h100_details = status["gpu_details"]["gpu-h100-01"]
         assert h100_details["vram_total_gb"] == 80.0
-        
+
         # Check A100 specific details
         a100_details = status["gpu_details"]["gpu-a100-01"]
         assert a100_details["vram_total_gb"] == 40.0

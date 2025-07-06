@@ -33,7 +33,9 @@ class TestCostCalculator:
         """Test basic token cost calculation."""
         technology_config = TechnologyConfig(
             gpu_types={
-                "nvidia-a100": GPUType(name="nvidia-a100", memory_gb=80, hourly_cost=3.60),  # $3.60/hour
+                "nvidia-a100": GPUType(
+                    name="nvidia-a100", memory_gb=80, hourly_cost=3.60
+                ),  # $3.60/hour
             }
         )
         calculator = CostCalculator(technology_config=technology_config)
