@@ -15,7 +15,7 @@ def setup_env():
 def test_list_runs():
     import sys
 
-    result = subprocess.run([sys.executable, CLI, "list"], capture_output=True, text=True)
+    result = subprocess.run([sys.executable, CLI, "list"], capture_output=True, text=True, timeout=10)
     assert result.returncode == 0
     assert "Ready" in result.stdout
 
@@ -23,7 +23,7 @@ def test_list_runs():
 def test_get_gpt2_yaml():
     import sys
 
-    result = subprocess.run([sys.executable, CLI, "get", "gpt2"], capture_output=True, text=True)
+    result = subprocess.run([sys.executable, CLI, "get", "gpt2"], capture_output=True, text=True, timeout=10)
     assert result.returncode == 0
     assert "metadata:" in result.stdout
     assert "gpt2" in result.stdout
@@ -42,7 +42,7 @@ def test_get_gpt2_json():
 def test_config_outputs():
     import sys
 
-    result = subprocess.run([sys.executable, CLI, "config"], capture_output=True, text=True)
+    result = subprocess.run([sys.executable, CLI, "config"], capture_output=True, text=True, timeout=10)
     assert result.returncode == 0
     assert "defaultRuntime" in result.stdout
 
@@ -50,6 +50,6 @@ def test_config_outputs():
 def test_help():
     import sys
 
-    result = subprocess.run([sys.executable, CLI, "help"], capture_output=True, text=True)
+    result = subprocess.run([sys.executable, CLI, "help"], capture_output=True, text=True, timeout=10)
     assert result.returncode == 0
     assert "usage" in result.stdout.lower() or "Available commands" in result.stdout

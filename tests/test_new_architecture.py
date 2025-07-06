@@ -3,7 +3,7 @@
 import asyncio
 from pathlib import Path
 from typing import Any, Dict
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pytest
 
@@ -230,9 +230,9 @@ class TestCaching:
         cache.put("key1", "value1")
         assert cache.get("key1") == "value1"
 
-        # Wait for expiration
-        time.sleep(0.15)
-        assert cache.get("key1") is None
+        # Mock time passage to test expiration
+        with patch("time.time", return_value=time.time() + 0.2):
+            assert cache.get("key1") is None
 
     @pytest.mark.asyncio
     async def test_async_cache(self) -> None:

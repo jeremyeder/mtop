@@ -12,20 +12,16 @@ Tests integration between all Phase 1 components:
 
 import os
 import subprocess
-import tempfile
 import time
-from unittest.mock import patch
 
 import pytest
 
 from config_loader import GPUType, SLOConfig, TechnologyConfig, load_config
-from mtop.dra_fractioning import DRASimulator, create_dra_simulator
-from mtop.gpu_heartbeat import GPUHeartbeat, create_gpu_heartbeat
+from mtop.dra_fractioning import create_dra_simulator
+from mtop.gpu_heartbeat import create_gpu_heartbeat
 from mtop.token_metrics import (
     QueueMetrics,
-    TokenTracker,
     create_cost_calculator,
-    create_queue_metrics,
     create_token_tracker,
     create_ttft_calculator,
 )
@@ -229,7 +225,7 @@ class TestDRAFractioningIntegration:
             heartbeat.add_gpu(gpu_id, gpu_type)
 
         # Allocate fractions in DRA
-        request_id = dra.request_allocation(
+        dra.request_allocation(
             workload_id="test-workload",
             fraction_size=0.75,  # 75% of GPU
             memory_mb=60000,
@@ -283,7 +279,7 @@ class TestDRAFractioningIntegration:
 
             # Simulate corresponding token generation
             tokens_target = int(fraction_size * 200)  # Proportional to GPU fraction
-            metrics = tracker.simulate_token_generation(workload_id, target_tokens=tokens_target)
+            tracker.simulate_token_generation(workload_id, target_tokens=tokens_target)
 
             allocated = dra.process_allocations()
             allocated_fractions.extend(allocated)
@@ -382,7 +378,7 @@ class TestDemoSystemIntegration:
         # Run demo status check (should work without full setup)
         try:
             result = subprocess.run(
-                ["./demo-status.sh", "--json"], capture_output=True, text=True, timeout=30
+                ["./demo-status.sh", "--json"], capture_output=True, text=True, timeout=10
             )
 
             # Should produce valid output (even if some checks fail)
@@ -545,7 +541,7 @@ class TestPerformanceValidation:
 
         # System status should be calculated quickly
         status_start = time.time()
-        status = dra.get_system_status()
+        dra.get_system_status()
         status_duration = time.time() - status_start
 
         assert status_duration < 0.2, f"DRA status too slow: {status_duration:.3f}s"
@@ -723,14 +719,14 @@ class TestCrossComponentIntegration:
 
         # Scenario 1: Invalid token generation request
         try:
-            invalid_metrics = tracker.simulate_token_generation("", target_tokens=-1)
+            tracker.simulate_token_generation("", target_tokens=-1)
             assert False, "Should have raised error for invalid parameters"
         except (ValueError, AssertionError):
             pass  # Expected error
 
         # Scenario 2: Invalid DRA allocation request
         try:
-            invalid_request = dra.request_allocation(
+            dra.request_allocation(
                 workload_id="test",
                 fraction_size=2.0,  # Invalid size > 1.0
                 memory_mb=1000,
@@ -777,7 +773,7 @@ class TestCrossComponentIntegration:
         assert metrics.is_completed()
 
         dra.request_allocation("test-workload", 0.5, 8000, 1000)
-        allocated = dra.process_allocations()
+        dra.process_allocations()
 
         # Systems should function with minimal config
         heartbeat_status = heartbeat.get_system_status()
