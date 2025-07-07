@@ -1,135 +1,104 @@
 # mtop
 
-Real-time monitoring for LLM inference infrastructure. Like `htop` for AI workloads.
+A demonstration tool showcasing [llm-d](https://llm-d.ai)'s enterprise-ready LLM deployment and management capabilities.
 
-![mtop-demo](recordings/sales/multi-model.gif)
+![llm-d-demo](recordings/sales/multi-model.gif)
 
-**Cut GPU costs by 40%. Ensure 99.9% uptime. Zero cluster required.**
+**See llm-d in action: GPU-aware scheduling, SLO-driven autoscaling, and cost optimization for LLM workloads.**
 
-## Quick Start
+## What is llm-d?
+
+[llm-d](https://llm-d.ai) is Red Hat's open source platform for deploying and managing Large Language Models at scale. It provides:
+
+- **GPU-Aware Orchestration**: Intelligent scheduling across heterogeneous GPU clusters (H100, A100, DRA)
+- **SLO-Driven Operations**: Automatic scaling based on Time-to-First-Token (TTFT) and latency targets
+- **Cost Intelligence**: 40% reduction in GPU costs through dynamic right-sizing and bin-packing
+- **Enterprise Integration**: Native OpenShift/Kubernetes integration with RBAC and multi-tenancy
+
+## About This Demo
+
+mtop simulates a production llm-d environment without requiring a live cluster, allowing you to:
+
+- Demonstrate llm-d's real-time monitoring capabilities
+- Showcase SLO convergence and autoscaling behavior
+- Illustrate GPU utilization optimization
+- Present cost savings through intelligent scheduling
+
+## Quick Demo
 
 ```bash
-./mtop-main                      # Monitor LLM services in real-time
-./mtop-main slo-dashboard        # Track SLO compliance & convergence
-./mtop-main simulate canary      # Test deployments without risk
+# Show llm-d's real-time monitoring
+./mtop-main
+
+# Demonstrate SLO-driven autoscaling
+./mtop-main slo-dashboard
+
+# Showcase deployment strategies
+./mtop-main simulate canary
 ```
 
-## Why mtop?
+## Key llm-d Capabilities Demonstrated
 
-- **💰 Cost Optimization**: Identify underutilized GPUs and rightsize deployments
-- **🎯 SLO Monitoring**: Track TTFT, latency, and throughput in real-time
-- **🔥 GPU Efficiency**: Monitor utilization across H100, A100, and DRA clusters
-- **📊 Executive Dashboards**: Business-ready metrics and ROI calculations
-
-## Key Features
-
-### Cost Optimization
-![cost-optimization](recordings/sales/cost-optimization.gif)
-
-Automatically identify GPU waste and recommend optimal configurations. Save 40% on infrastructure costs.
-
-### SLO Compliance Monitoring
+### 🎯 SLO-Driven Autoscaling
 ![slo-compliance](recordings/sales/slo-compliance.gif)
 
-Real-time tracking of Time-to-First-Token (TTFT) and request latency with automated convergence optimization.
+llm-d automatically scales deployments to meet TTFT and latency targets while minimizing cost.
 
-### GPU Efficiency Tracking
+### 💰 Intelligent Cost Optimization
+![cost-optimization](recordings/sales/cost-optimization.gif)
+
+GPU-aware bin-packing and right-sizing reduces infrastructure costs by up to 40%.
+
+### 🔥 Heterogeneous GPU Management
 ![gpu-efficiency](recordings/sales/gpu-efficiency.gif)
 
-Monitor GPU utilization across your entire fleet with heartbeat visualization and capacity planning.
+Seamlessly manage H100, A100, and DRA clusters with unified scheduling and monitoring.
 
-### Multi-Model Management
+### 📊 Enterprise-Ready Operations
 ![multi-model](recordings/sales/multi-model.gif)
 
-Manage dozens of LLM deployments from a single interface with real-time metrics and health status.
+Production-grade monitoring, RBAC, and multi-tenant isolation for enterprise deployments.
+
+## Demo Scenarios
+
+Pre-configured scenarios showcasing llm-d capabilities:
+
+```bash
+./scripts/demo.py startup           # Small team adopting llm-d
+./scripts/demo.py enterprise        # Large-scale llm-d deployment
+./scripts/demo.py cost-optimization # Cost reduction showcase
+```
 
 ## Installation
 
 ```bash
-# 1. Requirements: Python 3.12+
-python3 --version
-
-# 2. Install
+# Requirements: Python 3.12+
 pip install -r requirements.txt
 chmod +x mtop-main
 
-# 3. Verify
-./mtop-main help
-```
-
-## Usage Examples
-
-```bash
-# Monitor all LLM services
+# Run the demo
 ./mtop-main
-
-# Check specific model
-./mtop-main get gpt-4-turbo
-
-# View deployment logs
-./mtop-main logs llama-3-70b-instruct
-
-# Run cost optimization analysis
-./mtop-main slo-dashboard --focus cost
-
-# Simulate deployment strategies
-./mtop-main simulate canary --model gpt-4-turbo
-./mtop-main simulate bluegreen --model llama-3-70b
 ```
 
-## Architecture
+## Learn More About llm-d
 
-mtop operates in two modes:
+- 🌐 **Website**: [llm-d.ai](https://llm-d.ai)
+- 📚 **Documentation**: [docs.llm-d.ai](https://docs.llm-d.ai)
+- 🐙 **GitHub**: [github.com/redhat-et/llm-d](https://github.com/redhat-et/llm-d)
+- 💼 **Enterprise**: Contact Red Hat for OpenShift AI integration
 
-- **Mock Mode** (default): Use local simulation data for demos and testing
-- **Live Mode**: Connect to real Kubernetes clusters with LLMInferenceService CRDs
+## Demo Documentation
 
-```bash
-# Switch modes
-export LLD_MODE=live    # Use live cluster
-export LLD_MODE=mock    # Use mock data (default)
-```
-
-## Demo Framework
-
-Pre-configured scenarios for different use cases:
-
-```bash
-./scripts/demo.py startup           # Small startup scenario
-./scripts/demo.py enterprise        # Large enterprise deployment
-./scripts/demo.py cost-optimization # Cost reduction demo
-```
-
-## Documentation
-
-- 📚 [Full Documentation](docs/README.md)
-- 🎬 [Demo Guide](DEMO-GUIDE.md)
-- 💼 [Sales Demo Guide](SALES-DEMO-GUIDE.md)
-- 🏗️ [Architecture](ARCHITECTURE.md)
+- [Demo Guide](DEMO-GUIDE.md) - Step-by-step demonstration instructions
+- [Sales Demo Guide](SALES-DEMO-GUIDE.md) - Customer-facing demo playbook
+- [Architecture](ARCHITECTURE.md) - Technical deep dive
 
 ## Contributing
 
-We welcome contributions! See [COLLABORATION.md](COLLABORATION.md) for our development workflow.
-
-### Development
-
-```bash
-# Setup development environment
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -e .[dev]
-
-# Run tests
-pytest tests/ -v
-
-# Run linters (required before pushing)
-./scripts/lint.sh
-```
-
-## License
-
-MIT - See [LICENSE](LICENSE) for details.
+This demo tool is part of the llm-d project. For contributions:
+- llm-d project: [github.com/redhat-et/llm-d](https://github.com/redhat-et/llm-d)
+- Demo improvements: See [COLLABORATION.md](COLLABORATION.md)
 
 ---
 
-Built with ❤️ by the Red Hat AI Engineering team. Part of the [llm-d](https://llm-d.ai) project.
+Part of the [llm-d](https://llm-d.ai) project by Red Hat AI Engineering.
