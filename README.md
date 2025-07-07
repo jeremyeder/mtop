@@ -147,7 +147,7 @@ Watch rollouts with animation:
 | Mode   | Description                       |
 |--------|-----------------------------------|
 | `mock` | Use local files in `./mocks/`     |
-| `live` | Use `kubectl` to talk to a cluster|
+| `live` | Use kubernetes API to talk to a live cluster|
 
 ### 🔧 Set the Mode
 

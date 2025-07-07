@@ -236,11 +236,11 @@ class HeartbeatAnimator:
         if frame.pulse_intensity > 0.7:
             # High pulse - use pulse color
             bar_color = frame.pulse_color
-            border_style = "bold " + frame.pulse_color.lower().replace("#", "")
+            border_style = f"bold {frame.pulse_color}"
         elif frame.pulse_intensity > 0.3:
             # Medium pulse - blend colors
             bar_color = frame.color
-            border_style = frame.color.lower().replace("#", "")
+            border_style = frame.color
         else:
             # Low pulse - use base color
             bar_color = frame.color

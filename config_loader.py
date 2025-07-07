@@ -336,7 +336,7 @@ class ConfigLoader:
                 name=program_name,
                 monitor_name=program_raw.get("monitor_name", "mtop"),
                 description=program_raw.get("description", "Mock CLI tool"),
-                class_prefix=program_raw.get("class_prefix", "KubectlLD"),
+                class_prefix=program_raw.get("class_prefix", "MTOP"),
             )
 
             # Validate branding config

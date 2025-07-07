@@ -16,7 +16,7 @@ def setup_container() -> None:
 
     from .cache import CacheManager
     from .container import get_container
-    from .implementations import KubectlClient, LocalFileSystem, MockKubernetesClient
+    from .implementations import LiveKubernetesClient, LocalFileSystem, MockKubernetesClient
     from .interfaces import FileSystem, KubernetesClient, Logger
     from .logging import DefaultLogger
 
@@ -30,7 +30,7 @@ def setup_container() -> None:
     # Register Kubernetes client based on mode
     mode = os.environ.get("MTOP_MODE", "mock")
     if mode == "live":
-        container.register_transient(KubernetesClient, KubectlClient)
+        container.register_transient(KubernetesClient, LiveKubernetesClient)
     else:
         container.register_transient(KubernetesClient, MockKubernetesClient)
 
