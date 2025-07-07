@@ -72,6 +72,7 @@ def test_no_kubectl_legacy_references():
         r"kubectl run.*restore",
         r"kubectl create ns",
         r"kubectl apply -f",
+        r"kubectl get configmap",
     ]
 
     violations: List[Tuple[Path, int, str]] = []
