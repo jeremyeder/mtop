@@ -23,6 +23,17 @@ from typing import Any, Dict, List, Optional, Union
 import yaml
 from termcolor import colored
 
+# Try to import SLO dashboard components
+try:
+    from config_loader import SLOConfig, TechnologyConfig, WorkloadConfig
+    from mtop.slo_convergence import SLOConvergenceAlgorithm
+    from mtop.slo_dashboard import SLODashboard
+
+    SLO_DASHBOARD_AVAILABLE = True
+except ImportError as e:
+    SLO_DASHBOARD_AVAILABLE = False
+    SLO_IMPORT_ERROR = str(e)
+
 # Try to import rich for ldtop functionality
 try:
     from rich.console import Console
@@ -504,6 +515,58 @@ class MTop:
         monitor = LLMTopMonitor(self, interval=interval, namespace=namespace)
         monitor.run()
 
+    def slo_dashboard(
+        self, interval: float = 1.0, demo: bool = False, models: Optional[List[str]] = None
+    ) -> None:
+        """Run SLO dashboard with convergence monitoring"""
+        if not SLO_DASHBOARD_AVAILABLE:
+            print(
+                colored(f"❌ SLO dashboard components are not available: {SLO_IMPORT_ERROR}", "red")
+            )
+            sys.exit(1)
+
+        if not RICH_AVAILABLE:
+            print(
+                colored(
+                    "❌ Rich library is required for SLO dashboard. Install with: pip install rich",
+                    "red",
+                )
+            )
+            sys.exit(1)
+
+        console = Console()
+        console.print("[cyan]🚀 Starting SLO Dashboard...[/cyan]")
+        console.print("[dim]Press Ctrl+C to exit[/dim]\n")
+
+        try:
+            if demo:
+                # Use demo mode from slo_dashboard.py
+                from mtop.slo_dashboard import demo_dashboard
+
+                demo_dashboard()
+            else:
+                # Live integration mode
+                console.print("[yellow]Live integration mode not yet implemented[/yellow]")
+                console.print("[dim]Use --demo flag for demonstration mode[/dim]")
+
+                # Create basic SLO config for live mode
+                slo_config = SLOConfig(
+                    ttft_p95_ms=250.0,
+                    tokens_per_second=1000.0,
+                    error_rate_percent=1.0,
+                )
+
+                dashboard = SLODashboard(slo_config, console)
+
+                # Basic dashboard display without live data
+                console.print("[bold blue]SLO Dashboard - Live Mode (Coming Soon)[/bold blue]")
+                console.print("For now, please use: mtop slo-dashboard --demo")
+
+        except KeyboardInterrupt:
+            console.print("\n[yellow]SLO Dashboard stopped[/yellow]")
+        except Exception as e:
+            console.print(f"[red]Error running SLO dashboard: {e}[/red]")
+
 
 def main() -> None:
     # Check if running as mtop-monitor
@@ -530,6 +593,8 @@ Examples:
   %(prog)s create model.yaml      # Create CR from file
   %(prog)s ldtop                  # Real-time LLM inference monitoring
   %(prog)s --mode live ldtop      # Monitor live cluster
+  %(prog)s slo-dashboard          # SLO dashboard with convergence monitoring
+  %(prog)s slo-dashboard --demo   # SLO dashboard in demo mode
   
 For more information: https://github.com/jeremyeder/mtop
         """,
@@ -564,6 +629,20 @@ For more information: https://github.com/jeremyeder/mtop
     )
     ldtop_parser.add_argument(
         "--namespace", default="default", help="Kubernetes namespace to monitor"
+    )
+
+    # slo-dashboard command
+    slo_dashboard_parser = subparsers.add_parser(
+        "slo-dashboard", help="Real-time SLO dashboard with convergence monitoring"
+    )
+    slo_dashboard_parser.add_argument(
+        "--interval", type=float, default=1.0, help="Refresh interval in seconds (default: 1.0)"
+    )
+    slo_dashboard_parser.add_argument(
+        "--demo", action="store_true", help="Run in demo mode with simulated data"
+    )
+    slo_dashboard_parser.add_argument(
+        "--models", nargs="*", help="Specific models to monitor (default: all)"
     )
 
     # Commands with arguments
@@ -616,6 +695,9 @@ For more information: https://github.com/jeremyeder/mtop
         "simulate": lambda: cli.simulate_rollout(args.topology),
         "list-topologies": cli.list_topologies,
         "ldtop": lambda: cli.ldtop(interval=args.interval, namespace=args.namespace),
+        "slo-dashboard": lambda: cli.slo_dashboard(
+            interval=args.interval, demo=args.demo, models=args.models
+        ),
         "help": parser.print_help,
         None: parser.print_help,
     }
