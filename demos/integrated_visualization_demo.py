@@ -127,12 +127,11 @@ class VisualizationExcellenceDemo:
             dashboard.update_metrics(metrics, gpu_count=4)
 
             # Create and display dashboard
-            gauge_display = dashboard.create_twin_gauges()
-            convergence_display = dashboard.create_convergence_display()
+            full_display = dashboard.render()
 
             with Live(console=self.console, refresh_per_second=4):
                 live_panel = Panel(
-                    f"{gauge_display}\n\n{convergence_display}",
+                    full_display,
                     title=f"[bold]SLO Dashboard - Update {i+1}/15[/bold]",
                     border_style="yellow",
                 )
