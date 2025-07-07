@@ -7,6 +7,7 @@ with twin gauges showing TTFT and cost-per-million-tokens metrics, along with
 convergence trajectory and decision history visualization.
 """
 
+import math
 import time
 from collections import deque
 from dataclasses import dataclass
@@ -37,6 +38,22 @@ class GaugeConfig:
     unit: str
     is_lower_better: bool = True  # True for metrics where lower is better (TTFT, cost)
     format_string: str = "{:.1f}"
+    # Enhanced visualization options
+    enable_animated_needle: bool = True
+    enable_gradient_fill: bool = True
+    enable_sparkline: bool = True
+    enable_predictive_indicator: bool = True
+    enable_pulse_on_critical: bool = True
+
+
+@dataclass
+class PredictiveIndicator:
+    """Predictive indicator for gauge metrics."""
+
+    predicted_value: float
+    time_to_violation: Optional[float]  # seconds until SLO breach
+    confidence: float  # 0.0 to 1.0
+    trend_direction: str  # "improving", "degrading", "stable"
 
 
 class SLODashboard:
@@ -55,6 +72,12 @@ class SLODashboard:
         # History tracking
         self.metrics_history: deque = deque(maxlen=60)  # 60 data points for trending
         self.action_history: deque = deque(maxlen=10)  # Last 10 actions
+
+        # Enhanced tracking for visualizations
+        self.ttft_sparkline_data: deque = deque(maxlen=30)  # 30 points for sparkline
+        self.cost_sparkline_data: deque = deque(maxlen=30)  # 30 points for sparkline
+        self.last_needle_position: Dict[str, float] = {}  # For needle animation
+        self.animation_frame = 0  # For pulse effects
 
         # Gauge configurations based on SLO targets
         self.ttft_gauge_config = GaugeConfig(
@@ -88,6 +111,15 @@ class SLODashboard:
         self.ttft_gauge_config.current_value = metrics.current_ttft_p95
         self.cost_gauge_config.current_value = metrics.current_cost_per_million
 
+        # Update sparkline data
+        if metrics.current_ttft_p95 is not None:
+            self.ttft_sparkline_data.append(metrics.current_ttft_p95)
+        if metrics.current_cost_per_million is not None:
+            self.cost_sparkline_data.append(metrics.current_cost_per_million)
+
+        # Increment animation frame for effects
+        self.animation_frame += 1
+
         # Add to history
         self.metrics_history.append(
             {
@@ -110,14 +142,179 @@ class SLODashboard:
         """
         self.action_history.append(action)
 
+    def calculate_predictive_indicator(
+        self, config: GaugeConfig, sparkline_data: deque
+    ) -> Optional[PredictiveIndicator]:
+        """Calculate predictive indicator for a metric.
+
+        Args:
+            config: Gauge configuration
+            sparkline_data: Historical data for the metric
+
+        Returns:
+            PredictiveIndicator or None if insufficient data
+        """
+        if len(sparkline_data) < 5:  # Need at least 5 data points
+            return None
+
+        data_points = list(sparkline_data)
+
+        # Simple linear regression for trend prediction
+        n = len(data_points)
+        x_values = list(range(n))
+
+        # Calculate trend line
+        sum_x = sum(x_values)
+        sum_y = sum(data_points)
+        sum_xy = sum(x * y for x, y in zip(x_values, data_points))
+        sum_x2 = sum(x * x for x in x_values)
+
+        if n * sum_x2 - sum_x * sum_x == 0:  # Avoid division by zero
+            return None
+
+        # Linear regression coefficients
+        slope = (n * sum_xy - sum_x * sum_y) / (n * sum_x2 - sum_x * sum_x)
+        intercept = (sum_y - slope * sum_x) / n
+
+        # Predict next value (30 seconds ahead)
+        predicted_value = slope * (n + 30) + intercept
+
+        # Determine trend direction
+        if abs(slope) < 0.01:  # Threshold for "stable"
+            trend_direction = "stable"
+        elif slope > 0:
+            if config.is_lower_better:
+                trend_direction = "degrading"
+            else:
+                trend_direction = "improving"
+        else:
+            if config.is_lower_better:
+                trend_direction = "improving"
+            else:
+                trend_direction = "degrading"
+
+        # Calculate time to violation
+        time_to_violation = None
+        if trend_direction == "degrading":
+            violation_threshold = (
+                config.critical_value if config.is_lower_better else config.target_value
+            )
+            current_value = data_points[-1]
+
+            if slope != 0:
+                steps_to_violation = (violation_threshold - current_value) / slope
+                if steps_to_violation > 0:
+                    time_to_violation = steps_to_violation  # In data points (seconds)
+
+        # Calculate confidence based on data variance
+        variance = (
+            sum((y - (slope * x + intercept)) ** 2 for x, y in zip(x_values, data_points)) / n
+        )
+        confidence = max(0.1, min(1.0, 1.0 / (1.0 + variance)))
+
+        return PredictiveIndicator(
+            predicted_value=predicted_value,
+            time_to_violation=time_to_violation,
+            confidence=confidence,
+            trend_direction=trend_direction,
+        )
+
+    def create_sparkline(self, data: deque, width: int = 20) -> str:
+        """Create ASCII sparkline from data.
+
+        Args:
+            data: Historical data points
+            width: Width of sparkline in characters
+
+        Returns:
+            ASCII sparkline string
+        """
+        if not data or len(data) < 2:
+            return "─" * width
+
+        data_points = list(data)[-width:]  # Take last 'width' points
+
+        # Normalize data to 0-7 range for block characters
+        min_val = min(data_points)
+        max_val = max(data_points)
+
+        if max_val == min_val:
+            return "─" * len(data_points)
+
+        # Unicode block characters for sparkline
+        blocks = [" ", "▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"]
+
+        sparkline = ""
+        for value in data_points:
+            normalized = (value - min_val) / (max_val - min_val)
+            block_index = int(normalized * (len(blocks) - 1))
+            sparkline += blocks[block_index]
+
+        # Pad to width if needed
+        while len(sparkline) < width:
+            sparkline += " "
+
+        return sparkline
+
+    def create_animated_needle(self, config: GaugeConfig, position: float) -> str:
+        """Create animated needle visualization.
+
+        Args:
+            config: Gauge configuration
+            position: Current position (0-100%)
+
+        Returns:
+            Needle visualization string
+        """
+        gauge_width = 40
+
+        # Smooth needle animation
+        gauge_key = config.title
+        last_pos = self.last_needle_position.get(gauge_key, position)
+
+        # Animate towards target position
+        smoothing_factor = 0.3
+        animated_pos = last_pos + (position - last_pos) * smoothing_factor
+        self.last_needle_position[gauge_key] = animated_pos
+
+        # Create needle visualization
+        needle_pos = int((animated_pos / 100) * gauge_width)
+
+        # Build gauge with needle
+        gauge = "│" + "─" * (gauge_width - 2) + "│"
+
+        # Insert needle
+        if 0 <= needle_pos < len(gauge):
+            gauge = gauge[:needle_pos] + "▲" + gauge[needle_pos + 1 :]
+
+        return gauge
+
+    def get_gradient_color(
+        self, position: float, is_critical: bool = False, status_color: str = "green"
+    ) -> str:
+        """Get gradient color based on position and state.
+
+        Args:
+            position: Position on gauge (0-100%)
+            is_critical: Whether in critical state
+            status_color: Base status color from gauge logic
+
+        Returns:
+            Rich color string
+        """
+        if is_critical and self.animation_frame % 4 < 2:  # Pulse effect
+            return "red"
+        else:
+            return status_color  # Use the calculated status color
+
     def create_gauge(self, config: GaugeConfig) -> Panel:
-        """Create a visual gauge for a metric.
+        """Create an enhanced visual gauge for a metric.
 
         Args:
             config: Gauge configuration
 
         Returns:
-            Panel containing the gauge visualization
+            Panel containing the enhanced gauge visualization
         """
         if config.current_value is None:
             # No data yet
@@ -126,7 +323,7 @@ class SLODashboard:
                 Align.center(content, vertical="middle"),
                 title=config.title,
                 border_style="dim",
-                height=8,
+                height=12,  # Increased height for enhanced features
             )
 
         # Calculate position on scale (0-100%)
@@ -137,6 +334,7 @@ class SLODashboard:
                 position = (config.current_value / config.target_value) * 50
                 status_color = "green"
                 status_text = "✓ GOOD"
+                is_critical = False
             elif config.current_value <= config.critical_value:
                 # In warning zone (50-100% of gauge)
                 position = (
@@ -149,76 +347,113 @@ class SLODashboard:
                 )
                 status_color = "yellow"
                 status_text = "⚠ WARNING"
+                is_critical = False
             else:
                 # Beyond critical
                 position = 100
                 status_color = "red"
                 status_text = "✗ CRITICAL"
+                is_critical = True
         else:
             # For metrics where higher is better
             if config.current_value >= config.target_value:
                 position = 100
                 status_color = "green"
                 status_text = "✓ GOOD"
+                is_critical = False
             elif config.current_value >= config.critical_value:
                 position = (config.current_value / config.critical_value) * 100
                 status_color = "yellow"
                 status_text = "⚠ WARNING"
+                is_critical = False
             else:
                 position = (config.current_value / config.critical_value) * 50
                 status_color = "red"
                 status_text = "✗ CRITICAL"
+                is_critical = True
 
-        # Create gauge visualization
-        gauge_width = 40
-        filled_width = int((position / 100) * gauge_width)
-
-        # Create progress bar with zones
-        progress = Progress(
-            TextColumn("[progress.description]{task.description}"),
-            BarColumn(bar_width=gauge_width),
-            TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
-            expand=False,
+        # Get gradient color with pulse effect
+        display_color = self.get_gradient_color(
+            position, is_critical and config.enable_pulse_on_critical, status_color
         )
 
-        task_id = progress.add_task("", total=100, completed=position)
+        # Build enhanced gauge content
+        content_elements = []
 
-        # Build gauge content
+        # Main value display
         value_text = Text(
             config.format_string.format(config.current_value) + config.unit,
-            style=f"bold {status_color}",
+            style=f"bold {display_color}",
         )
+        content_elements.append(Align.center(value_text))
 
-        # Target and critical markers
-        target_pos = int((50 / 100) * gauge_width) if config.is_lower_better else gauge_width
-        critical_pos = (
-            gauge_width
-            if config.is_lower_better
-            else int((config.critical_value / config.target_value) * gauge_width)
+        # Enhanced needle gauge (if enabled)
+        if config.enable_animated_needle:
+            needle_gauge = self.create_animated_needle(config, position)
+            content_elements.append(Align.center(Text(needle_gauge, style=display_color)))
+        else:
+            # Fallback to progress bar
+            progress = Progress(
+                BarColumn(bar_width=40),
+                TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+                expand=False,
+            )
+            task_id = progress.add_task("", total=100, completed=position)
+            content_elements.append(Align.center(progress))
+
+        # Sparkline (if enabled and data available)
+        if config.enable_sparkline:
+            sparkline_data = (
+                self.ttft_sparkline_data if "TTFT" in config.title else self.cost_sparkline_data
+            )
+            if sparkline_data:
+                sparkline = self.create_sparkline(sparkline_data, width=30)
+                sparkline_text = Text(f"Trend: {sparkline}", style="cyan")
+                content_elements.append(Align.center(sparkline_text))
+
+        # Predictive indicator (if enabled)
+        if config.enable_predictive_indicator:
+            sparkline_data = (
+                self.ttft_sparkline_data if "TTFT" in config.title else self.cost_sparkline_data
+            )
+            prediction = self.calculate_predictive_indicator(config, sparkline_data)
+            if prediction:
+                trend_icon = {"improving": "📈", "degrading": "📉", "stable": "➡️"}.get(
+                    prediction.trend_direction, "➡️"
+                )
+
+                prediction_text = f"{trend_icon} {prediction.trend_direction.title()}"
+
+                if prediction.time_to_violation:
+                    minutes = int(prediction.time_to_violation / 60)
+                    if minutes < 60:
+                        prediction_text += f" (SLO breach in ~{minutes}m)"
+                    else:
+                        hours = minutes // 60
+                        prediction_text += f" (SLO breach in ~{hours}h)"
+
+                pred_color = {"improving": "green", "degrading": "red", "stable": "yellow"}.get(
+                    prediction.trend_direction, "white"
+                )
+
+                content_elements.append(Align.center(Text(prediction_text, style=f"{pred_color}")))
+
+        # Target and critical reference
+        ref_text = (
+            f"Target: {config.format_string.format(config.target_value)}{config.unit} | "
+            f"Critical: {config.format_string.format(config.critical_value)}{config.unit}"
         )
+        content_elements.append(Align.center(Text(ref_text, style="dim")))
 
         # Status line
-        status_line = Text(status_text, style=f"bold {status_color}")
-
-        # Combine elements
-        content = Group(
-            Align.center(value_text),
-            Align.center(progress),
-            Align.center(
-                Text(
-                    f"Target: {config.format_string.format(config.target_value)}{config.unit} | "
-                    f"Critical: {config.format_string.format(config.critical_value)}{config.unit}",
-                    style="dim",
-                )
-            ),
-            Align.center(status_line),
-        )
+        status_line = Text(status_text, style=f"bold {display_color}")
+        content_elements.append(Align.center(status_line))
 
         return Panel(
-            content,
+            Group(*content_elements),
             title=config.title,
-            border_style=status_color,
-            height=8,
+            border_style=display_color,
+            height=12,  # Increased height for enhanced features
         )
 
     def create_convergence_trajectory(self) -> Panel:
