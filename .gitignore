@@ -170,3 +170,31 @@ CLAUDE_PROGRESS.md
 
 # Auto-generated version files
 mtop/_version.py
+
+# Demo logs and temporary files
+demo-setup.log
+demo-status.log
+
+# Old build artifacts
+*.zip
+kubectl-ld-full.zip
+mtop-sales-demo-package.zip
+
+# Empty or deprecated directories
+exports/
+kubectl_ld/
+sales-package/
+
+# Old demo scripts replaced by new framework
+demo_cast.sh
+demo_full.sh
+demo_split.sh
+demo.sh
+
+# Outdated documentation
+COLLABORATION_UPDATE.md
+test-plan-issue.md
+PR-SUMMARY.md
+claude-slash-command.md
+claude-slash-examples.md
+claude-slash-README.md
