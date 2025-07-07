@@ -32,6 +32,8 @@ def test_no_kubectl_legacy_references():
         "venv",
         "dist",
         "build",
+        ".egg-info",
+        "mtop.egg-info",
     }
 
     # Allowed kubectl references (legitimate usage)
