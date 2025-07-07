@@ -60,6 +60,18 @@ def test_no_kubectl_legacy_references():
         r"using kubectl commands",
         # Documentation files that reference kubectl as external tool
         r"- \*\*kubectl\*\*.*Kubernetes CLI tool",
+        r"- \*\*kubectl\*\* for Kubernetes testing",
+        # Operational procedures in deployment and operations guides
+        r"kubectl get pods",
+        r"kubectl describe",
+        r"kubectl logs",
+        r"kubectl create secret",
+        r"kubectl scale deployment",
+        r"kubectl exec",
+        r"kubectl run.*backup",
+        r"kubectl run.*restore",
+        r"kubectl create ns",
+        r"kubectl apply -f",
     ]
 
     violations: List[Tuple[Path, int, str]] = []
