@@ -14,7 +14,7 @@ from enum import Enum
 from threading import Lock
 from typing import Any, Dict, List, Optional
 
-from config_loader import SLOConfig
+from .config_loader import SLOConfig
 
 
 class QueueState(Enum):

@@ -14,7 +14,7 @@ from enum import Enum
 from threading import Lock
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-from config_loader import TechnologyConfig
+from .config_loader import TechnologyConfig
 
 
 class FractionSize(Enum):

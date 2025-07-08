@@ -5,7 +5,7 @@ Dynamic column engine for configurable table display
 
 from typing import Any, Callable, Dict, List, Optional
 
-from config_loader import ColorThreshold, ColumnConfig, Config
+from .config_loader import ColorThreshold, ColumnConfig, Config
 
 # Try to import rich for table functionality
 try:
@@ -240,9 +240,9 @@ class TableRenderer:
 
 
 # Convenience functions
-def create_table_renderer(config_path: str = "config.yaml") -> TableRenderer:
+def create_table_renderer(config_path: str = "config/config.yaml") -> TableRenderer:
     """Create table renderer from config file"""
-    from config_loader import load_config
+    from .config_loader import load_config
 
     config = load_config(config_path)
     return TableRenderer(config)
@@ -250,7 +250,7 @@ def create_table_renderer(config_path: str = "config.yaml") -> TableRenderer:
 
 def get_default_table_renderer() -> TableRenderer:
     """Get table renderer with default configuration"""
-    from config_loader import get_default_config
+    from .config_loader import get_default_config
 
     config = get_default_config()
     return TableRenderer(config)
@@ -259,7 +259,7 @@ def get_default_table_renderer() -> TableRenderer:
 if __name__ == "__main__":
     # Test the column engine
     try:
-        from config_loader import load_config
+        from .config_loader import load_config
 
         config = load_config()
         engine = ColumnEngine(config)

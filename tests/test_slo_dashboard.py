@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from rich.console import Console
 
-from config_loader import SLOConfig
+from mtop.config_loader import SLOConfig
 from mtop.slo_convergence import ActionType, ConvergenceAction, ConvergenceMetrics
 from mtop.slo_dashboard import GaugeConfig, SLODashboard
 

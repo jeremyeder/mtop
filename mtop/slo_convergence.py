@@ -14,11 +14,12 @@ from enum import Enum
 from threading import Lock
 from typing import Any, Dict, List, Optional
 
-from config_loader import SLOConfig, TechnologyConfig, WorkloadConfig
 from mtop.cost_optimizer import CostOptimizer
 from mtop.gpu_heartbeat import CapacityScaler, ScalingDecision, UtilizationTracker
 from mtop.token_metrics import CostCalculator, TokenMetrics, TTFTCalculator
 from mtop.workload_generator import WorkloadGenerator
+
+from .config_loader import SLOConfig, TechnologyConfig, WorkloadConfig
 
 
 class ConvergenceState(Enum):

@@ -3,7 +3,7 @@
 
 def test_default_config_loads():
     """Default config.yaml loads without errors."""
-    from config_loader import load_config
+    from mtop.config_loader import load_config
 
     config = load_config()
     assert config is not None
@@ -14,7 +14,7 @@ def test_default_config_loads():
 
 def test_config_structure():
     """Config has expected structure."""
-    from config_loader import load_config
+    from mtop.config_loader import load_config
 
     config = load_config()
     assert config.technology.gpu_types is not None
