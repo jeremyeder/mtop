@@ -89,15 +89,15 @@ chmod +x mtop-main
 
 ## Demo Documentation
 
-- [Demo Guide](DEMO-GUIDE.md) - Step-by-step demonstration instructions
-- [Sales Demo Guide](SALES-DEMO-GUIDE.md) - Customer-facing demo playbook
-- [Architecture](ARCHITECTURE.md) - Technical deep dive
+- [Demo Guide](docs/demos/DEMO-GUIDE.md) - Step-by-step demonstration instructions
+- [Sales Demo Guide](docs/demos/SALES-DEMO-GUIDE.md) - Customer-facing demo playbook
+- [Architecture](docs/ARCHITECTURE.md) - Technical deep dive
 
 ## Contributing
 
 This demo tool is part of the llm-d project. For contributions:
 - llm-d project: [github.com/redhat-et/llm-d](https://github.com/redhat-et/llm-d)
-- Demo improvements: See [COLLABORATION.md](COLLABORATION.md)
+- Demo improvements: See [COLLABORATION.md](docs/COLLABORATION.md)
 
 ---
 

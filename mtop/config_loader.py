@@ -144,7 +144,7 @@ class ConfigLoader:
     def __init__(self):
         self.config_cache = {}
 
-    def load_config(self, config_path: str = "config.yaml") -> Config:
+    def load_config(self, config_path: str = "config/config.yaml") -> Config:
         """Load configuration from YAML file with environment variable support"""
         import os
 
@@ -160,7 +160,7 @@ class ConfigLoader:
             fallback_paths = [
                 Path.home() / ".mtop" / "config.yaml",
                 Path("/etc/mtop/config.yaml"),
-                Path("config.yaml"),
+                Path("config/config.yaml"),
             ]
 
             config_found = False
@@ -568,7 +568,7 @@ class ConfigLoader:
 
 
 # Convenience functions
-def load_config(config_path: str = "config.yaml") -> Config:
+def load_config(config_path: str = "config/config.yaml") -> Config:
     """Load configuration - convenience function"""
     return ConfigLoader().load_config(config_path)
 

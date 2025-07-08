@@ -32,8 +32,6 @@ jobs:
         isort --check-only .
         python -m py_compile tests/*.py
         python -m py_compile mtop/*.py
-        python -m py_compile config_loader.py
-        python -m py_compile column_engine.py
     
     - name: Run tests
       run: pytest tests/ -v

@@ -17,6 +17,7 @@ sys.path.insert(0, str(project_root))
 
 # Imports after path setup to avoid import errors
 from config_loader import load_config  # noqa: E402
+
 from mtop.token_metrics import create_cost_calculator, create_token_tracker  # noqa: E402
 
 

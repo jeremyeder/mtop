@@ -15,9 +15,10 @@ from enum import Enum
 from threading import Lock
 from typing import Any, Dict, List
 
-from config_loader import SLOConfig, TechnologyConfig
 from mtop.gpu_heartbeat import GPUMetrics
 from mtop.token_metrics import CostCalculator, TokenMetrics
+
+from .config_loader import SLOConfig, TechnologyConfig
 
 
 class OptimizationObjective(Enum):

@@ -16,7 +16,7 @@ from enum import Enum
 from threading import Lock
 from typing import Any, Dict, List, Optional, Tuple
 
-from config_loader import TechnologyConfig
+from .config_loader import TechnologyConfig
 
 
 class HeartbeatStrength(Enum):
