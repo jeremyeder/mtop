@@ -16,7 +16,7 @@ def test_token_metrics_creation():
 
 def test_gpu_type_creation():
     """GPUType dataclass works."""
-    from config_loader import GPUType
+    from mtop.config_loader import GPUType
 
     gpu = GPUType(name="test-gpu", memory_gb=16, hourly_cost=1.0)
     assert gpu.name == "test-gpu"

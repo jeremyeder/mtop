@@ -198,3 +198,21 @@ PR-SUMMARY.md
 claude-slash-command.md
 claude-slash-examples.md
 claude-slash-README.md
+
+# Journey artifacts and temporary files
+RELEASE_NOTES_*.md
+reports/
+logs/
+templates/
+mock/
+sales-demo-package/
+mtop.bash
+watch_rollout.py
+test_vhs_generation.sh
+release_mtop.sh
+
+# Test recordings and tapes
+*test*.gif
+*test*.tape
+recordings/test-*
+tapes/test-*

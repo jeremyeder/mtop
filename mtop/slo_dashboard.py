@@ -23,8 +23,9 @@ from rich.progress import BarColumn, Progress, TextColumn
 from rich.table import Table
 from rich.text import Text
 
-from config_loader import SLOConfig
 from mtop.slo_convergence import ConvergenceAction, ConvergenceMetrics, ConvergenceState
+
+from .config_loader import SLOConfig
 
 
 @dataclass

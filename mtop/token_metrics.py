@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 from threading import Lock
 from typing import Any, Dict, Optional
 
-from config_loader import SLOConfig, TechnologyConfig
+from .config_loader import SLOConfig, TechnologyConfig
 
 
 @dataclass

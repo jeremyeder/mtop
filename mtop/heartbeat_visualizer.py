@@ -23,8 +23,9 @@ from rich.progress import BarColumn, Progress, TextColumn
 from rich.table import Table
 from rich.text import Text
 
-from config_loader import TechnologyConfig
 from mtop.gpu_heartbeat import GPUHeartbeat, GPUMetrics, HeartbeatPulse, HeartbeatStrength
+
+from .config_loader import TechnologyConfig
 
 
 class TechnologyType(Enum):

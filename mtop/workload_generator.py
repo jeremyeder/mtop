@@ -15,7 +15,7 @@ from enum import Enum
 from threading import Lock
 from typing import Any, Dict, List, Optional
 
-from config_loader import SLOConfig, WorkloadConfig
+from .config_loader import SLOConfig, WorkloadConfig
 
 
 class WorkloadType(Enum):

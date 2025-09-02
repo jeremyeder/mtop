@@ -24,9 +24,10 @@ from rich.progress import BarColumn, Progress, TextColumn
 from rich.table import Table
 from rich.text import Text
 
-from config_loader import SLOConfig, TechnologyConfig
 from mtop.gpu_heartbeat import GPUHeartbeat
 from mtop.slo_convergence import ConvergenceMetrics
+
+from .config_loader import SLOConfig, TechnologyConfig
 
 
 class BusinessMetricType(Enum):
